@@ -2532,8 +2532,8 @@ function beginGrab(st, how) {
       const d = box.setFromObject(g).distanceToPoint(gp) + 0.01 * g.getWorldPosition(V()).distanceTo(gp);   // ties → the nearer centre
       if (d < bd) { bd = d; obj = g; mode = 'direct'; }
     }
-    const kd = joystick.userData.pivot.getWorldPosition(V()).distanceTo(gripPos(st));
-    if (kd < Math.min(bd, 0.1)) { obj = null; joy = true; mode = 'direct'; }
+    const kd = box.setFromObject(joystick).distanceToPoint(gp) + 0.01 * joystick.userData.pivot.getWorldPosition(V()).distanceTo(gp);
+    if (kd < Math.min(bd, 0.06)) { obj = null; joy = true; mode = 'direct'; }      // the stage joystick, measured the same way
     if (!obj && !joy) {                                     // reaching for a focus knob
       for (const kind of ['fine', 'coarse']) for (const k of microscope.userData.knobs[kind]) {
         if (k.getWorldPosition(V()).distanceTo(gripPos(st)) < 0.07) { st.held = { knob: kind, how, lastY: gripPos(st).y }; pulse(st, 0.3, 30); return; }
@@ -2662,6 +2662,7 @@ function updatePointer(st, dt) {
       o.position.y = Math.max(o.position.y, SNAP.tableHeightOffset);              // can't push it through the table
     if (gp && gp.buttons[3]?.pressed && !st.prevBtn[3]) { cycleRotSnap(); pulse(st, 0.3, 20); tone(1100, 0.05); }
     if (st.line) st.line.scale.z = 0.2;
+    if (gp && st.src) locomotion(st, gp, dt);          // you can still walk and turn while carrying it
   } else if (st.held) {
     const { obj, mode } = st.held;
     if (gp) {
