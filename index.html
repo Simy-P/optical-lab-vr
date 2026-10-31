@@ -36,7 +36,7 @@
     <p>Lenses are labelled on their bases (+ = convex, converging; − = concave, diverging), and the wall panel and laser controller show the starting beam size. <b>★ Free build</b> puts every optic in the tray with a live readout at the port: try +100 then +400 mm, 500 mm apart, for a 4× bigger collimated beam. A floating tag between each pair of lenses shows their spacing along the beam against f₁+f₂ (green when within 2 mm).</p>
     <p><b>0 · Safety</b> is a laser safety induction: close the door, switch on the warning lamp, pick the right goggles from the rack, find the stray reflection, measure the power, classify the laser, dump the beam and close the shutter. Strikes for unsafe behaviour; you finish with a certificate.</p>
     <p>Three stages: <b>1 · Mirrors</b> (steer the beam), <b>2 · Lenses</b> (expand and collimate the beam to fill the new objective's back aperture; lenses and curved mirrors centre themselves on the beam when you let go, and the beam's real width is drawn as it focuses and expands), <b>3 · Alignment</b> (two irises fixed on the microscope axis: the expanded beam must pass through the middle of both, so it arrives on axis and square), and <b>4 · Advanced</b> (polarisation and aberrations, coming next). Two labs: the normal lab, and <b>The Floor is Lava</b>, where the volcanology lab next door has sprung a leak. Stay on the stepping stones; the optical table is lava proof.</p>
-    <p><b>Quest:</b> <kbd>ENTER VR</kbd>. Point at the wall panel and pull the trigger to choose a game. Grip or trigger grabs a part from the tray (reach for it or point at it). While holding: twist your wrist to turn it, <kbd>A</kbd>/<kbd>X</kbd> and <kbd>B</kbd>/<kbd>Y</kbd> turn it one step, the thumbstick slides it (lenses and curved mirrors creep slowly, for fine focusing), and clicking the thumbstick changes the rotation snap (free, 1°, 5°, 15°, 45°; also on the wall panel; 5° to start). Put a part back in the tray to remove it. When the light is in, the monitor shows a live confocal image: grab the focus knobs on the microscope's right side and move your hand up or down to focus through the sample (big knob coarse, small knob fine), switch between confocal and widefield, set the pinhole and change the sample with the buttons under the monitor, and use the joystick to move the stage. The box beside the laser tunes it from 350 to 1064 nm; UV and IR beams are invisible, so pick up a detector card from the rack next to it and hold it in the beam to see where it goes, or pick up the IR viewer next to the controller and hold it to your eye: UV and near-IR beams show up green through it. Walking: the left stick moves you the way you're looking and the right stick turns (smooth by default). On the wall panel's title screen you can switch to snap turning (45° or 30°) or swap the sticks.</p>
+    <p><b>Quest:</b> <kbd>ENTER VR</kbd>. Point at the wall panel and pull the trigger to choose a game. Either hand grabs with grip or trigger: reach in and pick a part up to lift, tilt and carry it (or pass it to your other hand), and when you let go it drops back onto the table, upright, on the nearest grid spot and snap angle. Point at a part to slide it along the table from a distance. Let go of the trigger to point your index finger and you can press the buttons on the laser controller, the microscope pad and the wall panel by pushing them. While holding a part at a distance: twist your wrist to turn it, <kbd>A</kbd>/<kbd>X</kbd> and <kbd>B</kbd>/<kbd>Y</kbd> turn it one step, the thumbstick slides it (lenses and curved mirrors creep slowly, for fine focusing), and clicking the thumbstick changes the rotation snap (free, 1°, 5°, 15°, 45°; also on the wall panel; 5° to start). Put a part back in the tray to remove it. When the light is in, the monitor shows a live confocal image: grab the focus knobs on the microscope's right side and move your hand up or down to focus through the sample (big knob coarse, small knob fine), switch between confocal and widefield, set the pinhole and change the sample with the buttons under the monitor, and use the joystick to move the stage. The box beside the laser tunes it from 350 to 1064 nm; UV and IR beams are invisible, so pick up a detector card from the rack next to it and hold it in the beam to see where it goes, or pick up the IR viewer next to the controller and hold it to your eye: UV and near-IR beams show up green through it. Walking: the left stick moves you the way you're looking and the right stick turns (smooth by default). On the wall panel's title screen you can switch to snap turning (45° or 30°) or swap the sticks.</p>
     <p><b>Desktop:</b> click the panel buttons; drag parts; mouse wheel over a part turns it one snap step, 5° to start (<kbd>Shift</kbd> for 1°; change the snap on the wall panel); drag the joystick; drag a focus knob up/down or use the mouse wheel over it to focus; click the buttons under the monitor; the box beside the laser changes its wavelength (350–1064 nm; UV and IR beams are invisible: drag a detector card from the rack into the beam to find them, or press <kbd>V</kbd> to look through the IR viewer); <kbd>[</kbd>/<kbd>]</kbd> nudge the lens or curved mirror under the mouse 1 mm along its axis (<kbd>Shift</kbd> for 5 mm); drag empty space to orbit; <kbd>M</kbd> returns to the main menu.</p>
   </div>
 </div>
@@ -2367,40 +2367,78 @@ const rotateBy = (obj, unityDeg) => { obj.rotation.y -= unityDeg * DEG; };   // 
 
 // ───────────────────────── Gloves (procedural hands, ControllerHandPoseAnimator) ─────────────────────────
 // Built in WebXR grip space: fingers point along -Z, thumb toward +Y, palms face each other.
+// Each finger has three joints; the pose follows the trigger, grip and where your thumb rests,
+// so letting go of the trigger points your index finger (for pressing buttons) and lifting
+// your thumb off the controller gives a thumbs-up.
 function buildGlove(handedness) {
   const s = handedness === 'left' ? -1 : 1;
   const g = new THREE.Group();
   const mat = MAT.glove.clone();
-  const part = (geo) => { const m = new THREE.Mesh(geo, mat); m.castShadow = true; return m; };
-  const palm = part(new THREE.BoxGeometry(0.026, 0.082, 0.09));
-  palm.position.set(s * 0.016, 0, 0); g.add(palm);
-  const cuff = part(new THREE.CylinderGeometry(0.03, 0.032, 0.05, 16).rotateX(Math.PI / 2));
-  cuff.position.set(s * 0.016, 0, 0.07); cuff.scale.set(0.7, 1, 1); g.add(cuff);
-  const seg = (len, r) => part(new THREE.CapsuleGeometry(r, len, 4, 8).rotateX(Math.PI / 2).translate(0, 0, -len / 2));
+  const cuffMat = std(0x2c4f96, 0, 0.6);
+  const part = (geo, m = mat) => { const o = new THREE.Mesh(geo, m); o.castShadow = true; return o; };
+  const palm = part(new RoundedBoxGeometry(0.028, 0.084, 0.092, 3, 0.011));
+  palm.position.set(s * 0.016, -0.002, -0.002); g.add(palm);
+  const cuff = part(new THREE.CylinderGeometry(0.031, 0.034, 0.055, 18, 1, true).rotateX(Math.PI / 2), cuffMat);
+  cuff.material.side = THREE.DoubleSide;
+  cuff.position.set(s * 0.016, 0, 0.072); cuff.scale.set(0.72, 1, 1); g.add(cuff);
+  const seg = (len, r) => part(new THREE.CapsuleGeometry(r, Math.max(0.001, len - r), 4, 10).rotateX(Math.PI / 2).translate(0, 0, -len / 2));
   const fingers = [];
-  for (const [y, L] of [[0.031, 0.072], [0.011, 0.078], [-0.009, 0.074], [-0.029, 0.06]]) {
-    const root = new THREE.Group(); root.position.set(s * 0.012, y, -0.045); g.add(root);
-    root.add(seg(L * 0.55, 0.0085));
-    const mid = new THREE.Group(); mid.position.z = -L * 0.55; root.add(mid);
-    mid.add(seg(L * 0.45, 0.008));
-    fingers.push({ root, mid });
+  // index, middle, ring, little: [height across the palm, length, thickness]
+  for (const [y, L, r] of [[0.031, 0.078, 0.0085], [0.011, 0.084, 0.0087], [-0.009, 0.079, 0.0083], [-0.028, 0.064, 0.0075]]) {
+    const root = new THREE.Group(); root.position.set(s * 0.013, y, -0.046); g.add(root);
+    const knuckle = part(new THREE.SphereGeometry(r * 1.15, 12, 8)); root.add(knuckle);
+    const lens = [L * 0.44, L * 0.31, L * 0.25];
+    root.add(seg(lens[0], r));
+    const mid = new THREE.Group(); mid.position.z = -lens[0]; root.add(mid); mid.add(seg(lens[1], r * 0.93));
+    const tip = new THREE.Group(); tip.position.z = -lens[1]; mid.add(tip); tip.add(seg(lens[2], r * 0.85));
+    const end = new THREE.Object3D(); end.position.z = -lens[2]; tip.add(end);
+    fingers.push({ root, mid, tip, end });
   }
-  const tRoot = new THREE.Group(); tRoot.position.set(s * 0.004, 0.04, 0.01); tRoot.rotation.set(0.75, s * 0.35, 0);
-  g.add(tRoot);
-  const tCurl = new THREE.Group(); tRoot.add(tCurl); tCurl.add(seg(0.035, 0.0095));
-  const tTip = new THREE.Group(); tTip.position.z = -0.035; tCurl.add(tTip); tTip.add(seg(0.028, 0.0088));
-  g.userData = { s, fingers, tCurl, tTip };
-  setGloveCurl(g, 0, 0);
+  const tRoot = new THREE.Group(); tRoot.position.set(s * 0.006, 0.036, 0.012); g.add(tRoot);
+  const tCurl = new THREE.Group(); tRoot.add(tCurl); tCurl.add(seg(0.036, 0.0098));
+  const tTip = new THREE.Group(); tTip.position.z = -0.036; tCurl.add(tTip); tTip.add(seg(0.03, 0.009));
+  g.userData = { s, fingers, tRoot, tCurl, tTip, indexTip: fingers[0].end,
+    cur: { index: 0, grip: 0, thumb: 0.5, up: 0 } };
+  poseGlove(g, g.userData.cur);
   return g;
 }
-// trigger → index finger; grip → thumb, middle, ring, little
-function setGloveCurl(glove, trigger, grip) {
-  const { s, fingers, tCurl, tTip } = glove.userData;
+function poseGlove(glove, p) {
+  const { s, fingers, tRoot, tCurl, tTip } = glove.userData;
   fingers.forEach((f, i) => {
-    const c = 0.12 + (i === 0 ? trigger : grip) * 1.25;
-    f.root.rotation.y = s * c; f.mid.rotation.y = s * c * 1.1;
+    const c = i === 0 ? p.index : p.grip;
+    const open = 1 - c;
+    f.root.rotation.set((1.2 - i) * 0.06 * open, s * (0.08 + c * 1.3), 0);   // fingers spread a little when open
+    f.mid.rotation.y = s * (0.06 + c * 1.45);
+    f.tip.rotation.y = s * (0.04 + c * 1.0);
   });
-  tCurl.rotation.y = s * (0.1 + grip * 0.55); tTip.rotation.y = s * grip * 0.5;
+  // thumb: rests on the controller face (thumb 1), lifts for a thumbs-up (up 1)
+  tRoot.rotation.set(0.7 + p.up * 0.45, s * (0.38 - p.up * 0.25), 0);
+  tCurl.rotation.set(0, s * (0.05 + p.thumb * 0.5), 0);
+  tTip.rotation.set(0, s * (p.thumb * 0.55), 0);
+}
+function setGloveCurl(glove, trigger, grip) {          // kept for scripts: snap straight to a pose
+  Object.assign(glove.userData.cur, { index: trigger, grip, thumb: grip, up: 0 });
+  poseGlove(glove, glove.userData.cur);
+}
+// read the controller's buttons and touch sensors, then ease the hand toward that pose
+function animateGlove(st, dt) {
+  const gp = st.src?.gamepad, glove = st.glove;
+  if (!glove || !gp) return;
+  const b = gp.buttons;
+  const trig = b[0]?.value ?? 0, sq = b[1]?.value ?? 0;
+  const trigTouch = !!(b[0]?.touched || trig > 0.02);
+  const thumbTouch = [3, 4, 5, 6].some((i) => b[i]?.touched || b[i]?.pressed);
+  const holding = !!(st.held && (st.held.obj || st.held.joy || st.held.knob));
+  const t = {
+    index: holding ? Math.max(trig, 0.72) : trigTouch ? Math.min(1, 0.22 + trig * 0.8) : 0,      // trigger released → point
+    grip: holding ? Math.max(sq, 0.85) : sq,
+    thumb: holding ? 0.8 : thumbTouch ? 0.55 + sq * 0.3 : 0.15,
+    up: !holding && !thumbTouch && sq > 0.5 ? 1 : 0,
+  };
+  const cur = glove.userData.cur, k = 1 - Math.exp(-dt * 22);
+  for (const key in t) cur[key] += (t[key] - cur[key]) * k;
+  poseGlove(glove, cur);
+  st.pointing = !holding && cur.index < 0.15;
 }
 
 // ───────────────────────── XR controllers (XR Origin) ─────────────────────────
@@ -2418,7 +2456,7 @@ for (let i = 0; i < 2; i++) {
   const ctrl = renderer.xr.getController(i), grip = renderer.xr.getControllerGrip(i), hand = renderer.xr.getHand(i);
   rig.add(ctrl, grip, hand);
   hand.add(handFactory.createHandModel(hand, 'mesh'));      // real hand tracking, if used
-  const st = { kind: 'xr', ctrl, grip, src: null, glove: null, held: null, hover: null, prevBtn: [], line: makeLine(), turnLatch: false };
+  const st = { kind: 'xr', ctrl, grip, hand, src: null, glove: null, held: null, hover: null, prevBtn: [], line: makeLine(), turnLatch: false, tipPrev: null, pokeCool: 0 };
   ctrl.add(st.line);
   ctrl.addEventListener('connected', (e) => {
     st.src = e.data; st.line.visible = true;
@@ -2449,11 +2487,13 @@ function aimRay(st) {
   pickRay.near = 0; pickRay.far = 10;
   return pickRay;
 }
-function pickGrabbable(st) {
+let lastPick = null;
+function pickGrabbable(st, rc = aimRay(st)) {
   const meshes = []; [...components, ...cards].forEach((g) => g.traverse((o) => { if (o.isMesh) meshes.push(o); }));
   joystick.traverse((o) => { if (o.isMesh) meshes.push(o); });
   const pad = microscope.userData.pad;
-  const h = aimRay(st).intersectObjects([...meshes, ...clickables, ...microscope.userData.knobMeshes, pad, laserPanel, tableTop, panel, ...obstacleGroup.children, ...room.children], false)[0];
+  const h = rc.intersectObjects([...meshes, ...clickables, ...microscope.userData.knobMeshes, pad, laserPanel, tableTop, panel, ...obstacleGroup.children, ...room.children], false)[0];
+  lastPick = h || null;
   if (!h) return null;
   if (h.object.userData.onClick && h.object.visible && h.object.parent?.visible !== false) return { dist: h.distance, click: h.object.userData.onClick };
   if (h.object === panel) return { dist: h.distance, button: buttonAt(h.uv) };
@@ -2486,9 +2526,10 @@ function beginGrab(st, how) {
   let obj = null, mode = null;
   let joy = false;
   if (st.kind === 'xr') {
-    let bd = 0.12;
+    let bd = 0.05;                                         // within 5 cm of any part of it
+    const gp = gripPos(st), box = new THREE.Box3();
     for (const g of [...components, ...cards]) {
-      const d = g.getWorldPosition(V()).distanceTo(gripPos(st));
+      const d = box.setFromObject(g).distanceToPoint(gp) + 0.01 * g.getWorldPosition(V()).distanceTo(gp);   // ties → the nearer centre
       if (d < bd) { bd = d; obj = g; mode = 'direct'; }
     }
     const kd = joystick.userData.pivot.getWorldPosition(V()).distanceTo(gripPos(st));
@@ -2515,11 +2556,13 @@ function beginGrab(st, how) {
     return;
   }
   if (!obj) return;
+  for (const o of pointers) if (o !== st && o.held?.obj === obj) o.held = null;   // take it from your other hand
+  settling.delete(obj);
   if (isSpare(obj)) spares.set(obj.userData.kind, spawn(obj.userData.kind, TRAY_SLOTS[obj.userData.kind], FACE_BEAM.has(obj.userData.kind) ? Math.PI / 2 : 0));   // a new spare appears
   const wp = obj.getWorldPosition(V());
   const anchor = (mode === 'direct' ? gripPos(st) : aimOnTable(st)) || wp.clone();
   st.held = { obj, mode, how, off: wp.sub(anchor), yawOff: mode === 'direct' ? obj.rotation.y - gripYaw(st) : 0 };
-  if (obj.userData.free && mode === 'direct') {        // a card in the hand follows it freely in 3D
+  if (mode === 'direct') {                             // in the hand it follows you freely in 3D: lift it, tilt it, carry it
     const gq = st.grip.getWorldQuaternion(new THREE.Quaternion()).invert();
     st.held.cardPos = obj.getWorldPosition(V()).sub(gripPos(st)).applyQuaternion(gq);
     st.held.cardQuat = gq.multiply(obj.getWorldQuaternion(new THREE.Quaternion()));
@@ -2542,7 +2585,20 @@ function endGrab(st, how) {
     pulse(st, 0.25, 25); return;
   }
   if (inTray(m)) { removeComponent(m); tone(330, 0.1); }   // returned to the tray
-  else if (MOVER.snapOnRelease) {
+  else if (wasHand) {
+    // let go in mid-air: it drops upright onto the nearest free grid spot, turned to the nearest snap angle
+    const from = { p: m.position.clone(), q: m.quaternion.clone() };
+    const yaw = new THREE.Euler().setFromQuaternion(m.quaternion, 'YXZ').y;
+    m.rotation.set(0, yaw, 0); snapYaw(m);
+    const toQ = m.quaternion.clone();
+    const step = OPTICS[m.userData.kind] ? 0.001 : SNAP.gridSize;
+    const g = resolvePlacement(m.position, true, step);
+    const tries = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1], [2, 0], [-2, 0], [0, 2], [0, -2]];
+    let to = tries.map(([dx, dz]) => V(g.x + dx * step * (step < 0.01 ? 20 : 1), g.y, g.z + dz * step * (step < 0.01 ? 20 : 1))).find((p) => !blockedAt(p.x, p.z, m));
+    if (!to) to = m.userData.lastSpot?.clone() || g;
+    m.position.copy(from.p); m.quaternion.copy(from.q);
+    settling.set(m, { fromP: from.p, fromQ: from.q, toP: to, toQ, t: 0, dur: 0.12 + Math.min(0.3, from.p.distanceTo(to) * 0.6), st });
+  } else if (MOVER.snapOnRelease) {
     const before = m.position.clone();
     const step = OPTICS[m.userData.kind] ? 0.001 : SNAP.gridSize;    // lenses and curved mirrors position to 1 mm
     const g = resolvePlacement(m.position, true, step);
@@ -2558,6 +2614,26 @@ function endGrab(st, how) {
     }
   }
   pulse(st, 0.25, 25);
+}
+// parts settling onto the table after you let go
+const settling = new Map();
+function updateSettling(dt) {
+  for (const [m, a] of settling) {
+    a.t += dt;
+    const u = Math.min(1, a.t / a.dur), e = u * u * (3 - 2 * u);
+    m.position.lerpVectors(a.fromP, a.toP, e);
+    m.position.y = THREE.MathUtils.lerp(a.fromP.y, a.toP.y, u * u);          // falls, rather than floats
+    m.quaternion.slerpQuaternions(a.fromQ, a.toQ, e);
+    if (u < 1) continue;
+    settling.delete(m);
+    m.position.copy(a.toP); m.quaternion.copy(a.toQ); m.userData.lastSpot = a.toP.clone();
+    if (OPTICS[m.userData.kind]) {            // XY translator: centre the lens or curved mirror on the beam
+      traceBeam();
+      const h = opticHits.get(m);
+      if (h && Math.hypot(h.x, h.z) > 0.0002) { m.position.x += h.x; m.position.z += h.z; }
+    }
+    tone(170, 0.06); pulse(a.st, 0.35, 30);    // clunk
+  }
 }
 function pulse(st, v, ms) { st.src?.gamepad?.hapticActuators?.[0]?.pulse?.(v, ms); }
 
@@ -2579,8 +2655,12 @@ function updatePointer(st, dt) {
     if (st.line) st.line.scale.z = 0.2;
   } else if (st.held?.cardPos) {
     const gq = st.grip.getWorldQuaternion(new THREE.Quaternion());
-    st.held.obj.position.copy(st.held.cardPos).applyQuaternion(gq).add(gripPos(st)).sub(TABLE_PLANE);
-    st.held.obj.quaternion.copy(gq).multiply(st.held.cardQuat);
+    const o = st.held.obj;
+    o.position.copy(st.held.cardPos).applyQuaternion(gq).add(gripPos(st)).sub(TABLE_PLANE);
+    o.quaternion.copy(gq).multiply(st.held.cardQuat);
+    if (!o.userData.free && Math.abs(o.position.x) < SNAP.boundX + 0.05 && Math.abs(o.position.z) < SNAP.boundZ + 0.05)
+      o.position.y = Math.max(o.position.y, SNAP.tableHeightOffset);              // can't push it through the table
+    if (gp && gp.buttons[3]?.pressed && !st.prevBtn[3]) { cycleRotSnap(); pulse(st, 0.3, 20); tone(1100, 0.05); }
     if (st.line) st.line.scale.z = 0.2;
   } else if (st.held) {
     const { obj, mode } = st.held;
@@ -2620,10 +2700,34 @@ function updatePointer(st, dt) {
     if (gp) locomotion(st, gp, dt);
   }
   if (gp) st.prevBtn = gp.buttons.map((b) => b.pressed);
-  if (st.glove && gp) {
-    const trig = gp.buttons[0]?.value ?? 0, sq = gp.buttons[1]?.value ?? 0;
-    setGloveCurl(st.glove, st.held ? Math.max(trig, 0.7) : trig, st.held ? Math.max(sq, 0.8) : sq);
-  }
+  animateGlove(st, dt);
+  if (st.kind === 'xr') updatePoke(st, dt);
+}
+// press panel buttons by pushing your index fingertip through them (laser controller, microscope pad,
+// wall panel, door, light switch). Works with the gloves when you point, and with tracked hands.
+const pokeRay = new THREE.Raycaster();
+function fingertip(st) {
+  const j = st.hand?.joints?.['index-finger-tip'];
+  if (st.src?.hand && j) return j.getWorldPosition(V());
+  if (st.glove && st.pointing) return st.glove.userData.indexTip.getWorldPosition(V());
+  return null;
+}
+function updatePoke(st, dt) {
+  st.pokeCool = Math.max(0, st.pokeCool - dt);
+  const tip = fingertip(st);
+  if (!tip || st.held) { st.tipPrev = null; return; }
+  const prev = st.tipPrev; st.tipPrev = tip.clone();
+  if (!prev || st.pokeCool > 0) return;
+  const d = V().subVectors(tip, prev), len = d.length();
+  if (len < 1e-5) return;
+  // a little lead-in so a fingertip resting on the surface doesn't need to move fast
+  pokeRay.set(prev.clone().addScaledVector(d, -0.004 / len), d.normalize()); pokeRay.near = 0; pokeRay.far = len + 0.006;
+  const h = pickGrabbable(st, pokeRay);
+  if (!h || !(h.button || h.click || h.pad || h.laserBtn)) return;
+  if (lastPick?.face && lastPick.face.normal.clone().transformDirection(lastPick.object.matrixWorld).dot(pokeRay.ray.direction) > 0) return;   // only pushing in, not pulling out
+  st.pokeCool = 0.35;
+  if (h.button) pressButton(h.button); else if (h.click) h.click(); else if (h.pad) pressPad(h.pad); else pressLaser(h.laserBtn);
+  pulse(st, 0.6, 35); tone(900, 0.04);
 }
 
 // VR comfort settings (wall panel title screen): smooth or snap turning, and which stick moves
@@ -2735,6 +2839,7 @@ renderer.setAnimationLoop(() => {
     if ((st.kind === 'xr') !== renderer.xr.isPresenting) continue;
     updatePointer(st, dt);
   }
+  updateSettling(dt);
   for (const g of [...components, ...cards]) {
     const hot = pointers.some((p) => p.hover === g || p.held?.obj === g);
     g.userData.highlight.emissive.set(hot ? 0x40160f : 0x000000);
