@@ -36,7 +36,7 @@
     <p>Lenses are labelled on their bases (+ = convex, converging; − = concave, diverging), and the wall panel and laser controller show the starting beam size. <b>★ Free build</b> puts every optic in the tray with a live readout at the port: try +100 then +400 mm, 500 mm apart, for a 4× bigger collimated beam. A floating tag between each pair of lenses shows their spacing along the beam against f₁+f₂ (green when within 2 mm).</p>
     <p><b>0 · Safety</b> is a laser safety induction: close the door, switch on the warning lamp, pick the right goggles from the rack, find the stray reflection, measure the power, classify the laser, dump the beam and close the shutter. Strikes for unsafe behaviour; you finish with a certificate.</p>
     <p>Three stages: <b>1 · Mirrors</b> (steer the beam), <b>2 · Lenses</b> (expand and collimate the beam to fill the new objective's back aperture; lenses and curved mirrors centre themselves on the beam when you let go, and the beam's real width is drawn as it focuses and expands), <b>3 · Alignment</b> (two irises fixed on the microscope axis: the expanded beam must pass through the middle of both, so it arrives on axis and square), and <b>4 · Advanced</b> (polarisation and aberrations, coming next). Two labs: the normal lab, and <b>The Floor is Lava</b>, where the volcanology lab next door has sprung a leak. Stay on the stepping stones; the optical table is lava proof.</p>
-    <p><b>Quest:</b> <kbd>ENTER VR</kbd>. Point at the wall panel and pull the trigger to choose a game. Either hand grabs with grip or trigger: reach in and pick a part up to lift, tilt and carry it (or pass it to your other hand), and when you let go it drops back onto the table, upright, on the nearest grid spot and snap angle. Point at a part to slide it along the table from a distance. Let go of the trigger to point your index finger and you can press the buttons on the laser controller, the microscope pad and the wall panel by pushing them. While holding a part at a distance: twist your wrist to turn it, <kbd>A</kbd>/<kbd>X</kbd> and <kbd>B</kbd>/<kbd>Y</kbd> turn it one step, the thumbstick slides it (lenses and curved mirrors creep slowly, for fine focusing), and clicking the thumbstick changes the rotation snap (free, 1°, 5°, 15°, 45°; also on the wall panel; 5° to start). Put a part back in the tray to remove it. When the light is in, the monitor shows a live confocal image: grab the focus knobs on the microscope's right side and move your hand up or down to focus through the sample (big knob coarse, small knob fine), switch between confocal and widefield, set the pinhole and change the sample with the buttons under the monitor, and use the joystick to move the stage. The box beside the laser tunes it from 350 to 1064 nm; UV and IR beams are invisible, so pick up a detector card from the rack next to it and hold it in the beam to see where it goes, or pick up the IR viewer next to the controller and hold it to your eye: UV and near-IR beams show up green through it. Walking: the left stick moves you the way you're looking and the right stick turns (smooth by default). On the wall panel's title screen you can switch to snap turning (45° or 30°) or swap the sticks.</p>
+    <p><b>Quest:</b> <kbd>ENTER VR</kbd>. Point at the wall panel and pull the trigger to choose a game. Either hand grabs with grip or trigger: reach in and pick a part up to lift, tilt and carry it (or pass it to your other hand), and when you let go it drops back onto the table, upright, on the nearest grid spot and snap angle. Point at a part to slide it along the table from a distance. Let go of the trigger to point your index finger and you can press the buttons on the laser controller, the microscope pad and the wall panel by pushing them. While holding a part at a distance: twist your wrist to turn it, <kbd>A</kbd>/<kbd>X</kbd> and <kbd>B</kbd>/<kbd>Y</kbd> turn it one step, the thumbstick slides it (lenses and curved mirrors creep slowly, for fine focusing), and clicking the thumbstick changes the rotation snap (free, 1°, 5°, 15°, 45°; also on the wall panel; 5° to start). Put a part back in the tray to remove it. When the light is in, the monitor shows a live confocal image: grab the focus knobs on the microscope's right side and move your hand up or down to focus through the sample (big knob coarse, small knob fine), switch between confocal and widefield, set the pinhole and change the sample with the buttons under the monitor, and use the joystick to move the stage. The box beside the laser tunes it from 350 to 1064 nm; UV and IR beams are invisible, so pick up a detector card from the rack next to it and hold it in the beam to see where it goes, or pick up the IR viewer next to the controller and hold it to your eye: UV and near-IR beams show up green through it. Walking: the left stick moves you the way you're looking and the right stick turns (smooth by default). On the wall panel's title screen you can switch to snap turning (45° or 30°), swap the sticks, and set your eye height (1.75 m to start; 1.6, 1.9, or your real height).</p>
     <p><b>Desktop:</b> click the panel buttons; drag parts; mouse wheel over a part turns it one snap step, 5° to start (<kbd>Shift</kbd> for 1°; change the snap on the wall panel); drag the joystick; drag a focus knob up/down or use the mouse wheel over it to focus; click the buttons under the monitor; the box beside the laser changes its wavelength (350–1064 nm; UV and IR beams are invisible: drag a detector card from the rack into the beam to find them, or press <kbd>V</kbd> to look through the IR viewer); <kbd>[</kbd>/<kbd>]</kbd> nudge the lens or curved mirror under the mouse 1 mm along its axis (<kbd>Shift</kbd> for 5 mm); drag empty space to orbit; <kbd>M</kbd> returns to the main menu.</p>
   </div>
 </div>
@@ -1464,8 +1464,9 @@ function buttonsFor(state) {
   const last = game.level === LEVELS.length - 1;
   const TURN_LABEL = { smooth: 'Turn: smooth', snap45: 'Turn: snap 45°', snap30: 'Turn: snap 30°' };
   if (state === 'title') return [
-    { id: 'vr:turn', label: TURN_LABEL[vrPrefs.turn] || 'Turn: smooth', x: 600, y: 30, w: 190, h: 56, small: true },
-    { id: 'vr:sticks', label: vrPrefs.moveHand === 'left' ? 'Move: left stick' : 'Move: right stick', x: 802, y: 30, w: 190, h: 56, small: true },
+    { id: 'vr:turn', label: 'TURN\n' + (TURN_LABEL[vrPrefs.turn] || 'Turn: smooth').slice(6), x: 590, y: 30, w: 132, h: 62, small: true },
+    { id: 'vr:sticks', label: 'MOVE\n' + (vrPrefs.moveHand === 'left' ? 'left stick' : 'right stick'), x: 730, y: 30, w: 132, h: 62, small: true },
+    { id: 'vr:eye', label: 'EYE HEIGHT\n' + (vrPrefs.eye ? vrPrefs.eye.toFixed(2) + ' m' : 'real'), x: 870, y: 30, w: 132, h: 62, small: true },
     ...TIERS.map((t, i) => ({ ...t, x: 40 + i * 158, y: 300, w: 150, h: 150 })),
     { id: 'normal', label: 'Normal lab', x: 40, y: 486, w: 440, h: 90 },
     { id: 'lava', label: '🌋  The Floor is Lava', x: 544, y: 486, w: 440, h: 90 }];
@@ -1488,14 +1489,14 @@ function drawPanel() {
   const irisSig = (game.irisHits || []).map((x) => `${x.iris.index}${x.pass}${x.off.toFixed(1)}`).join(',');
   const spSig = spacingInfo.map((x) => x.d.toFixed(0)).join(',');
   const sfSig = game.safety ? JSON.stringify([game.safety.done, game.safety.strikes, game.safety.quiz, wornGoggles?.name]) : '';
-  const sig = [vrPrefs.turn, vrPrefs.moveHand, sfSig, spSig, irisSig, game.mode, game.tier, game.level, game.state, n, lit, game.hover, Math.floor(t / 1000), game.burns, rotSnap, L.need ? portStr : ''].join('|');
+  const sig = [vrPrefs.turn, vrPrefs.moveHand, vrPrefs.eye, sfSig, spSig, irisSig, game.mode, game.tier, game.level, game.state, n, lit, game.hover, Math.floor(t / 1000), game.burns, rotSnap, L.need ? portStr : ''].join('|');
   if (sig === panelSig) return; panelSig = sig;
   const g = pctx, lava = game.mode === 'lava';
   g.fillStyle = '#101317'; g.fillRect(0, 0, PW, PH);
   g.fillStyle = lava ? '#ff7a00' : '#ff3b2f'; g.fillRect(0, 0, PW, 8);
   if (game.state === 'title') {
     g.fillStyle = '#eef2f6'; g.font = 'bold 60px system-ui, sans-serif'; g.fillText('OPTICAL LAB VR', 40, 96);
-    g.fillStyle = '#8b96a3'; g.font = '600 18px system-ui, sans-serif'; g.fillText('VR CONTROLS', 600, 22);
+    g.fillStyle = '#8b96a3'; g.font = '600 18px system-ui, sans-serif'; g.fillText('VR CONTROLS', 590, 22);
     g.fillStyle = '#b6c0cb'; g.font = '28px system-ui, sans-serif';
     wrapText(g, 'Someone has stripped every optic off your setup. Get the laser into the microscope fast, with as few components as possible.', 40, 150, PW - 80, 36);
     g.fillStyle = '#8b96a3'; g.font = '600 24px system-ui, sans-serif'; g.fillText('CHOOSE A STAGE TO START', 40, 284);
@@ -1503,7 +1504,9 @@ function drawPanel() {
     for (const b of buttonsFor('title')) {
       if (b.small) {
         g.fillStyle = game.hover === b.id ? '#ff3b2f' : '#2b3340'; g.beginPath(); g.roundRect(b.x, b.y, b.w, b.h, 12); g.fill();
-        g.fillStyle = '#eef2f6'; g.font = 'bold 20px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText(b.label, b.x + b.w / 2, b.y + 36); g.textAlign = 'left';
+        const [hd, val] = b.label.split('\n'); g.textAlign = 'center';
+        g.fillStyle = '#9aa6b2'; g.font = '600 14px system-ui, sans-serif'; g.fillText(hd, b.x + b.w / 2, b.y + 22);
+        g.fillStyle = '#eef2f6'; g.font = 'bold 19px system-ui, sans-serif'; g.fillText(val, b.x + b.w / 2, b.y + 47); g.textAlign = 'left';
         continue;
       }
       const isTier = !!b.title, selected = b.id === game.mode;
@@ -1622,6 +1625,7 @@ function pressButton(id) {
   if (id === 'next') loadLevel(game.level + 1);
   if (id === 'snap') { cycleRotSnap(); return; }
   if (id === 'vr:turn') { vrPrefs.turn = { smooth: 'snap45', snap45: 'snap30', snap30: 'smooth' }[vrPrefs.turn] || 'smooth'; saveVrPrefs(); return; }
+  if (id === 'vr:eye') { const opts = [1.6, 1.75, 1.9, 0]; vrPrefs.eye = opts[(opts.indexOf(vrPrefs.eye) + 1) % opts.length]; saveVrPrefs(); applyEyeHeight(); return; }
   if (id === 'vr:sticks') { vrPrefs.moveHand = vrPrefs.moveHand === 'left' ? 'right' : 'left'; saveVrPrefs(); return; }
   if (id.startsWith('class:')) {
     const c = id.slice(6); say(CLASS_ANSWERS[c]);
@@ -1847,6 +1851,7 @@ function updateLavaHazard(dt) {
     rig.position.copy(u2t(0, 0, -2)); rig.rotation.set(0, Math.PI, 0);
     const h = camera.getWorldPosition(V());       // put your head back over the start stone
     rig.position.x -= h.x; rig.position.z -= h.z - (-2.0);
+    eyePending = true;
   }
   hurtShell.material.opacity = burning ? 0.25 + 0.15 * Math.sin(performance.now() / 60) : Math.max(0, hurtShell.material.opacity - dt);
   healthBar.visible = game.health < 100;
@@ -2650,8 +2655,16 @@ function updatePointer(st, dt) {
   } else if (st.held?.joy) {
     const p = st.held.mode === 'direct' ? gripPos(st) : aimOnTable(st);
     const t = joystick.userData.tilt;
-    if (p) t.set(THREE.MathUtils.clamp(-(p.x - st.held.anchor.x) / 0.05, -1, 1), THREE.MathUtils.clamp((p.z - st.held.anchor.z) / 0.05, -1, 1));
-    if (gp) { const x = gp.axes[2] ?? 0, y = gp.axes[3] ?? 0; if (Math.hypot(x, y) > 0.2) t.set(x, -y); }
+    if (p) t.set(THREE.MathUtils.clamp((p.x - st.held.anchor.x) / 0.05, -1, 1), THREE.MathUtils.clamp((p.z - st.held.anchor.z) / 0.05, -1, 1));   // the stick leans the way your hand goes
+    if (gp) {
+      const x = gp.axes[2] ?? 0, y = gp.axes[3] ?? 0;
+      if (Math.hypot(x, y) > 0.2) {                 // thumbstick: right is your right, up is away from you
+        const q = camera.getWorldQuaternion(new THREE.Quaternion());
+        const fwd = V(0, 0, -1).applyQuaternion(q); fwd.y = 0; fwd.normalize();
+        const right = V().crossVectors(fwd, UP), d = right.multiplyScalar(x).addScaledVector(fwd, -y);
+        t.set(THREE.MathUtils.clamp(d.x, -1, 1), THREE.MathUtils.clamp(d.z, -1, 1));
+      }
+    }
     if (st.line) st.line.scale.z = 0.2;
   } else if (st.held?.cardPos) {
     const gq = st.grip.getWorldQuaternion(new THREE.Quaternion());
@@ -2732,9 +2745,18 @@ function updatePoke(st, dt) {
 }
 
 // VR comfort settings (wall panel title screen): smooth or snap turning, and which stick moves
-const vrPrefs = { turn: 'smooth', moveHand: 'left' };
+const vrPrefs = { turn: 'smooth', moveHand: 'left', eye: 1.75 };   // eye: standing eye height in metres, or 0 for your real height
 try { Object.assign(vrPrefs, JSON.parse(localStorage.getItem('opticalLabVR') || '{}')); } catch {}
 function saveVrPrefs() { try { localStorage.setItem('opticalLabVR', JSON.stringify(vrPrefs)); } catch {} panelSig = ''; }
+// put your eyes at the chosen height above the lab floor (the table top is at 0.91 m)
+let eyePending = false;
+function applyEyeHeight() {
+  if (!renderer.xr.isPresenting) return;
+  const headY = camera.position.y;                       // tracked head height in your real room
+  if (headY < 0.2) { eyePending = true; return; }       // no pose yet; try again next frame
+  eyePending = false;
+  rig.position.y = vrPrefs.eye ? vrPrefs.eye - headY : 0;
+}
 function turnRig(ang) {                       // rotate the play space about your head
   const head = camera.getWorldPosition(V());
   rig.position.sub(head).applyAxisAngle(UP, ang).add(head);
@@ -2817,6 +2839,7 @@ renderer.xr.addEventListener('sessionstart', () => {
   orbit.enabled = false;
   rig.position.copy(u2t(0, 0, -2));       // XR Interaction Setup at Unity (0, 0, -2)
   rig.rotation.y = Math.PI;               // WebXR looks down -Z; the table is toward +Z
+  eyePending = true;                      // set your eye height once the headset reports a pose
   document.getElementById('hud').style.display = 'none';
 });
 renderer.xr.addEventListener('sessionend', () => {
@@ -2841,6 +2864,7 @@ renderer.setAnimationLoop(() => {
     updatePointer(st, dt);
   }
   updateSettling(dt);
+  if (eyePending) applyEyeHeight();
   for (const g of [...components, ...cards]) {
     const hot = pointers.some((p) => p.hover === g || p.held?.obj === g);
     g.userData.highlight.emissive.set(hot ? 0x40160f : 0x000000);
