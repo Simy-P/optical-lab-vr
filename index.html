@@ -898,7 +898,7 @@ function buildLaser() {
   const housing = box(0.06, 0.06, 0.12, MAT.dark);
   housing.name = 'LaserHousing'; housing.position.z = -0.06; src.add(housing);
   // shutter button on top of the laser: green = open, red = closed
-  const btn = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.012, 0.012, 20), new THREE.MeshBasicMaterial({ color: 0x22cc55 }));
+  const btn = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.016, 0.014, 20), new THREE.MeshBasicMaterial({ color: 0x22cc55 }));
   btn.position.set(0, 0.036, -0.09); src.add(btn); src.userData.shutterBtn = btn;
   const warn = new THREE.Mesh(new THREE.PlaneGeometry(0.05, 0.05), new THREE.MeshBasicMaterial({ map: (() => {
     const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
@@ -984,6 +984,12 @@ function wearGoggles(G) {
 }
 const gogglesBlock = (nm) => !!wornGoggles && wornGoggles.ranges.some(([a, b]) => nm >= a && nm <= b);
 const laser = buildLaser();
+function toggleShutter() {
+  setShutter(!laserState.shutter);
+  tone(laserState.shutter ? 880 : 440, 0.07);
+  if (!laserState.shutter && !game.safety) say('Shutter closed.');
+  panelSig = '';
+}
 laser.userData.shutterBtn.userData.onClick = () => toggleShutter();
 clickables.push(laser.userData.shutterBtn);
 scene.add(laser);
