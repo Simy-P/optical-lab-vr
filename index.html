@@ -1040,7 +1040,7 @@ function wearGoggles(G) {
     wornGoggles = G; G.group.visible = false; goggleTint.material.color.set(G.tint); goggleTint.visible = true;
     if (LEVELS[game.level]?.safety) say(G.line);
   }
-  tone(700, 0.06); setBeamLook(); panelSig = '';
+  tone(700, 0.06); setBeamLook(); updateSupervisorGoggles(); panelSig = '';
 }
 const gogglesBlock = (nm) => !!wornGoggles && wornGoggles.ranges.some(([a, b]) => nm >= a && nm <= b);
 const laser = buildLaser();
@@ -1060,7 +1060,7 @@ const PART_NAMES = { mirror: 'mirrors', tallMirror: 'tall mirrors', periscope: '
   lens50: '+50 mm convex lens', lens100: '+100 mm convex lens', lens200: '+200 mm convex lens', lens400: '+400 mm convex lens',
   lensN50: '−50 mm concave lens', lensN100: '−100 mm concave lens',
   cmirror100: 'f 100 concave mirror', cmirror200: 'f 200 concave mirror', xmirror100: 'f −100 convex mirror',
-  nd03: 'ND 0.3', nd05: 'ND 0.5', nd1: 'ND 1', nd2: 'ND 2', nd3: 'ND 3' };
+  nd03: 'ND 0.3', nd05: 'ND 0.5', nd1: 'ND 1', nd2: 'ND 2', nd3: 'ND 3', graphCard: 'graph paper target' };
 // Lenses and curved mirrors (2" optics). f in metres; negative f diverges.
 const OPTICS = {
   lens50: { type: 'lens', f: 0.05 }, lens100: { type: 'lens', f: 0.1 }, lens200: { type: 'lens', f: 0.2 }, lens400: { type: 'lens', f: 0.4 },
@@ -1071,7 +1071,8 @@ const OPTICS = {
   nd2: { type: 'nd', od: 2, f: Infinity }, nd3: { type: 'nd', od: 3, f: Infinity },
 };
 const OPTIC_R = 0.0254;
-const FACE_BEAM = new Set([...Object.keys(OPTICS), 'powerMeter', 'beamDump']);
+const FACE_BEAM = new Set([...Object.keys(OPTICS), 'powerMeter', 'beamDump', 'graphCard']);
+const fineStep = (kind) => (OPTICS[kind] ? 0.001 : kind === 'graphCard' ? 0.005 : SNAP.gridSize);
 function opticLabel(text, sub = null, tint = '#e9edf2') {
   const H = sub ? 160 : 96, c = document.createElement('canvas'); c.width = 256; c.height = H; const g = c.getContext('2d');
   g.fillStyle = tint; g.fillRect(0, 0, 256, H); g.fillStyle = '#111'; g.font = 'bold 54px system-ui, sans-serif'; g.textAlign = 'center';
@@ -1145,7 +1146,24 @@ function buildComponent(kind) {
     const disp = nc(box(0.075, 0.04, 0.025, MAT.dark)); disp.position.set(0, 0.012, -0.022); root.add(disp);
     const scr = nc(new THREE.Mesh(new THREE.PlaneGeometry(0.068, 0.028), new THREE.MeshBasicMaterial({ map: t, toneMapped: false })));
     scr.position.set(0, 0.024, -0.022); scr.rotation.x = -Math.PI / 2 + 0.6; scr.rotation.order = 'YXZ'; root.add(scr);
-    root.userData.display = { c, t, text: '' };
+    const tag = nc(new THREE.Mesh(new THREE.PlaneGeometry(0.17, 0.071), new THREE.MeshBasicMaterial({ map: t, toneMapped: false, side: THREE.DoubleSide })));
+    tag.position.set(0, yLow + 0.11, 0); root.add(tag);                // floats above the head and turns to face you
+    root.userData.display = { c, t, text: '', tag };
+  } else if (kind === 'graphCard') {
+    // graph paper in a holder on a post: the beam can't be seen in air, but it makes a spot on paper
+    const post = nc(new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, yLow - 0.02, 16), postMat)); post.position.y = (yLow - 0.02) / 2 - 0.004; root.add(post);
+    const holder = nc(box(0.09, 0.09, 0.006, MAT.dark)); holder.position.set(0, yLow, -0.004); root.add(holder);
+    const c = document.createElement('canvas'); c.width = c.height = 512; const g = c.getContext('2d');
+    g.fillStyle = '#fbfbf4'; g.fillRect(0, 0, 512, 512);
+    for (let i = 0; i <= 80; i++) {                            // 80 mm of 1 mm squares, bolder every 5 and 10 mm
+      const x = i * 512 / 80; g.strokeStyle = i % 10 === 0 ? '#2f7ab8' : i % 5 === 0 ? '#7fb0d8' : '#c9dff0'; g.lineWidth = i % 10 === 0 ? 3 : i % 5 === 0 ? 2 : 1;
+      g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 512); g.moveTo(0, x); g.lineTo(512, x); g.stroke();
+    }
+    g.strokeStyle = '#c0392b'; g.lineWidth = 3; g.beginPath(); g.arc(256, 256, 20, 0, 7); g.moveTo(256, 216); g.lineTo(256, 296); g.moveTo(216, 256); g.lineTo(296, 256); g.stroke();
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+    const paper = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.002), [MAT.dark, MAT.dark, MAT.dark, MAT.dark, new THREE.MeshStandardMaterial({ map: t, roughness: 0.95 }), MAT.dark]);
+    paper.position.set(0, yLow, 0); paper.userData.screen = true; root.add(paper);
+    const lab = opticLabel('TARGET', 'GRAPH', '#fbfbf4'); lab.rotation.x = -Math.PI / 2; lab.position.set(0, -0.0075, 0.012); lab.scale.setScalar(0.9); root.add(lab);
   } else if (kind === 'beamDump') {
     const post = nc(new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, yLow - 0.02, 16), postMat)); post.position.y = (yLow - 0.02) / 2 - 0.004; root.add(post);
     const body = box(0.05, 0.05, 0.05, std(0x111214, 0.4, 0.6)); body.position.y = yLow; body.userData.dump = true; root.add(body);
@@ -1491,6 +1509,10 @@ SAFETY_LEVELS.push({ name: 'Safety 2: Attenuation', safety: true, attenuation: t
   par: null, riser: false, obstacles: [], beamD: 2,
   say: "Lesson two: attenuation. Same laser, 2 watts at 532 nm, but for alignment we want about a milliwatt. Do the checklist as before, measure the full power, then stack ND filters in front of the meter until it reads between half a milliwatt and one. Every 1 of optical density is a factor of ten, and they add up.",
   lavaSay: "Lesson two, lava edition: attenuation. Measure the 2 watts, then stack ND filters until the meter reads half to one milliwatt. OD adds up; each 1 is a factor of ten." });
+SAFETY_LEVELS.push({ name: 'Safety 3: The Invisible Beam', safety: true, hideBeam: true, parts: ['graphCard', 'beamDump', 'mirror'],
+  par: null, riser: false, obstacles: [], beamD: 2,
+  say: "Confession: until now we've been drawing the beam in the air for you. Real beams are invisible in clean air. You only see light where it hits something. So: same laser, same rules, but to find the beam you'll need the graph paper target from the tray. Follow it spot by spot.",
+  lavaSay: "Confession: we've been drawing the beam for you. Real beams are invisible in clean air. Use the graph paper target to find it, spot by spot. And stay on the stones." });
 const LEVEL_SETS = { safety: SAFETY_LEVELS, mirrors: MIRROR_LEVELS, lenses: LENS_LEVELS, align: ALIGN_LEVELS, sandbox: SANDBOX_LEVELS };
 let LEVELS = MIRROR_LEVELS;
 
@@ -1818,6 +1840,16 @@ function buildSupervisor(heatSuit) {
 }
 const supervisorLabCoat = buildSupervisor(false), supervisorHeatSuit = buildSupervisor(true);
 supervisor.add(supervisorLabCoat, supervisorHeatSuit);
+// the supervisor puts on the same goggles you choose (over his glasses)
+const supGoggles = new THREE.Group(); supGoggles.position.set(0, 1.745, 0.1); supGoggles.visible = false; supervisorLabCoat.add(supGoggles);
+const supGogFrame = std(0x222222, 0.2, 0.5), supGogLens = new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.7, roughness: 0.1, metalness: 0.2 });
+{ const lens = new THREE.Mesh(new RoundedBoxGeometry(0.2, 0.075, 0.03, 3, 0.012), supGogLens); lens.position.z = 0.028; supGoggles.add(lens);
+  const rim = new THREE.Mesh(new RoundedBoxGeometry(0.212, 0.087, 0.022, 3, 0.014), supGogFrame); rim.position.z = 0.016; supGoggles.add(rim);
+  const strap = new THREE.Mesh(new THREE.TorusGeometry(0.118, 0.008, 6, 32), std(0x1a1a1a, 0, 0.8)); strap.rotation.x = Math.PI / 2; strap.position.z = -0.1; strap.scale.set(1, 1.05, 1); supGoggles.add(strap); }
+function updateSupervisorGoggles() {
+  supGoggles.visible = !!wornGoggles;
+  if (wornGoggles) { supGogLens.color.set(wornGoggles.tint); supGogFrame.color.set(wornGoggles.frame); }
+}
 const bubbleCanvas = document.createElement('canvas'); bubbleCanvas.width = 1024; bubbleCanvas.height = 420;
 const bubbleTex = new THREE.CanvasTexture(bubbleCanvas); bubbleTex.colorSpace = THREE.SRGBColorSpace;
 const bubble = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 1.1 * 420 / 1024), new THREE.MeshBasicMaterial({ map: bubbleTex, transparent: true, toneMapped: false, side: THREE.DoubleSide }));
@@ -1958,6 +1990,9 @@ function drawPanel() {
       g.fillStyle = '#eef2f6'; g.font = 'bold 26px system-ui, sans-serif';
       g.fillText(L.attenuation ? `The meter reads ${(S.attenPower * 1000).toFixed(2)} mW at ${laserState.nm} nm. What class is the beam now?`
         : `The meter reads ${laserState.watts.toFixed(2)} W at ${laserState.nm} nm. What class is this laser?`, 40, 490);
+    } else if (L.hideBeam) {
+      g.fillStyle = '#9fb3c8'; g.font = 'italic 22px system-ui, sans-serif';
+      g.fillText('The beam is not drawn: real beams are invisible in air. Use the graph paper target.', 40, 486);
     } else if (L.attenuation && game.meterHit && laserState.shutter) {
       const mw = game.meterPower * 1000, ok = mw >= 0.5 && mw <= 1.05;
       g.fillStyle = ok ? '#39f07a' : '#ffd23f'; g.font = 'bold 26px ui-monospace, monospace';
@@ -2004,7 +2039,7 @@ function drawPanel() {
     g.fillStyle = '#eef2f6'; g.font = '32px system-ui, sans-serif'; g.fillText(grade[1], PW / 2, 310);
     g.fillStyle = '#b6c0cb'; g.font = '26px system-ui, sans-serif';
     g.fillText(`Strikes: ${k}   ·   Supervisors injured: ${r.safety.zaps}   ·   Time ${fmt(r.t)}`, PW / 2, 366);
-    g.font = 'italic 21px system-ui, sans-serif'; g.fillText(L.attenuation ? 'Door shut · lamp on · right goggles · 2 W measured · attenuated to 1 mW with ND filters · beam dumped'
+    g.font = 'italic 21px system-ui, sans-serif'; g.fillText(L.hideBeam ? 'Door shut · lamp on · right goggles · invisible beam traced with a target · stray removed · beam dumped' : L.attenuation ? 'Door shut · lamp on · right goggles · 2 W measured · attenuated to 1 mW with ND filters · beam dumped'
       : 'Door shut · lamp on · right goggles · no stray reflections · power measured · beam dumped', PW / 2, 432);
     g.textAlign = 'left';
   } else {
@@ -2099,7 +2134,7 @@ function loadLevel(i) {
     game.safety = { done: {}, strikes: 0, zaps: 0, quiz: false, answered: false, cool: 0, log: [] };
   } else {
     if (laserState.watts > 1) setWavelength(633);       // back to the HeNe after the induction
-    if (wornGoggles) { wornGoggles.group.visible = true; wornGoggles = null; goggleTint.visible = false; setBeamLook(); }
+    if (wornGoggles) { wornGoggles.group.visible = true; wornGoggles = null; goggleTint.visible = false; setBeamLook(); updateSupervisorGoggles(); }
     laserState.watts = 0.005; setShutter(true); labDoor.target = 0; setLabLamp(true); drawLaserPanel(true); }
   panelSig = '';
 }
@@ -2141,7 +2176,17 @@ const ATTEN_TASKS = [
   { id: 'dump', text: 'Terminate the beam on a beam dump' },
   { id: 'close', text: 'Finished for the day: close the shutter' },
 ];
-const safetyTasks = () => (LEVELS[game.level]?.attenuation ? ATTEN_TASKS : SAFETY_TASKS);
+const INVIS_TASKS = [
+  { id: 'door', text: 'Close the lab door' },
+  { id: 'lamp', text: 'Switch on the LASER IN USE warning lamp' },
+  { id: 'goggles', text: 'Wear the right goggles for 532 nm, 2 W' },
+  { id: 'shutter', text: 'Open the laser shutter' },
+  { id: 'find', text: 'Find the invisible beam with the graph paper target' },
+  { id: 'stray', text: 'Track down the stray reflection and remove it' },
+  { id: 'dump', text: 'Terminate the beam on a beam dump' },
+  { id: 'close', text: 'Finished for the day: close the shutter' },
+];
+const safetyTasks = () => (LEVELS[game.level]?.hideBeam ? INVIS_TASKS : LEVELS[game.level]?.attenuation ? ATTEN_TASKS : SAFETY_TASKS);
 const ATTEN_ANSWERS = {
   '1': "Class 1 for green is under about 0.4 milliwatts. You've got more than that. Close, but no.",
   '2': "Class 2. Correct: visible, up to 1 milliwatt, and your blink reflex protects you. Still don't stare into it. Alignment power.",
@@ -2223,6 +2268,7 @@ function updateSafety(dt) {
     const on = game.meterHit === c, w = on ? game.meterPower * (1 + 0.008 * Math.sin(performance.now() / 300)) : 0;
     const text = on ? (w >= 1 ? `${w.toFixed(2)} W` : w >= 0.01 ? `${(w * 1000).toFixed(1)} mW` : w >= 1e-4 ? `${(w * 1000).toFixed(3)} mW` : `${(w * 1e6).toFixed(1)} µW`) : '0.00 mW';
     const D = c.userData.display;
+    D.tag.lookAt(camera.getWorldPosition(V()));
     if (text !== D.text) {
       D.text = text; const g = D.c.getContext('2d');
       g.fillStyle = '#0b1a10'; g.fillRect(0, 0, 384, 160); g.fillStyle = on ? '#7dff9a' : '#3b6b47';
@@ -2249,8 +2295,11 @@ function updateSafety(dt) {
   if (labLamp.userData.on) done.lamp = true;
   if (wornGoggles?.correct) done.goggles = true;
   if (sh) done.shutter = true;
-  if (sh && !game.spannerHit) done.stray = true;
-  if (!L.attenuation) {
+  if (sh && !game.spannerHit && (!L.hideBeam || (done.find && !game.graphHit))) done.stray = true;   // (not just hiding it behind the target)
+  if (L.hideBeam) {
+    if (sh && game.graphHit) done.find = true;
+    if (sh && game.dumpHit && done.find) done.dump = true;
+  } else if (!L.attenuation) {
     if (sh && game.meterHit) { done.meter = true; S.quiz = true; }
     if (sh && game.dumpHit && done.meter) done.dump = true;
   } else {
@@ -2297,7 +2346,8 @@ function updateSafety(dt) {
       meter: L.attenuation ? `Full power: ${laserState.watts.toFixed(2)} watts. We want a milliwatt: that's a factor of 2000, or OD 3.3. Stack ND filters in front of the meter.`
         : `Reading ${laserState.watts.toFixed(2)} W. Always measure the power yourself, never trust the sticker. Now: what class is it?`,
       attenuate: `${((S.attenPower || 0) * 1000).toFixed(2)} milliwatts. Alignment power. OD ${(game.ndOD || 0).toFixed(1)} is a factor of ${Math.round(10 ** (game.ndOD || 0))}. Now: what class is the beam now?`,
-      dump: 'Beam terminated on a dump. Never let a beam run off the table or into a wall.' };
+      dump: 'Beam terminated on a dump. Never let a beam run off the table or into a wall.',
+      find: "There it is, a spot on the paper. Move the target along to follow the beam: that's how you trace any invisible beam. Now find where it's going after that spanner." };
     const key = safetyTasks().slice().reverse().find((t) => done[t.id])?.id;
     if (cheers[key] && key !== 'goggles') say(cheers[key] + (next && key !== 'meter' && key !== 'attenuate' ? ` Next: ${next.text.toLowerCase()}.` : ''));
   }
@@ -2446,7 +2496,7 @@ const beamCore = makeTube(beamMat), beamGlow = makeTube(glowMat);
 const UP = V(0, 1, 0);
 const _u = V(), _v = V(), _d = V();
 function drawBeam(segs) {
-  const show = laserState.vis > 0.01 || laserState.seen;      // UV and IR can't be seen, except through the IR viewer
+  const show = !LEVELS[game.level]?.hideBeam && (laserState.vis > 0.01 || laserState.seen);   // UV and IR can't be seen, except through the IR viewer
   beamCore.visible = beamGlow.visible = show && segs.length > 0;
   if (!beamCore.visible) return;
   const pc = beamCore.geometry.attributes.position.array, pg = beamGlow.geometry.attributes.position.array;
@@ -2672,6 +2722,27 @@ function updateViewer() {
   }
   if (v !== viewing) { viewing = v; viewerOverlay.visible = v; viewer.visible = !v || !renderer.xr.isPresenting; setBeamLook(); if (v) tone(1500, 0.05, 0, 0.05); }
 }
+// Where the beam lands on something it makes a spot. In the invisible-beam lesson that's all you get.
+const spotPool = [];
+for (let i = 0; i < 20; i++) {
+  const core = new THREE.Mesh(new THREE.CircleGeometry(1, 20), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending }));
+  const halo = new THREE.Mesh(new THREE.CircleGeometry(2.6, 24), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.35, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending }));
+  halo.position.z = -0.0001; core.add(halo); core.visible = false; core.renderOrder = 997; scene.add(core); spotPool.push(core);
+}
+function drawSpots(segs) {
+  const on = !!LEVELS[game.level]?.hideBeam && laserState.shutter && laserState.vis > 0.01;
+  let n = 0;
+  if (on) for (const sg of segs) {
+    if (sg.miss || n >= spotPool.length) continue;
+    const sp = spotPool[n++], w = Math.max(gaussW(sg.q, laserState.nm) * 1.5, 0.0018);
+    _d.subVectors(sg.b, sg.a).normalize();
+    sp.position.copy(sg.b).addScaledVector(_d, -0.0012); sp.lookAt(sg.a); sp.scale.setScalar(w);
+    const k = Math.min(1, 0.35 + 0.65 * Math.log10(Math.max(sg.p ?? laserState.watts, 1e-5) / 1e-5) / 5);
+    sp.material.color.copy(beamMat.color); sp.material.opacity = k * (wornGoggles && gogglesBlock(laserState.nm) ? 0.35 : 1);
+    sp.children[0].material.color.copy(beamMat.color); sp.visible = true;
+  }
+  for (let i = n; i < spotPool.length; i++) spotPool[i].visible = false;
+}
 function setBeamLook() {
   const nm = laserState.nm, seen = viewing && nm >= VIEWER_RANGE[0] && nm <= VIEWER_RANGE[1];
   if (seen) { beamMat.color.set(0x9dff8a); beamMat.opacity = 1; glowMat.color.set(0x5dff4a); glowMat.opacity = 0.45; }
@@ -2755,7 +2826,7 @@ function traceBeam() {
   const nm = laserState.nm;
   const q = { re: 0, im: Math.PI * laserState.w0 * laserState.w0 / (nm * 1e-9) };   // waist at the laser
   let remaining = laserState.shutter ? LASER.maxDistance : 0, skip = null, port = null;
-  let meterHit = null, dumpHit = false, spannerHit = false, power = laserState.watts, meterPower = 0, ndOD = 0;
+  let graphHit = false, meterHit = null, dumpHit = false, spannerHit = false, power = laserState.watts, meterPower = 0, ndOD = 0;
   let nSpots = 0;
   opticHits.clear();
   const opticPath = [];                   // lenses / curved mirrors in beam order, with path length to each
@@ -2765,7 +2836,7 @@ function traceBeam() {
   for (let bounce = 0; bounce <= LASER.maxBounces && remaining > 0; bounce++) {
     const hit = raycast(origin, dir, remaining, skip);
     skip = null;
-    if (!hit) { step(origin.clone().addScaledVector(dir, remaining), remaining); break; }
+    if (!hit) { step(origin.clone().addScaledVector(dir, remaining), remaining); segs[segs.length - 1].miss = true; break; }
     if (hit.object.userData.optic?.type === 'lens') {     // a thin lens acts at its centre plane, not its front surface
       hit.object.getWorldPosition(_c); _ax.set(0, 0, 1).transformDirection(hit.object.matrixWorld);
       const den = dir.dot(_ax);
@@ -2788,6 +2859,7 @@ function traceBeam() {
       }
       break;
     }
+    if (hit.object.userData.screen) { graphHit = true; break; }                          // graph paper: a spot, and that's where it stops
     if (hit.object.userData.sensor) { meterHit = hit.object.userData.grabRoot; meterPower = power; break; }   // power meter absorbs it
     if (hit.object.userData.dump) { dumpHit = true; break; }                               // beam dump: safely terminated
     if (hit.object.userData.grabRoot?.userData.kind === 'spanner') spannerHit = true;
@@ -2846,7 +2918,8 @@ function traceBeam() {
   if (port && L?.need) port.ok = port.D >= L.need.dMin && port.D <= L.need.dMax && port.div <= L.need.divMax;
   game.port = port;
   game.irisHits = irisHits;
-  Object.assign(game, { meterHit, dumpHit, spannerHit, segs, meterPower, ndOD });
+  Object.assign(game, { meterHit, dumpHit, spannerHit, segs, meterPower, ndOD, graphHit });
+  drawSpots(segs);
   updateSpacingTags(opticPath);
   for (const g of irises) {
     const ir = g.userData.collider.userData.iris, h = irisHits.find((x) => x.iris === ir);
@@ -3101,7 +3174,7 @@ function endGrab(st, how) {
     const yaw = new THREE.Euler().setFromQuaternion(m.quaternion, 'YXZ').y;
     m.rotation.set(0, yaw, 0); snapYaw(m);
     const toQ = m.quaternion.clone();
-    const step = OPTICS[m.userData.kind] ? 0.001 : SNAP.gridSize;
+    const step = fineStep(m.userData.kind);
     const g = resolvePlacement(m.position, true, step);
     const tries = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1], [2, 0], [-2, 0], [0, 2], [0, -2]];
     let to = tries.map(([dx, dz]) => V(g.x + dx * step * (step < 0.01 ? 20 : 1), g.y, g.z + dz * step * (step < 0.01 ? 20 : 1))).find((p) => !blockedAt(p.x, p.z, m));
@@ -3110,7 +3183,7 @@ function endGrab(st, how) {
     settling.set(m, { fromP: from.p, fromQ: from.q, toP: to, toQ, t: 0, dur: 0.12 + Math.min(0.3, from.p.distanceTo(to) * 0.6), st });
   } else if (MOVER.snapOnRelease) {
     const before = m.position.clone();
-    const step = OPTICS[m.userData.kind] ? 0.001 : SNAP.gridSize;    // lenses and curved mirrors position to 1 mm
+    const step = fineStep(m.userData.kind);    // lenses and curved mirrors position to 1 mm, the target to 5 mm
     const g = resolvePlacement(m.position, true, step);
     const tries = [[0, 0], [1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]];
     const ok = tries.map(([dx, dz]) => V(g.x + dx * step, g.y, g.z + dz * step)).find((p) => !blockedAt(p.x, p.z, m));
