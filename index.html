@@ -324,10 +324,15 @@ roomPart(0, 2.55, -3.1, 1.2, 0.9, 0.2);      // Wall_South_Header
     const lp = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.55).rotateX(Math.PI / 2), panelMat); lp.position.set(x, 2.995, z); room.add(lp);
   } }
 // DoorHinge: Unity (-0.6, 0, -3), yaw 70°; DoorPanel local (0.575, 1.025, 0), scale (1.15, 2.05, 0.05)
-const hinge = new THREE.Group(); hinge.position.copy(u2t(-0.6, 0, -3)); hinge.rotation.y = 0; room.add(hinge);
-const doorPanel = box(1.15, 2.05, 0.05, std(0x8a9099, 0.1, 0.6), false);
-doorPanel.position.set(-0.575, 1.025, 0); hinge.add(doorPanel);
-const DOOR_OPEN = -86 * DEG;           // swings right out over the drop
+const hinge = new THREE.Group(); hinge.position.set(0.6, 0, -3.03); hinge.rotation.y = 0; room.add(hinge);   // hinge on the inside face of the opening
+const doorPanel = box(1.19, 2.09, 0.05, std(0x8a9099, 0.1, 0.6), false);       // fills the 1.2 × 2.1 m opening
+doorPanel.position.set(-0.597, 1.047, -0.022); hinge.add(doorPanel);
+// a painted frame round the opening, on the lab side
+{ const trim = std(0xd9dce0, 0, 0.5);
+  for (const [w, h, x, y] of [[0.08, 2.18, -0.64, 1.09], [0.08, 2.18, 0.64, 1.09], [1.36, 0.08, 0, 2.14]]) {
+    const t = box(w, h, 0.03, trim, false); t.position.set(x, y, -2.995); room.add(t);
+  } }
+const DOOR_OPEN = 88 * DEG;            // swings in, into the lab
 const labDoor = { target: 0 };          // shut: it says EXIT, after all
 doorPanel.userData.onClick = () => { labDoor.target = labDoor.target === 0 ? DOOR_OPEN : 0; tone(220, 0.15); if (labDoor.target) abyssOpened(); };
 clickables.push(doorPanel);
@@ -488,15 +493,6 @@ const lavaNote = new THREE.Mesh(new THREE.PlaneGeometry(0.3, 0.16), new THREE.Me
   g.fillText('7. DON\'T STAND', 0, -40); g.fillText('IN THE LAVA!!', 0, 20); g.font = '30px "Comic Sans MS", cursive'; g.fillText('- Management', 60, 80); g.restore();
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })() }));
 lavaNote.position.set(2.985, 1.15, -1.02); lavaNote.rotation.set(0, -Math.PI / 2, 0.08); scene.add(lavaNote);
-// door sign for the lab next door
-const doorSign = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.35), new THREE.MeshBasicMaterial({ map: (() => {
-  const c = document.createElement('canvas'); c.width = 700; c.height = 350; const g = c.getContext('2d');
-  g.fillStyle = '#c1121f'; g.fillRect(0, 0, 700, 350); g.fillStyle = '#fff'; g.textAlign = 'center';
-  g.font = 'bold 54px system-ui, sans-serif'; g.fillText('VOLCANOLOGY', 350, 90);
-  g.font = 'bold 36px system-ui, sans-serif'; g.fillText('CONTAINMENT LAB', 350, 145);
-  g.font = '30px system-ui, sans-serif'; g.fillText('Sample of the week:', 350, 220); g.font = 'italic bold 38px system-ui'; g.fillText('"Hawaiian pāhoehoe, 1150 °C"', 350, 275);
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })() }));
-doorSign.position.set(-0.575, 1.5, 0.03); hinge.add(doorSign);
 
 // ───────────────────────── The EXIT door, and what's really outside ─────────────────────────
 // A proper green EXIT sign, a handle, and a note about the assembly point
@@ -511,7 +507,7 @@ const exitSign = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.18), new THREE.Me
   g.beginPath(); g.moveTo(110, 90); g.lineTo(150, 90); g.stroke(); g.beginPath(); g.moveTo(152, 90); g.lineTo(132, 72); g.lineTo(132, 108); g.fill();
   g.font = 'bold 112px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText('EXIT', 320, 130);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })() }));
-exitSign.position.set(-0.575, 1.86, 0.03); hinge.add(exitSign);
+exitSign.position.set(-0.597, 1.8, 0.006); hinge.add(exitSign);
 const doorNote = new THREE.Mesh(new THREE.PlaneGeometry(0.21, 0.15), new THREE.MeshBasicMaterial({ map: (() => {
   const c = document.createElement('canvas'); c.width = 420; c.height = 300; const g = c.getContext('2d');
   g.fillStyle = '#fbfaf3'; g.fillRect(0, 0, 420, 300); g.fillStyle = '#222'; g.textAlign = 'center';
@@ -520,14 +516,14 @@ const doorNote = new THREE.Mesh(new THREE.PlaneGeometry(0.21, 0.15), new THREE.M
   g.fillText('Please do not feed Doris.', 210, 190);
   g.font = 'italic 24px system-ui, sans-serif'; g.fillText('- Estates', 300, 255);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })() }));
-doorNote.position.set(-0.84, 1.2, 0.03); doorNote.rotation.z = 0.04; hinge.add(doorNote);
+doorNote.position.set(-0.597, 1.42, 0.006); doorNote.rotation.z = 0.04; hinge.add(doorNote);
 const doorHandle = new THREE.Group();
 { const steel = std(0xc9ced4, 0.9, 0.3);
   const rose = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.012, 20).rotateX(Math.PI / 2), steel);
   const lever = new THREE.Mesh(new THREE.CapsuleGeometry(0.011, 0.12, 4, 10).rotateZ(Math.PI / 2).translate(0.065, 0, 0), steel);
   lever.position.z = 0.045; const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.045, 10).rotateX(Math.PI / 2).translate(0, 0, 0.025), steel);
   doorHandle.add(rose, neck, lever); }
-doorHandle.position.set(-1.04, 1.02, 0.03); hinge.add(doorHandle);
+doorHandle.position.set(-1.09, 1.02, 0.006); hinge.add(doorHandle);
 doorHandle.children.forEach((m) => { m.userData.onClick = doorPanel.userData.onClick; clickables.push(m); });
 // the threshold: the lab floor stops at the door, and so does everything else
 const sill = box(1.2, 0.1, 0.22, std(0x6f757c, 0.6, 0.5), false); sill.position.set(0, -0.05, -3.1); room.add(sill);
@@ -552,7 +548,7 @@ abyss.children[0].position.set(0, 0, -3); abyss.children[0].renderOrder = -10;
 const cliff = box(40, 60, 24, std(0x1a1f24, 0, 1), false); cliff.position.set(0, -30.12, 8.8); abyss.add(cliff);   // its face is the outside wall, straight down
 for (let i = 0; i < 26; i++) {           // ledges and lumps so it reads as rock
   const r = new THREE.Mesh(new THREE.DodecahedronGeometry(0.6 + Math.random() * 1.6, 0), std(0x20262c, 0, 1));
-  r.position.set((Math.random() - 0.5) * 30, -1.5 - Math.random() * 40, -3.3 - Math.random() * 0.4); r.rotation.set(Math.random() * 3, Math.random() * 3, 0);
+  r.position.set((Math.random() - 0.5) * 30, -3 - Math.random() * 40, -3.3 - Math.random() * 0.4);   // all well below the sill r.rotation.set(Math.random() * 3, Math.random() * 3, 0);
   abyss.add(r);
 }
 // marine snow drifting down past the door
@@ -668,7 +664,7 @@ function abyssOpened() {
   abyssStare = 0;
   setTimeout(() => marineSound('honk'), 900);
   // Doris is a benefactor: give people a moment to take her in, then she checks on your alignment
-  doris.timer = abyssSeen ? 2.5 : 4.5;
+  doris.timer = 10;                                       // ten seconds to take her in
   supTimer = game.safety ? 0 : doris.timer + 4;
   supLine = abyssSeen ? 1 + (Math.random() * (DORIS_SAY.length - 1) | 0) : 0;
   abyssSeen++;          // the supervisor chips in afterwards (not during the induction)
