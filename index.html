@@ -2190,10 +2190,11 @@ function strike(kind, st, detail) {
 }
 function resetToStart() {
   if (renderer.xr.isPresenting) {
-    rig.position.copy(u2t(0, 0, -2)); rig.rotation.set(0, Math.PI, 0);
+    const y = rig.position.y;                          // keep your eye height exactly as it was
+    rig.position.copy(u2t(0, 0, -2)); rig.position.y = y; rig.rotation.set(0, Math.PI, 0);
+    rig.updateMatrixWorld(true);
     const h = camera.getWorldPosition(V());            // your head back where you started
     rig.position.x -= h.x; rig.position.z -= h.z - (-2.0);
-    eyePending = true;
   } else {
     camera.position.set(0.35, 1.6, -1.1); orbit.target.set(0, TABLE_PLANE.y, TABLE_PLANE.z); orbit.update();
   }
@@ -2345,10 +2346,11 @@ function updateLavaHazard(dt) {
   if (game.health <= 0) {
     game.burns++; game.health = 100; game.offLava = 0; sizzle(0.5); tone(140, 0.5, 0, 0.2);
     say(TOASTED[Math.random() * TOASTED.length | 0]);
-    rig.position.copy(u2t(0, 0, -2)); rig.rotation.set(0, Math.PI, 0);
+    const y = rig.position.y;
+    rig.position.copy(u2t(0, 0, -2)); rig.position.y = y; rig.rotation.set(0, Math.PI, 0);
+    rig.updateMatrixWorld(true);
     const h = camera.getWorldPosition(V());       // put your head back over the start stone
     rig.position.x -= h.x; rig.position.z -= h.z - (-2.0);
-    eyePending = true;
   }
   hurtShell.material.opacity = burning ? 0.25 + 0.15 * Math.sin(performance.now() / 60) : Math.max(0, hurtShell.material.opacity - dt);
   healthBar.visible = game.health < 100;
@@ -3343,6 +3345,8 @@ renderer.xr.addEventListener('sessionstart', () => {
   rig.position.copy(u2t(0, 0, -2));       // XR Interaction Setup at Unity (0, 0, -2)
   rig.rotation.y = Math.PI;               // WebXR looks down -Z; the table is toward +Z
   eyePending = true;                      // set your eye height once the headset reports a pose
+  // if the headset recentres (or loses tracking and recovers), set the eye height again
+  setTimeout(() => renderer.xr.getReferenceSpace()?.addEventListener?.('reset', () => { eyePending = true; }), 0);
   document.getElementById('hud').style.display = 'none';
 });
 renderer.xr.addEventListener('sessionend', () => {
