@@ -664,8 +664,7 @@ function abyssOpened() {
   abyssStare = 0;
   setTimeout(() => marineSound('honk'), 900);
   // Doris is a benefactor: give people a moment to take her in, then she checks on your alignment
-  doris.timer = 10;                                       // ten seconds to take her in
-  supTimer = game.safety ? 0 : doris.timer + 4;
+  supTimer = game.safety ? 0 : 9;          // the supervisor chips in after Doris (not during the induction)
   supLine = abyssSeen ? 1 + (Math.random() * (DORIS_SAY.length - 1) | 0) : 0;
   abyssSeen++;          // the supervisor chips in afterwards (not during the induction)
 }
@@ -674,8 +673,8 @@ const doris = { timer: 0, show: 0, lastSolved: -1, nag: 0 };
 let supTimer = 0, supLine = 0;
 const dorisCanvas = document.createElement('canvas'); dorisCanvas.width = 1024; dorisCanvas.height = 420;
 const dorisTex = new THREE.CanvasTexture(dorisCanvas); dorisTex.colorSpace = THREE.SRGBColorSpace;
-const dorisBubble = new THREE.Mesh(new THREE.PlaneGeometry(7, 2.9), new THREE.MeshBasicMaterial({ map: dorisTex, transparent: true, opacity: 0, depthWrite: false }));
-dorisBubble.position.set(-1.2, 4.4, 4.5); dorisBubble.visible = false; octo.add(dorisBubble);
+const dorisBubble = new THREE.Mesh(new THREE.PlaneGeometry(5, 2.07), new THREE.MeshBasicMaterial({ map: dorisTex, transparent: true, opacity: 0, depthWrite: false }));
+dorisBubble.visible = false; dorisBubble.renderOrder = 5; abyss.add(dorisBubble);
 const solvedCount = () => Object.values(records).reduce((n, m) => n + Object.keys(m || {}).length, 0);
 const DORIS_NAG = ["Still aligning? Take your time. I have eight arms and all the time in the world.",
   "Walk the beam, then the irises. Centre first, angle second.", "Fewer mirrors, dear. Fewer mirrors."];
@@ -713,10 +712,9 @@ function dorisVoice(text) {               // a syllable of warbly octopus per wo
   setTimeout(() => marineSound('bubbles'), words.length * 200 + 100);
 }
 function updateDoris(dt, open) {
-  if (doris.timer > 0) {
-    if (open < 0.3) doris.timer = 0;        // shut the door on her and she keeps it to herself
-    else if ((doris.timer -= dt) <= 0) dorisSays();
-  }
+  // whenever the door has been open for 5 s, however it was opened, Doris has something to say
+  if (open < 0.3) { doris.openFor = 0; doris.spoke = false; }
+  else { doris.openFor = (doris.openFor || 0) + dt; if (!doris.spoke && doris.openFor >= 5) { doris.spoke = true; dorisSays(); } }
   if (supTimer > 0) {
     if (open < 0.3) supTimer = 0;
     else if ((supTimer -= dt) <= 0) say(DORIS_SAY[supLine]);
@@ -724,8 +722,11 @@ function updateDoris(dt, open) {
   if (doris.show > 0) {
     doris.show -= dt;
     dorisBubble.material.opacity = Math.min(1, doris.show * 1.5, (7 - doris.show) * 3);
-    const eye = camera.getWorldPosition(V()), wp = dorisBubble.getWorldPosition(V());
-    dorisBubble.rotation.y = Math.atan2(eye.x - wp.x, eye.z - wp.z) - octo.rotation.y;
+    // hang it in the doorway's line of sight, 12 m out, just above her eyes, facing you
+    const eye = camera.getWorldPosition(V()), doorC = V(0, 1.45, -3.1);
+    const dir = doorC.clone().sub(eye); dir.y = Math.max(dir.y, 0); dir.normalize();
+    dorisBubble.position.copy(doorC).addScaledVector(dir, 12); dorisBubble.position.y += 0.9;
+    dorisBubble.lookAt(eye);
     if (doris.show <= 0) dorisBubble.visible = false;
   }
 }
@@ -3172,7 +3173,7 @@ renderer.xr.addEventListener('sessionend', () => {
 const clock = new THREE.Clock();
 setMode(location.hash === '#lava' ? 'lava' : 'normal');
 loadLevel(0); showTitle();
-window.lab = { doris, dorisSays, abyssOpened, abyss, octo, marineSound, hinge, removeComponent, wearGoggles, GOGGLES, setShutter, labDoor, setLabLamp, get supervisor() { return supervisor; }, get irises() { return irises; }, opticHits, endGrabTest: (m) => { const st = { held: { obj: m, how: 't', mode: 'ray' } }; endGrab(st, 't'); }, setTier, LEVEL_SETS, gaussW, viewer, get viewing() { return viewing; }, setDesktopViewing: (v) => { desktopViewing = v; }, cards, cardSpots, blockedAt, setWavelength, laserState, laserCtl, THREE, scene, microscope, game, setMode, showTitle, pressButton, LEVELS, spawn, components, componentsUsed, loadLevel, startLevel, joystick, scopeState, get levels() { return LEVELS; }, pressPad, turnFocus, setFocus, camera, orbit, table, laser, buildGlove, setGloveCurl, buildGoalPort, buildBeamBlockerBox, traceBeam, rotateBy };
+window.lab = { doris, dorisSays, abyssOpened, dorisBubble, abyss, octo, marineSound, hinge, removeComponent, wearGoggles, GOGGLES, setShutter, labDoor, setLabLamp, get supervisor() { return supervisor; }, get irises() { return irises; }, opticHits, endGrabTest: (m) => { const st = { held: { obj: m, how: 't', mode: 'ray' } }; endGrab(st, 't'); }, setTier, LEVEL_SETS, gaussW, viewer, get viewing() { return viewing; }, setDesktopViewing: (v) => { desktopViewing = v; }, cards, cardSpots, blockedAt, setWavelength, laserState, laserCtl, THREE, scene, microscope, game, setMode, showTitle, pressButton, LEVELS, spawn, components, componentsUsed, loadLevel, startLevel, joystick, scopeState, get levels() { return LEVELS; }, pressPad, turnFocus, setFocus, camera, orbit, table, laser, buildGlove, setGloveCurl, buildGoalPort, buildBeamBlockerBox, traceBeam, rotateBy };
 
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.05);
