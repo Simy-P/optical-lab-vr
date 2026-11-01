@@ -317,13 +317,19 @@ roomPart(-3.1, 1.5, 0, 0.2, 3, 6);           // Wall_West
 roomPart(-1.9, 1.5, -3.1, 2.6, 3, 0.2);      // Wall_South_Left
 roomPart(1.9, 1.5, -3.1, 2.6, 3, 0.2);       // Wall_South_Right
 roomPart(0, 2.55, -3.1, 1.2, 0.9, 0.2);      // Wall_South_Header
+// a ceiling, so the only view of outside is through the door
+{ const ceil = box(6.4, 0.1, 6.4, std(0xe9ebee, 0, 0.9), false); ceil.position.set(0, 3.05, 0); room.add(ceil);
+  const panelMat = new THREE.MeshBasicMaterial({ color: 0xf6f8ff });
+  for (const [x, z] of [[-1.2, -1.2], [1.2, -1.2], [-1.2, 1.2], [1.2, 1.2]]) {
+    const lp = new THREE.Mesh(new THREE.PlaneGeometry(1.1, 0.55).rotateX(Math.PI / 2), panelMat); lp.position.set(x, 2.995, z); room.add(lp);
+  } }
 // DoorHinge: Unity (-0.6, 0, -3), yaw 70°; DoorPanel local (0.575, 1.025, 0), scale (1.15, 2.05, 0.05)
-const hinge = new THREE.Group(); hinge.position.copy(u2t(-0.6, 0, -3)); hinge.rotation.y = -70 * DEG; room.add(hinge);
+const hinge = new THREE.Group(); hinge.position.copy(u2t(-0.6, 0, -3)); hinge.rotation.y = 0; room.add(hinge);
 const doorPanel = box(1.15, 2.05, 0.05, std(0x8a9099, 0.1, 0.6), false);
 doorPanel.position.set(-0.575, 1.025, 0); hinge.add(doorPanel);
-const DOOR_OPEN = -70 * DEG;
-const labDoor = { target: DOOR_OPEN };
-doorPanel.userData.onClick = () => { labDoor.target = labDoor.target === 0 ? DOOR_OPEN : 0; tone(220, 0.15); };
+const DOOR_OPEN = -86 * DEG;           // swings right out over the drop
+const labDoor = { target: 0 };          // shut: it says EXIT, after all
+doorPanel.userData.onClick = () => { labDoor.target = labDoor.target === 0 ? DOOR_OPEN : 0; tone(220, 0.15); if (labDoor.target) abyssOpened(); };
 clickables.push(doorPanel);
 // LASER IN USE lamp above the door, and its switch beside the door
 const lampCanvas = document.createElement('canvas'); lampCanvas.width = 512; lampCanvas.height = 144;
@@ -491,6 +497,260 @@ const doorSign = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.35), new THREE.Me
   g.font = '30px system-ui, sans-serif'; g.fillText('Sample of the week:', 350, 220); g.font = 'italic bold 38px system-ui'; g.fillText('"Hawaiian pāhoehoe, 1150 °C"', 350, 275);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })() }));
 doorSign.position.set(-0.575, 1.5, 0.03); hinge.add(doorSign);
+
+// ───────────────────────── The EXIT door, and what's really outside ─────────────────────────
+// A proper green EXIT sign, a handle, and a note about the assembly point
+const exitSign = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.18), new THREE.MeshBasicMaterial({ map: (() => {
+  const c = document.createElement('canvas'); c.width = 500; c.height = 180; const g = c.getContext('2d');
+  g.fillStyle = '#0a8f3c'; g.fillRect(0, 0, 500, 180); g.strokeStyle = '#e9fff0'; g.lineWidth = 8; g.strokeRect(8, 8, 484, 164);
+  // a little running figure and an arrow
+  g.fillStyle = '#fff'; g.strokeStyle = '#fff'; g.lineCap = 'round'; g.lineWidth = 14;
+  g.beginPath(); g.arc(78, 46, 15, 0, 7); g.fill();
+  g.beginPath(); g.moveTo(70, 66); g.lineTo(60, 112); g.lineTo(84, 146); g.moveTo(60, 112); g.lineTo(34, 140);
+  g.moveTo(68, 76); g.lineTo(98, 96); g.moveTo(68, 76); g.lineTo(42, 92); g.stroke();
+  g.beginPath(); g.moveTo(110, 90); g.lineTo(150, 90); g.stroke(); g.beginPath(); g.moveTo(152, 90); g.lineTo(132, 72); g.lineTo(132, 108); g.fill();
+  g.font = 'bold 112px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText('EXIT', 320, 130);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })() }));
+exitSign.position.set(-0.575, 1.86, 0.03); hinge.add(exitSign);
+const doorNote = new THREE.Mesh(new THREE.PlaneGeometry(0.21, 0.15), new THREE.MeshBasicMaterial({ map: (() => {
+  const c = document.createElement('canvas'); c.width = 420; c.height = 300; const g = c.getContext('2d');
+  g.fillStyle = '#fbfaf3'; g.fillRect(0, 0, 420, 300); g.fillStyle = '#222'; g.textAlign = 'center';
+  g.font = 'bold 34px system-ui, sans-serif'; g.fillText('FIRE ASSEMBLY POINT', 210, 60);
+  g.font = '30px system-ui, sans-serif'; g.fillText('Approx. 4 km straight down.', 210, 130);
+  g.fillText('Please do not feed Doris.', 210, 190);
+  g.font = 'italic 24px system-ui, sans-serif'; g.fillText('- Estates', 300, 255);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })() }));
+doorNote.position.set(-0.84, 1.2, 0.03); doorNote.rotation.z = 0.04; hinge.add(doorNote);
+const doorHandle = new THREE.Group();
+{ const steel = std(0xc9ced4, 0.9, 0.3);
+  const rose = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.012, 20).rotateX(Math.PI / 2), steel);
+  const lever = new THREE.Mesh(new THREE.CapsuleGeometry(0.011, 0.12, 4, 10).rotateZ(Math.PI / 2).translate(0.065, 0, 0), steel);
+  lever.position.z = 0.045; const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.045, 10).rotateX(Math.PI / 2).translate(0, 0, 0.025), steel);
+  doorHandle.add(rose, neck, lever); }
+doorHandle.position.set(-1.04, 1.02, 0.03); hinge.add(doorHandle);
+doorHandle.children.forEach((m) => { m.userData.onClick = doorPanel.userData.onClick; clickables.push(m); });
+// the threshold: the lab floor stops at the door, and so does everything else
+const sill = box(1.2, 0.1, 0.22, std(0x6f757c, 0.6, 0.5), false); sill.position.set(0, -0.05, -3.1); room.add(sill);
+
+const abyss = new THREE.Group(); abyss.visible = false; scene.add(abyss);
+// the deep: a gradient dome with shafts of light coming down from somewhere far above
+abyss.add(new THREE.Mesh(new THREE.SphereGeometry(46, 48, 24), new THREE.ShaderMaterial({
+  side: THREE.BackSide, depthWrite: false, uniforms: { time: { value: 0 } },
+  vertexShader: 'varying vec3 vD; void main(){ vD = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+  fragmentShader: `uniform float time; varying vec3 vD;
+    void main(){
+      float y = vD.y;
+      vec3 top = vec3(0.10, 0.36, 0.48), mid = vec3(0.02, 0.12, 0.22), deep = vec3(0.0, 0.01, 0.03);
+      vec3 c = mix(deep, mid, smoothstep(-0.7, 0.0, y)); c = mix(c, top, smoothstep(0.0, 0.85, y));
+      float a = atan(vD.x, -vD.z);
+      float shafts = pow(max(0.0, sin(a * 9.0 + sin(time * 0.15) * 0.6)), 10.0) + 0.6 * pow(max(0.0, sin(a * 23.0 - time * 0.1)), 14.0);
+      c += vec3(0.25, 0.45, 0.5) * shafts * smoothstep(-0.2, 0.9, y) * 0.18;
+      gl_FragColor = vec4(c, 1.0);
+    }` })));
+abyss.children[0].position.set(0, 0, -3); abyss.children[0].renderOrder = -10;
+// the building is perched on a sheer rock face
+const cliff = box(40, 60, 24, std(0x1a1f24, 0, 1), false); cliff.position.set(0, -30.12, 8.8); abyss.add(cliff);   // its face is the outside wall, straight down
+for (let i = 0; i < 26; i++) {           // ledges and lumps so it reads as rock
+  const r = new THREE.Mesh(new THREE.DodecahedronGeometry(0.6 + Math.random() * 1.6, 0), std(0x20262c, 0, 1));
+  r.position.set((Math.random() - 0.5) * 30, -1.5 - Math.random() * 40, -3.3 - Math.random() * 0.4); r.rotation.set(Math.random() * 3, Math.random() * 3, 0);
+  abyss.add(r);
+}
+// marine snow drifting down past the door
+const SNOW = 700, snowGeo = new THREE.BufferGeometry(), snowPos = new Float32Array(SNOW * 3);
+for (let i = 0; i < SNOW; i++) { snowPos[i * 3] = (Math.random() - 0.5) * 34; snowPos[i * 3 + 1] = (Math.random() - 0.5) * 30; snowPos[i * 3 + 2] = -5 - Math.random() * 34; }
+snowGeo.setAttribute('position', new THREE.BufferAttribute(snowPos, 3));
+abyss.add(new THREE.Points(snowGeo, new THREE.PointsMaterial({ color: 0xbfe6ef, size: 0.09, transparent: true, opacity: 0.55, depthWrite: false })));
+
+// Doris
+const octo = new THREE.Group(); octo.position.set(0, -2.2, -27); abyss.add(octo);
+const octoSkin = (() => {
+  const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+  g.fillStyle = '#a3384a'; g.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 260; i++) {
+    g.fillStyle = Math.random() < 0.6 ? 'rgba(80,16,40,0.45)' : 'rgba(230,120,110,0.35)';
+    g.beginPath(); g.arc(Math.random() * 256, Math.random() * 256, 2 + Math.random() * 9, 0, 7); g.fill();
+  }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+})();
+function skinMat(rep = 1) {
+  const map = octoSkin.clone(); map.repeat.set(rep, rep); map.needsUpdate = true;
+  const m = new THREE.MeshStandardMaterial({ map, roughness: 0.45, metalness: 0, emissive: 0x3a0d22, emissiveIntensity: 0.6 });
+  m.onBeforeCompile = (sh) => {             // a cold rim of light so she reads against the dark
+    sh.fragmentShader = sh.fragmentShader.replace('#include <opaque_fragment>',
+      'outgoingLight += vec3(0.25, 0.6, 0.75) * pow(1.0 - saturate(dot(normal, normalize(vViewPosition))), 3.0) * 0.9;\n#include <opaque_fragment>');
+  };
+  return m;
+}
+const headMat = skinMat(2);
+const octoHead = new THREE.Mesh(new THREE.SphereGeometry(3.2, 40, 28), headMat); octoHead.scale.set(1.15, 0.9, 1); octo.add(octoHead);
+const mantle = new THREE.Mesh(new THREE.SphereGeometry(3.4, 40, 28), headMat); mantle.scale.set(1.05, 1.65, 1.1);
+mantle.position.set(0, 4.6, -2.6); mantle.rotation.x = -0.5; octo.add(mantle);
+const eyes = [];
+for (const sx of [-1, 1]) {
+  const socket = new THREE.Mesh(new THREE.SphereGeometry(1.35, 24, 16), headMat); socket.position.set(sx * 2.35, 0.9, 1.7); octo.add(socket);
+  const eye = new THREE.Group(); eye.position.set(sx * 2.45, 0.95, 2.05); octo.add(eye);
+  const ball = new THREE.Mesh(new THREE.SphereGeometry(1.1, 28, 20), new THREE.MeshStandardMaterial({ color: 0xf2e6c4, roughness: 0.25, emissive: 0x2a2614 }));
+  const iris = new THREE.Mesh(new THREE.CircleGeometry(0.78, 32), new THREE.MeshStandardMaterial({ color: 0xd8a21e, roughness: 0.3, emissive: 0x4a3205 })); iris.position.z = 1.06;
+  const pupil = new THREE.Mesh(new RoundedBoxGeometry(1.0, 0.26, 0.04, 2, 0.12), new THREE.MeshBasicMaterial({ color: 0x050505 })); pupil.position.z = 1.08;
+  const glint = new THREE.Mesh(new THREE.SphereGeometry(0.11, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffffff })); glint.position.set(0.3, 0.32, 1.06);
+  const lid = new THREE.Mesh(new THREE.SphereGeometry(1.17, 28, 14, 0, Math.PI * 2, 0, Math.PI / 2), headMat);   // upper lid: rotates down to blink
+  const lidPivot = new THREE.Group(); lidPivot.add(lid); lidPivot.rotation.x = -1.15;
+  eye.add(ball, iris, pupil, glint, lidPivot);
+  eyes.push({ eye, pupil, lidPivot });
+}
+// eight arms, each a chain of tapering segments with suckers on the inside of the curl
+const tentacles = [];
+const suckerMat = new THREE.MeshStandardMaterial({ color: 0xf0c3b4, roughness: 0.5, emissive: 0x3a1f1a });
+for (let i = 0; i < 8; i++) {
+  const a = (i / 8) * Math.PI * 2 + Math.PI / 8;
+  const out = V(Math.sin(a), 0, Math.cos(a)), tan = V(Math.cos(a), 0, -Math.sin(a));
+  const yAx = out.clone().multiplyScalar(0.75).add(V(0, -0.66, 0)).normalize(), zAx = V().crossVectors(tan, yAx);
+  const root = new THREE.Group(); root.position.set(out.x * 2.2, -2.2, out.z * 2.2 + 0.4);
+  root.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(tan, yAx, zAx)); octo.add(root);
+  const segs = []; let parent = root;
+  const N = 16, mat = headMat;
+  for (let k = 0; k < N; k++) {
+    const r0 = 0.95 * (1 - k / N) + 0.06, r1 = 0.95 * (1 - (k + 1) / N) + 0.06, len = 1.15;
+    const j = new THREE.Group(); j.position.y = k ? 1.15 : 0; parent.add(j);
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r1, r0, len * 1.06, 14).translate(0, len / 2, 0), mat); j.add(m);
+    const jointBall = new THREE.Mesh(new THREE.SphereGeometry(r0, 14, 10), mat); j.add(jointBall);
+    const sk = new THREE.Mesh(new THREE.CylinderGeometry(r0 * 0.42, r0 * 0.5, r0 * 0.3, 12).rotateX(Math.PI / 2), suckerMat);
+    sk.position.set(0, len * 0.5, r0 * 0.9); j.add(sk);
+    segs.push(j); parent = j;
+  }
+  tentacles.push({ segs, ph: i * 1.7, wave: i === 0 || i === 7 });   // the two arms at the front wave at you
+}
+// something big passes by, very far off, now and then
+const whale = new THREE.Group();
+{ const dark = new THREE.MeshBasicMaterial({ color: 0x041420 });
+  const body = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 10), dark); body.scale.set(6, 1.6, 1.8); whale.add(body);
+  const tail = new THREE.Mesh(new THREE.ConeGeometry(1.4, 3, 3).rotateZ(Math.PI / 2), dark); tail.scale.set(1, 0.3, 1.4); tail.position.x = -6.8; whale.add(tail);
+  const fin = new THREE.Mesh(new THREE.ConeGeometry(0.6, 2.4, 3), dark); fin.position.set(1.5, -1.2, 1.2); fin.rotation.set(0.9, 0, 0.4); whale.add(fin); }
+whale.position.set(-60, 10, -40); abyss.add(whale);
+
+function updateAbyss(t, dt) {
+  const open = Math.abs(hinge.rotation.y);
+  abyss.visible = open > 0.01;
+  updateMarine(dt, open);
+  if (!abyss.visible) return;
+  abyss.children[0].material.uniforms.time.value = t;
+  for (let i = 0; i < SNOW; i++) { let y = snowPos[i * 3 + 1] - dt * 0.25; if (y < -15) y += 30; snowPos[i * 3 + 1] = y; snowPos[i * 3] += Math.sin(t * 0.3 + i) * dt * 0.05; }
+  snowGeo.attributes.position.needsUpdate = true;
+  // she bobs, breathes, and leans in for a better look the longer the door stays open
+  abyssStare = Math.min(1, abyssStare + dt * 0.08);
+  octo.position.set(Math.sin(t * 0.21) * 0.6, -2.2 + Math.sin(t * 0.5) * 0.5 + abyssStare * 0.8, -27 + abyssStare * 3);
+  octo.rotation.set(Math.sin(t * 0.33) * 0.05, Math.sin(t * 0.17) * 0.08, Math.sin(t * 0.27) * 0.04);
+  mantle.scale.set(1.05 + Math.sin(t * 1.1) * 0.04, 1.65 + Math.sin(t * 1.1) * 0.05, 1.1 + Math.sin(t * 1.1) * 0.04);
+  const eyeTarget = camera.getWorldPosition(V());
+  const blink = (t % 5.3) < 0.18 ? 1 - Math.abs((t % 5.3) / 0.09 - 1) : 0;
+  for (const e of eyes) {
+    e.eye.lookAt(eyeTarget);
+    e.lidPivot.rotation.x = -1.15 + blink * 1.3 - abyssStare * 0.1;
+    e.pupil.scale.set(1, 1 + abyssStare * 0.7, 1);            // pupils widen: you're interesting
+  }
+  for (const tn of tentacles) tn.segs.forEach((j, k) => {
+    const curl = 0.11 + 0.09 * Math.sin(t * 0.6 + k * 0.42 + tn.ph) + (tn.wave ? 0.06 * Math.sin(t * 1.6 + k * 0.5) : 0);
+    j.rotation.set(curl, 0, 0.05 * Math.sin(t * 0.45 + k * 0.3 + tn.ph * 0.7));
+  });
+  const wt = (t % 70) / 70;                 // a whale crosses the far distance every 70 s
+  whale.position.set(-60 + wt * 120, 9 + Math.sin(wt * 6) * 1.5, -40); whale.rotation.z = Math.cos(wt * 6) * 0.04;
+}
+let abyssStare = 0, abyssSeen = 0;
+const DORIS_SAY = [
+  "Ah. You've met Doris. She came with the building. Shut the door, she isn't laser trained.",
+  "Don't make eye contact. The last postdoc did, and now he's in marine biology.",
+  "Yes, that's where the noise comes from. No, Estates won't do anything about it.",
+  "Close it, she can smell the coffee.",
+  "That's not an exit. That's an abyss with a sign on it.",
+];
+function abyssOpened() {
+  abyssStare = 0;
+  if (game.safety) return;                  // don't talk over the induction
+  say(DORIS_SAY[abyssSeen ? 1 + (Math.random() * (DORIS_SAY.length - 1) | 0) : 0]);
+  abyssSeen++;
+  setTimeout(() => marineSound('honk'), 900);
+}
+
+// Marine noises: heard faintly through the closed door, loud and clear once it's open
+let marine = null;
+function marineBus() {
+  if (marine || !actx) return marine;
+  const lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 350;
+  const gain = actx.createGain(); gain.gain.value = 0;
+  const dly = actx.createDelay(1); dly.delayTime.value = 0.32; const fb = actx.createGain(); fb.gain.value = 0.38;
+  const wet = actx.createGain(); wet.gain.value = 0.5;
+  const input = actx.createGain();
+  input.connect(lp); lp.connect(gain); lp.connect(dly); dly.connect(fb).connect(dly); dly.connect(wet).connect(gain);
+  gain.connect(actx.destination);
+  // the deep's own rumble: brown noise, looped
+  const n = actx.sampleRate * 4, buf = actx.createBuffer(1, n, actx.sampleRate), d = buf.getChannelData(0);
+  let last = 0; for (let i = 0; i < n; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.5; }
+  const rum = actx.createBufferSource(); rum.buffer = buf; rum.loop = true;
+  const rlp = actx.createBiquadFilter(); rlp.type = 'lowpass'; rlp.frequency.value = 160;
+  const rg = actx.createGain(); rg.gain.value = 0.5; rum.connect(rlp).connect(rg).connect(input); rum.start();
+  marine = { input, lp, gain, next: 2 };
+  return marine;
+}
+function marineSound(kind) {
+  const M = marineBus(); if (!M) return;
+  const t = actx.currentTime, out = M.input;
+  const env = (g, a, peak, dur) => { g.gain.setValueAtTime(0, t + a); g.gain.linearRampToValueAtTime(peak, t + a + 0.03); g.gain.exponentialRampToValueAtTime(0.0001, t + a + dur); };
+  if (kind === 'whale') {                     // a long mournful glide with vibrato
+    const o = actx.createOscillator(), g = actx.createGain(), lfo = actx.createOscillator(), lg = actx.createGain();
+    const f0 = 140 + Math.random() * 80;
+    o.frequency.setValueAtTime(f0, t); o.frequency.linearRampToValueAtTime(f0 * 2.6, t + 1.2); o.frequency.linearRampToValueAtTime(f0 * 1.5, t + 2.8);
+    lfo.frequency.value = 5; lg.gain.value = 9; lfo.connect(lg).connect(o.frequency);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.22, t + 0.5); g.gain.linearRampToValueAtTime(0.0001, t + 3);
+    o.connect(g).connect(out); o.start(t); lfo.start(t); o.stop(t + 3.1); lfo.stop(t + 3.1);
+  } else if (kind === 'bubbles') {           // blub blub blub
+    const n = 6 + (Math.random() * 8 | 0);
+    for (let i = 0; i < n; i++) {
+      const o = actx.createOscillator(), g = actx.createGain(), a = i * 0.07 + Math.random() * 0.05, f = 300 + Math.random() * 500;
+      o.frequency.setValueAtTime(f, t + a); o.frequency.exponentialRampToValueAtTime(f * 2.4, t + a + 0.06);
+      env(g, a, 0.18, 0.08); o.connect(g).connect(out); o.start(t + a); o.stop(t + a + 0.12);
+    }
+  } else if (kind === 'bloop') {             // a big comedy bwoop
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.frequency.setValueAtTime(420, t); o.frequency.exponentialRampToValueAtTime(70, t + 0.45);
+    env(g, 0, 0.35, 0.5); o.connect(g).connect(out); o.start(t); o.stop(t + 0.55);
+  } else if (kind === 'ping') {              // sonar, somebody's submarine
+    const o = actx.createOscillator(), g = actx.createGain(); o.frequency.value = 1350;
+    env(g, 0, 0.12, 1.4); o.connect(g).connect(out); o.start(t); o.stop(t + 1.5);
+  } else if (kind === 'slurp') {             // wet squelchy suckers
+    const n = actx.sampleRate * 0.6, buf = actx.createBuffer(1, n, actx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1);
+    const src = actx.createBufferSource(); src.buffer = buf;
+    const bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 9;
+    bp.frequency.setValueAtTime(300, t); bp.frequency.exponentialRampToValueAtTime(1400, t + 0.25); bp.frequency.exponentialRampToValueAtTime(500, t + 0.55);
+    const g = actx.createGain(); env(g, 0, 0.9, 0.6); src.connect(bp).connect(g).connect(out); src.start(t);
+  } else if (kind === 'honk') {              // Doris says hello: a deep, wobbly, slightly rude foghorn
+    const o = actx.createOscillator(), o2 = actx.createOscillator(), g = actx.createGain(), lp = actx.createBiquadFilter();
+    o.type = o2.type = 'sawtooth'; o.frequency.setValueAtTime(78, t); o.frequency.linearRampToValueAtTime(64, t + 1.3);
+    o2.frequency.setValueAtTime(80, t); o2.frequency.linearRampToValueAtTime(61, t + 1.3);
+    lp.type = 'lowpass'; lp.frequency.setValueAtTime(250, t); lp.frequency.linearRampToValueAtTime(700, t + 0.3); lp.frequency.linearRampToValueAtTime(200, t + 1.3);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.4, t + 0.1); g.gain.linearRampToValueAtTime(0.3, t + 1.0); g.gain.linearRampToValueAtTime(0.0001, t + 1.4);
+    o.connect(lp); o2.connect(lp); lp.connect(g).connect(out); o.start(t); o2.start(t); o.stop(t + 1.5); o2.stop(t + 1.5);
+  } else if (kind === 'creak') {             // the building, groaning on its perch
+    const o = actx.createOscillator(), g = actx.createGain(); o.type = 'square';
+    o.frequency.setValueAtTime(38, t); o.frequency.linearRampToValueAtTime(52, t + 0.9);
+    const lp = actx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 400;
+    env(g, 0, 0.12, 1.0); o.connect(lp).connect(g).connect(out); o.start(t); o.stop(t + 1.1);
+  }
+}
+const MARINE_MIX = ['bubbles', 'bubbles', 'bloop', 'whale', 'slurp', 'ping', 'creak', 'honk', 'bubbles', 'bloop'];
+function updateMarine(dt, open) {
+  const M = marineBus(); if (!M) return;
+  const head = camera.getWorldPosition(V()), door = V(0, 1.1, -3.1);
+  const near = THREE.MathUtils.clamp(2.2 / (head.distanceTo(door) + 0.8), 0.25, 1);
+  const o = Math.min(1, open / 0.6);
+  M.gain.gain.setTargetAtTime((0.12 + 0.88 * o) * near * 0.9, actx.currentTime, 0.2);
+  M.lp.frequency.setTargetAtTime(350 + o * 7000, actx.currentTime, 0.2);     // muffled through the door, clear when open
+  M.next -= dt;
+  if (M.next <= 0) {
+    marineSound(MARINE_MIX[Math.random() * MARINE_MIX.length | 0]);
+    M.next = o > 0.1 ? 1.2 + Math.random() * 3 : 6 + Math.random() * 9;
+  }
+}
 
 // ───────────────────────── OpticalTable ─────────────────────────
 const table = new THREE.Group();            // TablePlane: placement space for things on the table
@@ -1685,7 +1945,7 @@ function loadLevel(i) {
   } else {
     if (laserState.watts > 1) setWavelength(633);       // back to the HeNe after the induction
     if (wornGoggles) { wornGoggles.group.visible = true; wornGoggles = null; goggleTint.visible = false; setBeamLook(); }
-    laserState.watts = 0.005; setShutter(true); labDoor.target = DOOR_OPEN; setLabLamp(true); drawLaserPanel(true); }
+    laserState.watts = 0.005; setShutter(true); labDoor.target = 0; setLabLamp(true); drawLaserPanel(true); }
   panelSig = '';
 }
 function startLevel() {
@@ -2853,7 +3113,7 @@ renderer.xr.addEventListener('sessionend', () => {
 const clock = new THREE.Clock();
 setMode(location.hash === '#lava' ? 'lava' : 'normal');
 loadLevel(0); showTitle();
-window.lab = { removeComponent, wearGoggles, GOGGLES, setShutter, labDoor, setLabLamp, get supervisor() { return supervisor; }, get irises() { return irises; }, opticHits, endGrabTest: (m) => { const st = { held: { obj: m, how: 't', mode: 'ray' } }; endGrab(st, 't'); }, setTier, LEVEL_SETS, gaussW, viewer, get viewing() { return viewing; }, setDesktopViewing: (v) => { desktopViewing = v; }, cards, cardSpots, blockedAt, setWavelength, laserState, laserCtl, THREE, scene, microscope, game, setMode, showTitle, pressButton, LEVELS, spawn, components, componentsUsed, loadLevel, startLevel, joystick, scopeState, get levels() { return LEVELS; }, pressPad, turnFocus, setFocus, camera, orbit, table, laser, buildGlove, setGloveCurl, buildGoalPort, buildBeamBlockerBox, traceBeam, rotateBy };
+window.lab = { abyss, octo, marineSound, hinge, removeComponent, wearGoggles, GOGGLES, setShutter, labDoor, setLabLamp, get supervisor() { return supervisor; }, get irises() { return irises; }, opticHits, endGrabTest: (m) => { const st = { held: { obj: m, how: 't', mode: 'ray' } }; endGrab(st, 't'); }, setTier, LEVEL_SETS, gaussW, viewer, get viewing() { return viewing; }, setDesktopViewing: (v) => { desktopViewing = v; }, cards, cardSpots, blockedAt, setWavelength, laserState, laserCtl, THREE, scene, microscope, game, setMode, showTitle, pressButton, LEVELS, spawn, components, componentsUsed, loadLevel, startLevel, joystick, scopeState, get levels() { return LEVELS; }, pressPad, turnFocus, setFocus, camera, orbit, table, laser, buildGlove, setGloveCurl, buildGoalPort, buildBeamBlockerBox, traceBeam, rotateBy };
 
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.05);
@@ -2871,6 +3131,7 @@ renderer.setAnimationLoop(() => {
   }
   updateViewer();
   hinge.rotation.y += (labDoor.target - hinge.rotation.y) * Math.min(1, dt * 4);
+  updateAbyss(clock.elapsedTime, dt);
   traceBeam();
   game.hover = pointers.find((p) => p.hoverButton)?.hoverButton ?? null;
   padHover = pointers.find((p) => p.hoverPad)?.hoverPad ?? null;
