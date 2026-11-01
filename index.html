@@ -34,7 +34,7 @@
   <div class="more">
     <p>You come in to find every optic gone from your setup. Your supervisor wants light in the microscope's rear port, fast, and with as few optical components on the table as possible. Each level they add something new to the table.</p>
     <p>Lenses are labelled on their bases (+ = convex, converging; − = concave, diverging), and the wall panel and laser controller show the starting beam size. <b>★ Free build</b> puts every optic in the tray with a live readout at the port: try +100 then +400 mm, 500 mm apart, for a 4× bigger collimated beam. A floating tag between each pair of lenses shows their spacing along the beam against f₁+f₂ (green when within 2 mm).</p>
-    <p><b>0 · Safety</b> is a laser safety induction: close the door, switch on the warning lamp, pick the right goggles from the rack, find the stray reflection, measure the power, classify the laser, dump the beam and close the shutter. Strikes for unsafe behaviour; you finish with a certificate.</p>
+    <p><b>0 · Safety</b> is a laser safety induction: close the door, switch on the warning lamp, pick the right goggles from the rack, find the stray reflection, measure the power, classify the laser, dump the beam and close the shutter. Do anything unsafe (shutter open too early, no or wrong goggles, a hand or your eye in the beam) and everything stops: you're back at the start and the supervisor tells you exactly what you did wrong. Finish to get a certificate.</p>
     <p>Three stages: <b>1 · Mirrors</b> (steer the beam), <b>2 · Lenses</b> (expand and collimate the beam to fill the new objective's back aperture; lenses and curved mirrors centre themselves on the beam when you let go, and the beam's real width is drawn as it focuses and expands), <b>3 · Alignment</b> (two irises fixed on the microscope axis: the expanded beam must pass through the middle of both, so it arrives on axis and square), and <b>4 · Advanced</b> (polarisation and aberrations, coming next). Two labs: the normal lab, and <b>The Floor is Lava</b>, where the volcanology lab next door has sprung a leak. Stay on the stepping stones; the optical table is lava proof.</p>
     <p><b>Quest:</b> <kbd>ENTER VR</kbd>. Point at the wall panel and pull the trigger to choose a game. Either hand grabs with grip or trigger: reach in and pick a part up to lift, tilt and carry it (or pass it to your other hand), and when you let go it drops back onto the table, upright, on the nearest grid spot and snap angle. Point at a part to slide it along the table from a distance. Let go of the trigger to point your index finger and you can press the buttons on the laser controller, the microscope pad and the wall panel by pushing them. While holding a part at a distance: twist your wrist to turn it, <kbd>A</kbd>/<kbd>X</kbd> and <kbd>B</kbd>/<kbd>Y</kbd> turn it one step, the thumbstick slides it (lenses and curved mirrors creep slowly, for fine focusing), and clicking the thumbstick changes the rotation snap (free, 1°, 5°, 15°, 45°; also on the wall panel; 5° to start). Put a part back in the tray to remove it. When the light is in, the monitor shows a live confocal image: grab the focus knobs on the microscope's right side and move your hand up or down to focus through the sample (big knob coarse, small knob fine), switch between confocal and widefield, set the pinhole and change the sample with the buttons under the monitor, and use the joystick to move the stage. The box beside the laser tunes it from 350 to 1064 nm; UV and IR beams are invisible, so pick up a detector card from the rack next to it and hold it in the beam to see where it goes, or pick up the IR viewer next to the controller and hold it to your eye: UV and near-IR beams show up green through it. Walking: the left stick moves you the way you're looking and the right stick turns (smooth by default). On the wall panel's title screen you can switch to snap turning (45° or 30°), swap the sticks, and set your eye height (1.75 m to start; 1.6, 1.9, or your real height).</p>
     <p><b>Desktop:</b> click the panel buttons; drag parts; mouse wheel over a part turns it one snap step, 5° to start (<kbd>Shift</kbd> for 1°; change the snap on the wall panel); drag the joystick; drag a focus knob up/down or use the mouse wheel over it to focus; click the buttons under the monitor; the box beside the laser changes its wavelength (350–1064 nm; UV and IR beams are invisible: drag a detector card from the rack into the beam to find them, or press <kbd>V</kbd> to look through the IR viewer); <kbd>[</kbd>/<kbd>]</kbd> nudge the lens or curved mirror under the mouse 1 mm along its axis (<kbd>Shift</kbd> for 5 mm); drag empty space to orbit; <kbd>M</kbd> returns to the main menu.</p>
@@ -1809,7 +1809,7 @@ function drawPanel() {
   const irisSig = (game.irisHits || []).map((x) => `${x.iris.index}${x.pass}${x.off.toFixed(1)}`).join(',');
   const spSig = spacingInfo.map((x) => x.d.toFixed(0)).join(',');
   const sfSig = game.safety ? JSON.stringify([game.safety.done, game.safety.strikes, game.safety.quiz, wornGoggles?.name]) : '';
-  const sig = [vrPrefs.turn, vrPrefs.moveHand, vrPrefs.eye, sfSig, spSig, irisSig, game.mode, game.tier, game.level, game.state, n, lit, game.hover, Math.floor(t / 1000), game.burns, rotSnap, L.need ? portStr : ''].join('|');
+  const sig = [frameError, vrPrefs.turn, vrPrefs.moveHand, vrPrefs.eye, sfSig, spSig, irisSig, game.mode, game.tier, game.level, game.state, n, lit, game.hover, Math.floor(t / 1000), game.burns, rotSnap, L.need ? portStr : ''].join('|');
   if (sig === panelSig) return; panelSig = sig;
   const g = pctx, lava = game.mode === 'lava';
   g.fillStyle = '#101317'; g.fillRect(0, 0, PW, PH);
@@ -1864,7 +1864,7 @@ function drawPanel() {
   } else if (game.state === 'playing' && L.safety && game.safety) {
     const S = game.safety, next = SAFETY_TASKS.find((t) => !S.done[t.id]);
     g.fillStyle = S.strikes ? '#ffb32b' : '#9fe6a8'; g.font = 'bold 30px system-ui, sans-serif'; g.textAlign = 'right';
-    g.fillText(`Strikes: ${S.strikes}`, PW - 40, 122); g.textAlign = 'left';
+    g.fillText(`Restarts: ${S.strikes}`, PW - 40, 122); g.textAlign = 'left';
     SAFETY_TASKS.forEach((T, i) => {
       const y = 166 + i * 33, d = S.done[T.id], cur = T === next;
       g.fillStyle = d ? '#39f07a' : cur ? '#ffd23f' : '#5d6773'; g.font = `${cur ? 'bold ' : ''}25px system-ui, sans-serif`;
@@ -1932,6 +1932,7 @@ function drawPanel() {
     g.fillStyle = '#eef2f6'; g.font = 'bold 32px system-ui, sans-serif'; g.textAlign = 'center';
     g.fillText(b.label, b.x + b.w / 2, b.y + 46); g.textAlign = 'left';
   }
+  if (frameError) { g.fillStyle = '#ff6b5e'; g.font = '16px ui-monospace, monospace'; g.fillText('error: ' + String(frameError).slice(0, 110), 16, PH - 10); }
   panelTex.needsUpdate = true;
 }
 function buttonAt(uv) {
@@ -2048,13 +2049,54 @@ const STRIKE_LINES = {
   nogoggles: ["You opened a 2 watt shutter without goggles?! Close it and put the right ones on.", "Shutter open, no goggles. That's a strike, and very nearly a white stick."],
   wronggoggles: ["Shutter's open and your goggles don't block 532 nm. They're decorative. Strike."],
 };
-function strike(kind, st) {
-  const S = game.safety; if (!S || performance.now() < S.cool) return;
-  S.strikes++; S.cool = performance.now() + 2500; S.log.push(kind);
-  const lines = STRIKE_LINES[kind]; say(lines[Math.random() * lines.length | 0]);
+// A safety failure stops everything: the shutter shuts, the screen goes dark, you're back at the
+// door with the induction reset, and the supervisor tells you exactly what you did wrong and why.
+const FAIL_WHY = {
+  order: (miss) => `STOP. You opened the shutter before ${miss}. The order matters: door shut, warning lamp on, goggles on, and only then the shutter. From the top.`,
+  nogoggles: () => "STOP. Shutter open and no goggles. One stray reflection of 2 watts at 532 nm blinds you before you can blink. Goggles on BEFORE the shutter opens. From the top.",
+  wronggoggles: () => "STOP. Those goggles don't block 532 nm, so they're decorative. Check the wavelength printed on the goggles covers the laser's wavelength. From the top.",
+  hand: () => "STOP. Your hand went into the beam. 2 watts burns skin in a fraction of a second. Keep hands out of the beam path; move things with the shutter closed. From the top.",
+  eye: () => "STOP. Your eye was in the beam path. You get one pair. Never look along a beam, and never put your face near it. From the top.",
+  head: () => "STOP. You bent down to beam height. That's how people lose an eye picking up a dropped screw. Keep your eyes well above the beam. From the top.",
+};
+const failFade = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 12), new THREE.MeshBasicMaterial({ color: 0x000000,
+  transparent: true, opacity: 0, side: THREE.BackSide, depthTest: false, depthWrite: false }));
+failFade.renderOrder = 1001; camera.add(failFade);
+let failing = null;
+function strike(kind, st, detail) {
+  const S = game.safety; if (!S || failing) return;
+  S.strikes++; S.log.push(kind);
+  setShutter(false);
   tone(160, 0.35, 0, 0.2); tone(110, 0.4, 0.15, 0.2);
   hurtShell.material.opacity = 0.45; pointers.forEach((p) => pulse(p, 1, 150));
+  for (const p of pointers) if (p.held) p.held = null;      // drop whatever you were holding
+  failing = { t: 0, why: FAIL_WHY[kind](detail), strikes: S.strikes, zaps: S.zaps, log: S.log, reset: false };
+  say(failing.why.split('.')[0] + '!');
   panelSig = '';
+}
+function resetToStart() {
+  if (renderer.xr.isPresenting) {
+    rig.position.copy(u2t(0, 0, -2)); rig.rotation.set(0, Math.PI, 0);
+    const h = camera.getWorldPosition(V());            // your head back where you started
+    rig.position.x -= h.x; rig.position.z -= h.z - (-2.0);
+    eyePending = true;
+  } else {
+    camera.position.set(0.35, 1.6, -1.1); orbit.target.set(0, TABLE_PLANE.y, TABLE_PLANE.z); orbit.update();
+  }
+}
+function updateFailure(dt) {
+  if (!failing) return;
+  const F = failing; F.t += dt;
+  failFade.material.opacity = F.t < 0.7 ? F.t / 0.7 : F.t < 1.4 ? 1 : Math.max(0, 1 - (F.t - 1.4) / 0.8);
+  if (!F.reset && F.t >= 1.0) {                        // in the dark: reset the lab and put you back at the door
+    F.reset = true;
+    loadLevel(game.level); startLevel();
+    Object.assign(game.safety, { strikes: F.strikes, zaps: F.zaps, log: F.log });
+    resetToStart();
+    say(F.why);
+    panelSig = '';
+  }
+  if (F.t >= 2.2) { failFade.material.opacity = 0; failing = null; }
 }
 const _sp = V(), _sq = V();
 function segDist(p, a, b) { _sp.subVectors(b, a); const t = THREE.MathUtils.clamp(_sq.subVectors(p, a).dot(_sp) / _sp.lengthSq(), 0, 1); return _sq.copy(a).addScaledVector(_sp, t).distanceTo(p); }
@@ -2086,7 +2128,7 @@ function updateSafety(dt) {
     tone(600, 0.1); tone(900, 0.15, 0.08);
   }
   if (supJump > 0) { supJump = Math.max(0, supJump - dt); supervisor.position.y = Math.sin((0.5 - supJump) / 0.5 * Math.PI) * 0.35; }
-  if (!L.safety || !S || game.state !== 'playing') return;
+  if (!L.safety || !S || game.state !== 'playing' || failing) return;
   const done = S.done, sh = laserState.shutter, before = Object.keys(done).length;
   if (Math.abs(hinge.rotation.y) < 0.05) done.door = true;
   if (labLamp.userData.on) done.lamp = true;
@@ -2098,8 +2140,11 @@ function updateSafety(dt) {
   if (done.class && done.dump && done.stray && done.goggles && done.lamp && done.door && done.shutter && !sh) done.close = true;
   // shutter discipline
   if (sh && !S.wasOpen) {
-    if (!wornGoggles) strike('nogoggles'); else if (!gogglesBlock(laserState.nm)) strike('wronggoggles');
-    if (!done.door || !done.lamp) say("Shutter's open but " + (!done.door ? 'the door is wide open' : 'the warning lamp is off') + ". Anyone could walk in!");
+    const miss = [!done.door && 'shutting the door', !done.lamp && 'switching on the warning lamp', !wornGoggles && 'putting on goggles'].filter(Boolean);
+    if (miss.length > 1 || (miss.length === 1 && wornGoggles)) strike('order', null, miss.length > 1 ? miss.slice(0, -1).join(', ') + ' and ' + miss.at(-1) : miss[0]);
+    else if (!wornGoggles) strike('nogoggles');
+    else if (!gogglesBlock(laserState.nm)) strike('wronggoggles');
+    if (failing) { S.wasOpen = false; return; }
   }
   S.wasOpen = sh;
   // body parts in the beam (VR only: we know where your head and hands are)
@@ -2107,7 +2152,7 @@ function updateSafety(dt) {
     const head = camera.getWorldPosition(V());
     for (const p of pointers) if (p.kind === 'xr' && p.src) {
       const gp = gripPos(p);
-      if (segs.some(({ a, b }) => segDist(gp, a, b) < 0.035)) strike('hand', p);
+      if (segs.some(({ a, b }) => segDist(gp, a, b) < 0.035)) { strike('hand', p); return; }
     }
     if (segs.some(({ a, b }) => segDist(head, a, b) < 0.12)) strike('eye');
     else if (head.y < TABLE_PLANE.y + 0.3 && Math.abs(head.x) < 1.9 && head.z > 0 && head.z < 1.8) strike('head');
@@ -3173,9 +3218,21 @@ renderer.xr.addEventListener('sessionend', () => {
 const clock = new THREE.Clock();
 setMode(location.hash === '#lava' ? 'lava' : 'normal');
 loadLevel(0); showTitle();
-window.lab = { doris, dorisSays, abyssOpened, dorisBubble, abyss, octo, marineSound, hinge, removeComponent, wearGoggles, GOGGLES, setShutter, labDoor, setLabLamp, get supervisor() { return supervisor; }, get irises() { return irises; }, opticHits, endGrabTest: (m) => { const st = { held: { obj: m, how: 't', mode: 'ray' } }; endGrab(st, 't'); }, setTier, LEVEL_SETS, gaussW, viewer, get viewing() { return viewing; }, setDesktopViewing: (v) => { desktopViewing = v; }, cards, cardSpots, blockedAt, setWavelength, laserState, laserCtl, THREE, scene, microscope, game, setMode, showTitle, pressButton, LEVELS, spawn, components, componentsUsed, loadLevel, startLevel, joystick, scopeState, get levels() { return LEVELS; }, pressPad, turnFocus, setFocus, camera, orbit, table, laser, buildGlove, setGloveCurl, buildGoalPort, buildBeamBlockerBox, traceBeam, rotateBy };
+window.lab = { get failing() { return failing; }, strike, doris, dorisSays, abyssOpened, dorisBubble, abyss, octo, marineSound, hinge, removeComponent, wearGoggles, GOGGLES, setShutter, labDoor, setLabLamp, get supervisor() { return supervisor; }, get irises() { return irises; }, opticHits, endGrabTest: (m) => { const st = { held: { obj: m, how: 't', mode: 'ray' } }; endGrab(st, 't'); }, setTier, LEVEL_SETS, gaussW, viewer, get viewing() { return viewing; }, setDesktopViewing: (v) => { desktopViewing = v; }, cards, cardSpots, blockedAt, setWavelength, laserState, laserCtl, THREE, scene, microscope, game, setMode, showTitle, pressButton, LEVELS, spawn, components, componentsUsed, loadLevel, startLevel, joystick, scopeState, get levels() { return LEVELS; }, pressPad, turnFocus, setFocus, camera, orbit, table, laser, buildGlove, setGloveCurl, buildGoalPort, buildBeamBlockerBox, traceBeam, rotateBy };
 
+let frameError = null;
+function reportError(e) {
+  const msg = (e && (e.message || e.reason?.message || e.reason)) || String(e);
+  if (frameError === msg) return;
+  frameError = msg; console.error(e); panelSig = '';
+}
+addEventListener('error', (e) => reportError(e.error || e.message));
+addEventListener('unhandledrejection', (e) => reportError(e.reason));
 renderer.setAnimationLoop(() => {
+  try { frame(); } catch (e) { reportError(e); }
+  renderer.render(scene, camera);
+});
+function frame() {
   const dt = Math.min(clock.getDelta(), 0.05);
   updateLava(clock.elapsedTime, dt);
   if (!renderer.xr.isPresenting) orbit.update();
@@ -3200,8 +3257,8 @@ renderer.setAnimationLoop(() => {
   // speech bubble turns to face you
   const eye = camera.getWorldPosition(V());
   bubble.rotation.y = Math.atan2(eye.x - bubble.position.x, eye.z - bubble.position.z);
-  renderer.render(scene, camera);
-});
+  updateFailure(dt);
+}
 </script>
 </body>
 </html>
