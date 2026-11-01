@@ -334,7 +334,7 @@ doorPanel.position.set(-0.597, 1.047, -0.022); hinge.add(doorPanel);
   } }
 const DOOR_OPEN = 88 * DEG;            // swings in, into the lab
 const labDoor = { target: 0 };          // shut: it says EXIT, after all
-doorPanel.userData.onClick = () => { labDoor.target = labDoor.target === 0 ? DOOR_OPEN : 0; tone(220, 0.15); if (labDoor.target) abyssOpened(); };
+doorPanel.userData.onClick = () => { labDoor.target = labDoor.target === 0 ? DOOR_OPEN : 0; tone(220, 0.15); };
 clickables.push(doorPanel);
 // LASER IN USE lamp above the door, and its switch beside the door
 const lampCanvas = document.createElement('canvas'); lampCanvas.width = 512; lampCanvas.height = 144;
@@ -528,6 +528,55 @@ doorHandle.children.forEach((m) => { m.userData.onClick = doorPanel.userData.onC
 // the threshold: the lab floor stops at the door, and so does everything else
 const sill = box(1.2, 0.1, 0.22, std(0x6f757c, 0.6, 0.5), false); sill.position.set(0, -0.05, -3.1); room.add(sill);
 
+// ───────────────────────── The corridor outside (what's usually behind the EXIT door) ─────────────────────────
+const corridor = new THREE.Group(); corridor.visible = false; scene.add(corridor);
+{
+  const Z0 = -3.2, Z1 = -5.6, X = 12, H = 2.8, zc = (Z0 + Z1) / 2;
+  const wallM = std(0xdfe2dc, 0, 0.9), floorM = std(0x5d6b78, 0, 0.6), ceilM = std(0xf1f2f0, 0, 0.95);
+  const add = (m, x, y, z) => { m.position.set(x, y, z); corridor.add(m); return m; };
+  add(box(2 * X, 0.1, Z0 - Z1, floorM, false), 0, -0.05, zc);
+  add(box(2 * X, 0.1, Z0 - Z1, ceilM, false), 0, H + 0.05, zc);
+  add(box(2 * X, H, 0.1, wallM, false), 0, H / 2, Z1 - 0.05);                           // the far wall
+  add(box(2 * X, H, 0.06, wallM, false), 0, H / 2, Z0 - 0.03).visible = false;          // (our own wall is already there)
+  for (const sx of [-1, 1]) add(box(0.1, H, Z0 - Z1, wallM, false), sx * X, H / 2, zc);
+  // skirting and a handrail-height scuff strip, so it reads as a real institutional corridor
+  add(box(2 * X, 0.1, 0.02, std(0x3a4148, 0, 0.6), false), 0, 0.05, Z1 + 0.01);
+  for (let x = -10; x <= 10; x += 2.5) {                                               // ceiling lights
+    const l = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.3).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xfbfcff }));
+    add(l, x, H - 0.005, zc);
+  }
+  const plate = (lines, bg = '#1f3b63', fg = '#fff', w = 0.42, h = 0.16) => {
+    const c = document.createElement('canvas'); c.width = 512; c.height = Math.round(512 * h / w); const g = c.getContext('2d');
+    g.fillStyle = bg; g.fillRect(0, 0, c.width, c.height); g.fillStyle = fg; g.textAlign = 'center';
+    lines.forEach(([txt, size, bold], i) => { g.font = `${bold ? 'bold ' : ''}${size}px system-ui, sans-serif`; g.fillText(txt, 256, (i + 1) * c.height / (lines.length + 0.6)); });
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+    return new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: t }));
+  };
+  // doors along the far wall, each another lab in the facility
+  const DOORS = [
+    [-7.5, '2.12', 'Two-Photon Lab', '#1f3b63'], [-4.2, '2.13', 'FLIM Lab', '#1f3b63'], [-1.0, '2.14', 'Cleanroom', '#245d3a'],
+    [2.2, '2.15', 'Adaptive Optics', '#1f3b63'], [5.4, '2.16', 'Kitchen', '#6b3d1f'], [8.6, '2.17', 'Stores', '#444b54'],
+  ];
+  for (const [x, num, name, col] of DOORS) {
+    const leaf = box(1.0, 2.05, 0.05, std(0x8a9099, 0.1, 0.6), false); add(leaf, x, 1.025, Z1 + 0.03);
+    const frame = box(1.12, 2.12, 0.03, std(0xcfd3d7, 0, 0.5), false); add(frame, x, 1.06, Z1 + 0.012);
+    const handle = new THREE.Mesh(new THREE.CapsuleGeometry(0.01, 0.1, 4, 8).rotateZ(Math.PI / 2), std(0xc9ced4, 0.9, 0.3)); add(handle, x + 0.36, 1.0, Z1 + 0.07);
+    const sign = plate([[num, 64, true], [name, 46, false]], col); add(sign, x, 1.62, Z1 + 0.058);
+    const lamp = plate([['LASER IN USE', 52, true]], '#3a1010', '#ff6b5e', 0.36, 0.09); add(lamp, x, 2.3, Z1 + 0.06);
+  }
+  // a notice board, a fire extinguisher, a wet floor sign and the real fire exit at the end
+  const board = box(1.4, 0.9, 0.03, std(0xa77b4f, 0, 0.9), false); add(board, -2.6, 1.4, Z1 + 0.02);
+  const notes = [['SEMINAR', 'Thursday 4pm', '#fff6a8'], ['LOST', 'one 25 mm iris', '#d9f0ff'], ['WHO TOOK', 'the good Allen key?', '#ffd9e0'], ['LASER', 'safety refresher', '#e6ffd9']];
+  notes.forEach(([a, b, bg], i) => { const n = plate([[a, 52, true], [b, 36, false]], bg, '#222', 0.3, 0.22); n.rotation.z = (i % 2 ? 1 : -1) * 0.05; add(n, -3.05 + i * 0.31, 1.45 + (i % 2) * 0.12, Z1 + 0.04); });
+  const ext = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.5, 16), std(0xc0141c, 0.3, 0.4)); add(ext, 0.6, 0.55, Z1 + 0.12);
+  const extTop = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.05, 0.08, 12), std(0x222222, 0.5, 0.5)); add(extTop, 0.6, 0.84, Z1 + 0.12);
+  { const wet = new THREE.Group(); add(wet, -0.35, 0, -4.7); wet.rotation.y = 0.5;   // an A-frame CAUTION WET FLOOR sign
+    for (const sd of [-1, 1]) { const panel = plate([['CAUTION', 64, true], ['WET FLOOR', 52, true], ['(it\'s Doris)', 34, false]], '#ffd400', '#111', 0.3, 0.6);
+      panel.material.side = THREE.DoubleSide; panel.position.set(0, 0.29, sd * 0.07); panel.rotation.x = sd * -0.24; if (sd < 0) panel.rotation.y = Math.PI; wet.add(panel); } }
+  const exitEnd = plate([['EXIT  →', 70, true]], '#0a8f3c', '#fff', 0.5, 0.18); exitEnd.rotation.y = -Math.PI / 2; add(exitEnd, X - 0.06, 2.3, zc);
+  const sign = plate([['← Labs 2.12–2.14', 40, true], ['Labs 2.15–2.17 →', 40, true]], '#2b3340', '#fff', 0.6, 0.2); add(sign, 0, 2.45, Z1 + 0.06);
+}
+
 const abyss = new THREE.Group(); abyss.visible = false; scene.add(abyss);
 // the deep: a gradient dome with shafts of light coming down from somewhere far above
 abyss.add(new THREE.Mesh(new THREE.SphereGeometry(46, 48, 24), new THREE.ShaderMaterial({
@@ -624,11 +673,21 @@ const whale = new THREE.Group();
   const fin = new THREE.Mesh(new THREE.ConeGeometry(0.6, 2.4, 3), dark); fin.position.set(1.5, -1.2, 1.2); fin.rotation.set(0.9, 0, 0.4); whale.add(fin); }
 whale.position.set(-60, 10, -40); abyss.add(whale);
 
+// What's behind the door is decided as it starts to open: normally the department corridor, but
+// open it a second time and... Doris. Never during the safety induction: that's the corridor.
+let outside = 'corridor', doorOpens = 0, wasOpen = false;
 function updateAbyss(t, dt) {
-  const open = Math.abs(hinge.rotation.y);
-  abyss.visible = open > 0.01;
-  updateMarine(dt, open);
-  updateDoris(dt, open);
+  const open = Math.abs(hinge.rotation.y), isOpen = open > 0.01;
+  if (isOpen && !wasOpen) {
+    if (game.safety) outside = 'corridor';
+    else { doorOpens++; outside = doorOpens >= 2 ? 'abyss' : 'corridor'; }
+    if (outside === 'abyss') abyssOpened();
+  }
+  wasOpen = isOpen;
+  abyss.visible = isOpen && outside === 'abyss';
+  corridor.visible = isOpen && outside === 'corridor';
+  updateMarine(dt, outside === 'abyss' ? open : 0, outside === 'abyss' || (doorOpens >= 1 && !game.safety));
+  updateDoris(dt, outside === 'abyss' ? open : 0);
   if (!abyss.visible) return;
   abyss.children[0].material.uniforms.time.value = t;
   for (let i = 0; i < SNOW; i++) { let y = snowPos[i * 3 + 1] - dt * 0.25; if (y < -15) y += 30; snowPos[i * 3 + 1] = y; snowPos[i * 3] += Math.sin(t * 0.3 + i) * dt * 0.05; }
@@ -798,8 +857,9 @@ function marineSound(kind) {
   }
 }
 const MARINE_MIX = ['bubbles', 'bubbles', 'bloop', 'whale', 'slurp', 'ping', 'creak', 'honk', 'bubbles', 'bloop'];
-function updateMarine(dt, open) {
+function updateMarine(dt, open, audible = true) {
   const M = marineBus(); if (!M) return;
+  if (!audible) { M.gain.gain.setTargetAtTime(0, actx.currentTime, 0.2); return; }   // nothing to hear until she's around
   const head = camera.getWorldPosition(V()), door = V(0, 1.1, -3.1);
   const near = THREE.MathUtils.clamp(2.2 / (head.distanceTo(door) + 0.8), 0.25, 1);
   const o = Math.min(1, open / 0.6);
