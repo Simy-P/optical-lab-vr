@@ -999,12 +999,16 @@ const BEAM_HIGH = 0.20;                                 // height a periscope li
 const PART_NAMES = { mirror: 'mirrors', tallMirror: 'tall mirrors', periscope: 'periscopes', powerMeter: 'power meter', beamDump: 'beam dump', spanner: 'spanner',
   lens50: '+50 mm convex lens', lens100: '+100 mm convex lens', lens200: '+200 mm convex lens', lens400: '+400 mm convex lens',
   lensN50: '−50 mm concave lens', lensN100: '−100 mm concave lens',
-  cmirror100: 'f 100 concave mirror', cmirror200: 'f 200 concave mirror', xmirror100: 'f −100 convex mirror' };
+  cmirror100: 'f 100 concave mirror', cmirror200: 'f 200 concave mirror', xmirror100: 'f −100 convex mirror',
+  nd03: 'ND 0.3', nd05: 'ND 0.5', nd1: 'ND 1', nd2: 'ND 2', nd3: 'ND 3' };
 // Lenses and curved mirrors (2" optics). f in metres; negative f diverges.
 const OPTICS = {
   lens50: { type: 'lens', f: 0.05 }, lens100: { type: 'lens', f: 0.1 }, lens200: { type: 'lens', f: 0.2 }, lens400: { type: 'lens', f: 0.4 },
   lensN50: { type: 'lens', f: -0.05 }, lensN100: { type: 'lens', f: -0.1 },
   cmirror100: { type: 'cmirror', f: 0.1 }, cmirror200: { type: 'cmirror', f: 0.2 }, xmirror100: { type: 'cmirror', f: -0.1 },
+  // neutral density filters: transmission 10^-OD, no focusing. Optical densities add when stacked.
+  nd03: { type: 'nd', od: 0.3, f: Infinity }, nd05: { type: 'nd', od: 0.5, f: Infinity }, nd1: { type: 'nd', od: 1, f: Infinity },
+  nd2: { type: 'nd', od: 2, f: Infinity }, nd3: { type: 'nd', od: 3, f: Infinity },
 };
 const OPTIC_R = 0.0254;
 const FACE_BEAM = new Set([...Object.keys(OPTICS), 'powerMeter', 'beamDump']);
@@ -1043,7 +1047,15 @@ function buildComponent(kind) {
     post.position.y = (yLow - OPTIC_R - 0.008) / 2; root.add(post);
     const ring = nc(new THREE.Mesh(new THREE.TorusGeometry(OPTIC_R + 0.003, 0.004, 10, 40), MAT.dark)); ring.position.y = yLow; root.add(ring);
     let glass;
-    if (optic.type === 'lens') {
+    if (optic.type === 'nd') {
+      // a 25 mm square filter, greyer the denser it is, in a black square holder
+      glass = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.003),
+        new THREE.MeshStandardMaterial({ color: 0x3a3d42, metalness: 0.5, roughness: 0.15, transparent: true, opacity: Math.min(0.92, 0.3 + optic.od * 0.2) }));
+      ring.visible = false;                     // a hollow square holder instead of the round lens ring
+      for (const [w, h, x, y] of [[0.04, 0.005, 0, 0.0175], [0.04, 0.005, 0, -0.0175], [0.005, 0.03, 0.0175, 0], [0.005, 0.03, -0.0175, 0]]) {
+        const bar = nc(box(w, h, 0.006, MAT.dark)); bar.position.set(x, yLow + y, 0); root.add(bar);
+      }
+    } else if (optic.type === 'lens') {
       glass = new THREE.Mesh(lensGeometry(optic.f),
         new THREE.MeshStandardMaterial({ color: 0xbfe3ff, metalness: 0, roughness: 0.05, transparent: true, opacity: 0.45, envMapIntensity: 1.6, side: THREE.DoubleSide }));
     } else {
@@ -1055,7 +1067,8 @@ function buildComponent(kind) {
     if (optic.type === 'cmirror') glass.position.z = -0.004;   // mirror surface on the mount centre
     // label on the base: focal length and type (convex = converging, concave = diverging)
     const fmm = Math.round(optic.f * 1000), conv = optic.f > 0;
-    const lab = optic.type === 'lens'
+    const lab = optic.type === 'nd' ? opticLabel(`ND ${optic.od}`, `T ${+(100 * 10 ** -optic.od).toPrecision(2)}%`, '#c9ced6')
+      : optic.type === 'lens'
       ? opticLabel(`${conv ? '+' : '−'}${Math.abs(fmm)} mm`, conv ? 'CONVEX' : 'CONCAVE', conv ? '#e9edf2' : '#ffe2b8')
       : opticLabel(`f ${fmm} mm`, conv ? 'CC MIRROR' : 'CX MIRROR', conv ? '#e9edf2' : '#ffe2b8');
     // text runs along the optical axis so it reads straight on when the optic faces along the beam
@@ -1414,6 +1427,10 @@ const SAFETY_LEVELS = [
     say: "Welcome to your laser safety induction. Today's laser: 532 nm, 2 watts, Class 4. It can blind you faster than you can blink. Follow the checklist on the board, and keep every part of yourself out of the beam.",
     lavaSay: "Laser safety induction, lava edition. 532 nm, 2 watts, Class 4. Follow the checklist, stay on the stones, and keep every part of yourself out of the beam." },
 ];
+SAFETY_LEVELS.push({ name: 'Safety 2: Attenuation', safety: true, attenuation: true, parts: ['powerMeter', 'beamDump', 'nd03', 'nd05', 'nd1', 'nd2', 'nd3'],
+  par: null, riser: false, obstacles: [], beamD: 2,
+  say: "Lesson two: attenuation. Same laser, 2 watts at 532 nm, but for alignment we want about a milliwatt. Do the checklist as before, measure the full power, then stack ND filters in front of the meter until it reads between half a milliwatt and one. Every 1 of optical density is a factor of ten, and they add up.",
+  lavaSay: "Lesson two, lava edition: attenuation. Measure the 2 watts, then stack ND filters until the meter reads half to one milliwatt. OD adds up; each 1 is a factor of ten." });
 const LEVEL_SETS = { safety: SAFETY_LEVELS, mirrors: MIRROR_LEVELS, lenses: LENS_LEVELS, align: ALIGN_LEVELS, sandbox: SANDBOX_LEVELS };
 let LEVELS = MIRROR_LEVELS;
 
@@ -1814,7 +1831,7 @@ function drawPanel() {
   const P = game.port, portStr = P ? `${P.D.toFixed(1)}|${P.div.toFixed(1)}|${P.ok}` : '-';
   const irisSig = (game.irisHits || []).map((x) => `${x.iris.index}${x.pass}${x.off.toFixed(1)}`).join(',');
   const spSig = spacingInfo.map((x) => x.d.toFixed(0)).join(',');
-  const sfSig = game.safety ? JSON.stringify([game.safety.done, game.safety.strikes, game.safety.quiz, wornGoggles?.name]) : '';
+  const sfSig = game.safety ? JSON.stringify([game.safety.done, game.safety.strikes, game.safety.quiz, wornGoggles?.name, game.meterHit ? (game.meterPower * 1e4 | 0) : -1, game.ndOD]) : '';
   const sig = [frameError, vrPrefs.turn, vrPrefs.moveHand, vrPrefs.eye, sfSig, spSig, irisSig, game.mode, game.tier, game.level, game.state, n, lit, game.hover, Math.floor(t / 1000), game.burns, rotSnap, L.need ? portStr : ''].join('|');
   if (sig === panelSig) return; panelSig = sig;
   const g = pctx, lava = game.mode === 'lava';
@@ -1868,15 +1885,24 @@ function drawPanel() {
     g.fillText(rec ? `Your best: ${rec.n} components in ${fmt(rec.t)}` : 'Not completed yet', 40, 420);
     }
   } else if (game.state === 'playing' && L.safety && game.safety) {
-    const S = game.safety, next = SAFETY_TASKS.find((t) => !S.done[t.id]);
+    const S = game.safety, next = safetyTasks().find((t) => !S.done[t.id]);
     g.fillStyle = S.strikes ? '#ffb32b' : '#9fe6a8'; g.font = 'bold 30px system-ui, sans-serif'; g.textAlign = 'right';
     g.fillText(`Restarts: ${S.strikes}`, PW - 40, 122); g.textAlign = 'left';
-    SAFETY_TASKS.forEach((T, i) => {
-      const y = 166 + i * 33, d = S.done[T.id], cur = T === next;
+    const TL = safetyTasks(), gap = TL.length > 9 ? 30 : 33;
+    TL.forEach((T, i) => {
+      const y = 166 + i * gap, d = S.done[T.id], cur = T === next;
       g.fillStyle = d ? '#39f07a' : cur ? '#ffd23f' : '#5d6773'; g.font = `${cur ? 'bold ' : ''}25px system-ui, sans-serif`;
       g.fillText(`${d ? '✓' : cur ? '▶' : '○'}  ${T.text}`, 40, y);
     });
-    if (S.quiz && !S.done.class) { g.fillStyle = '#eef2f6'; g.font = 'bold 26px system-ui, sans-serif'; g.fillText(`The meter reads ${laserState.watts.toFixed(2)} W at ${laserState.nm} nm. What class is this laser?`, 40, 490); }
+    if (S.quiz && !S.done.class) {
+      g.fillStyle = '#eef2f6'; g.font = 'bold 26px system-ui, sans-serif';
+      g.fillText(L.attenuation ? `The meter reads ${(S.attenPower * 1000).toFixed(2)} mW at ${laserState.nm} nm. What class is the beam now?`
+        : `The meter reads ${laserState.watts.toFixed(2)} W at ${laserState.nm} nm. What class is this laser?`, 40, 490);
+    } else if (L.attenuation && game.meterHit && laserState.shutter) {
+      const mw = game.meterPower * 1000, ok = mw >= 0.5 && mw <= 1.05;
+      g.fillStyle = ok ? '#39f07a' : '#ffd23f'; g.font = 'bold 26px ui-monospace, monospace';
+      g.fillText(`Meter: ${mw >= 100 ? (mw / 1000).toFixed(2) + ' W' : mw.toFixed(mw < 1 ? 3 : 1) + ' mW'}   ND in beam: OD ${(game.ndOD || 0).toFixed(1)}   target 0.5–1.0 mW`, 40, 486);
+    }
   } else if (game.state === 'playing') {
     g.font = '20px system-ui, sans-serif'; wrapText(g, `In the tray: ${parts}. Return a part to the tray to remove it.`, 40, 162, PW - 80, 24);
     g.fillStyle = '#eef2f6'; g.font = 'bold 46px system-ui, sans-serif';
@@ -1918,7 +1944,8 @@ function drawPanel() {
     g.fillStyle = '#eef2f6'; g.font = '32px system-ui, sans-serif'; g.fillText(grade[1], PW / 2, 310);
     g.fillStyle = '#b6c0cb'; g.font = '26px system-ui, sans-serif';
     g.fillText(`Strikes: ${k}   ·   Supervisors injured: ${r.safety.zaps}   ·   Time ${fmt(r.t)}`, PW / 2, 366);
-    g.font = 'italic 21px system-ui, sans-serif'; g.fillText('Door shut · lamp on · right goggles · no stray reflections · power measured · beam dumped', PW / 2, 432);
+    g.font = 'italic 21px system-ui, sans-serif'; g.fillText(L.attenuation ? 'Door shut · lamp on · right goggles · 2 W measured · attenuated to 1 mW with ND filters · beam dumped'
+      : 'Door shut · lamp on · right goggles · no stray reflections · power measured · beam dumped', PW / 2, 432);
     g.textAlign = 'left';
   } else {
     const r = game.result;
@@ -1955,8 +1982,9 @@ function pressButton(id) {
   if (id === 'vr:eye') { const opts = [1.6, 1.75, 1.9, 0]; vrPrefs.eye = opts[(opts.indexOf(vrPrefs.eye) + 1) % opts.length]; saveVrPrefs(); applyEyeHeight(); return; }
   if (id === 'vr:sticks') { vrPrefs.moveHand = vrPrefs.moveHand === 'left' ? 'right' : 'left'; saveVrPrefs(); return; }
   if (id.startsWith('class:')) {
-    const c = id.slice(6); say(CLASS_ANSWERS[c]);
-    if (c === '4') { game.safety.done.class = true; panelSig = ''; }
+    const att = LEVELS[game.level]?.attenuation;
+    const c = id.slice(6); say((att ? ATTEN_ANSWERS : CLASS_ANSWERS)[c]);
+    if (c === (att ? '2' : '4')) { game.safety.done.class = true; panelSig = ''; }
     else { game.safety.strikes++; game.safety.log.push('class'); tone(160, 0.3); panelSig = ''; }
     return;
   }
@@ -2041,6 +2069,26 @@ const SAFETY_TASKS = [
   { id: 'dump', text: 'Terminate the beam on a beam dump, never on a wall' },
   { id: 'close', text: "Finished for the day: close the shutter" },
 ];
+const ATTEN_TASKS = [
+  { id: 'door', text: 'Close the lab door' },
+  { id: 'lamp', text: 'Switch on the LASER IN USE warning lamp' },
+  { id: 'goggles', text: 'Wear the right goggles for 532 nm, 2 W' },
+  { id: 'shutter', text: 'Open the laser shutter' },
+  { id: 'stray', text: 'Get the stray reflection out of the beam' },
+  { id: 'meter', text: 'Measure the full power with the power meter' },
+  { id: 'attenuate', text: 'Add ND filters before the meter: 0.5 to 1.0 mW' },
+  { id: 'class', text: 'Classify the attenuated beam' },
+  { id: 'dump', text: 'Terminate the beam on a beam dump' },
+  { id: 'close', text: 'Finished for the day: close the shutter' },
+];
+const safetyTasks = () => (LEVELS[game.level]?.attenuation ? ATTEN_TASKS : SAFETY_TASKS);
+const ATTEN_ANSWERS = {
+  '1': "Class 1 for green is under about 0.4 milliwatts. You've got more than that. Close, but no.",
+  '2': "Class 2. Correct: visible, up to 1 milliwatt, and your blink reflex protects you. Still don't stare into it. Alignment power.",
+  '3R': "3R starts above 1 milliwatt. You're at or under one. Try again.",
+  '3B': "3B? You've just taken off more than three orders of magnitude. Look at the meter.",
+  '4': "It WAS Class 4, before you put the filters in. What is it now?",
+};
 const CLASS_ANSWERS = {
   '1': "Class 1? It just set fire to my clipboard. Try again.",
   '2': "Class 2 is a supermarket laser pointer. Your blink reflex won't save you from 2 watts.",
@@ -2111,8 +2159,8 @@ function updateSafety(dt) {
   const L = LEVELS[game.level], S = game.safety;
   // power meter readouts (whenever there's a meter on the table)
   for (const c of components) if (c.userData.display) {
-    const on = game.meterHit === c, w = on ? laserState.watts * (1 + 0.008 * Math.sin(performance.now() / 300)) : 0;
-    const text = on ? (w >= 1 ? `${w.toFixed(2)} W` : `${(w * 1000).toFixed(1)} mW`) : '0.00 mW';
+    const on = game.meterHit === c, w = on ? game.meterPower * (1 + 0.008 * Math.sin(performance.now() / 300)) : 0;
+    const text = on ? (w >= 1 ? `${w.toFixed(2)} W` : w >= 0.01 ? `${(w * 1000).toFixed(1)} mW` : w >= 1e-4 ? `${(w * 1000).toFixed(3)} mW` : `${(w * 1e6).toFixed(1)} µW`) : '0.00 mW';
     const D = c.userData.display;
     if (text !== D.text) {
       D.text = text; const g = D.c.getContext('2d');
@@ -2141,9 +2189,25 @@ function updateSafety(dt) {
   if (wornGoggles?.correct) done.goggles = true;
   if (sh) done.shutter = true;
   if (sh && !game.spannerHit) done.stray = true;
-  if (sh && game.meterHit) { done.meter = true; S.quiz = true; }
-  if (sh && game.dumpHit && done.meter) done.dump = true;
-  if (done.class && done.dump && done.stray && done.goggles && done.lamp && done.door && done.shutter && !sh) done.close = true;
+  if (!L.attenuation) {
+    if (sh && game.meterHit) { done.meter = true; S.quiz = true; }
+    if (sh && game.dumpHit && done.meter) done.dump = true;
+  } else {
+    const mp = game.meterPower;
+    if (sh && game.meterHit && mp > 1) done.meter = true;                     // the full 2 W, unfiltered
+    if (sh && game.meterHit && done.meter && mp >= 0.0005 && mp <= 0.00105) { done.attenuate = true; S.quiz = true; S.attenPower = mp; }
+    // a nudge each time the filter stack in front of the meter changes
+    const od = game.meterHit && sh ? +(game.ndOD || 0).toFixed(1) : null;
+    if (done.meter && !done.attenuate && od !== null && od > 0 && od !== S.lastOD) {
+      const mw = mp * 1000;
+      say(mw > 1.05 ? `OD ${od}: ${mw >= 1000 ? (mw / 1000).toFixed(2) + ' watts' : mw.toFixed(1) + ' milliwatts'}. Still too bright. You need about OD 3.3 in total: add more.`
+        : `OD ${od}: ${(mw * 1000).toFixed(0)} microwatts. Too dim to align by. Take a little OD out.`);
+    }
+    if (od !== null) S.lastOD = od;
+    if (sh && game.dumpHit && done.attenuate) done.dump = true;
+  }
+  const need = safetyTasks().filter((t) => t.id !== 'close');
+  if (need.every((t) => done[t.id]) && !sh) done.close = true;
   // shutter discipline
   if (sh && !S.wasOpen) {
     const miss = [!done.door && 'shutting the door', !done.lamp && 'switching on the warning lamp', !wornGoggles && 'putting on goggles'].filter(Boolean);
@@ -2158,21 +2222,23 @@ function updateSafety(dt) {
     const head = camera.getWorldPosition(V());
     for (const p of pointers) if (p.kind === 'xr' && p.src) {
       const gp = gripPos(p);
-      if (segs.some(({ a, b }) => segDist(gp, a, b) < 0.035)) { strike('hand', p); return; }
+      if (segs.some(({ a, b, p: pw = laserState.watts }) => pw > 0.005 && segDist(gp, a, b) < 0.035)) { strike('hand', p); return; }
     }
     if (segs.some(({ a, b }) => segDist(head, a, b) < 0.12)) strike('eye');
-    else if (head.y < TABLE_PLANE.y + 0.3 && Math.abs(head.x) < 1.9 && head.z > 0 && head.z < 1.8) strike('head');
+    else if (segs.some((sg) => (sg.p ?? laserState.watts) > 0.005) && head.y < TABLE_PLANE.y + 0.3 && Math.abs(head.x) < 1.9 && head.z > 0 && head.z < 1.8) strike('head');
   }
   const now = Object.keys(done).length;
   if (now > before) {
     tone(1200, 0.08); tone(1600, 0.1, 0.08); panelSig = '';
-    const next = SAFETY_TASKS.find((t) => !done[t.id]);
+    const next = safetyTasks().find((t) => !done[t.id]);
     const cheers = { door: 'Door shut. Nobody wanders into a Class 4 beam on your watch.', lamp: 'Warning lamp on. Now everyone outside knows.',
       stray: 'Spanner gone. Remove watches, rings and tools from the table: anything shiny is a mirror you didn\'t plan.',
-      meter: `Reading ${laserState.watts.toFixed(2)} W. Always measure the power yourself, never trust the sticker. Now: what class is it?`,
+      meter: L.attenuation ? `Full power: ${laserState.watts.toFixed(2)} watts. We want a milliwatt: that's a factor of 2000, or OD 3.3. Stack ND filters in front of the meter.`
+        : `Reading ${laserState.watts.toFixed(2)} W. Always measure the power yourself, never trust the sticker. Now: what class is it?`,
+      attenuate: `${((S.attenPower || 0) * 1000).toFixed(2)} milliwatts. Alignment power. OD ${(game.ndOD || 0).toFixed(1)} is a factor of ${Math.round(10 ** (game.ndOD || 0))}. Now: what class is the beam now?`,
       dump: 'Beam terminated on a dump. Never let a beam run off the table or into a wall.' };
-    const key = SAFETY_TASKS.slice().reverse().find((t) => done[t.id])?.id;
-    if (cheers[key] && key !== 'goggles') say(cheers[key] + (next && key !== 'meter' ? ` Next: ${next.text.toLowerCase()}.` : ''));
+    const key = safetyTasks().slice().reverse().find((t) => done[t.id])?.id;
+    if (cheers[key] && key !== 'goggles') say(cheers[key] + (next && key !== 'meter' && key !== 'attenuate' ? ` Next: ${next.text.toLowerCase()}.` : ''));
   }
   if (done.close) {
     const t = performance.now() - game.start;
@@ -2324,12 +2390,13 @@ function drawBeam(segs) {
   const pc = beamCore.geometry.attributes.position.array, pg = beamGlow.geometry.attributes.position.array;
   const n = Math.min(segs.length, MAX_SEGS);
   for (let s = 0; s < n; s++) {
-    const { a, b, q } = segs[s];
+    const { a, b, q, p = laserState.watts } = segs[s];
+    const pf = THREE.MathUtils.clamp(0.3 + 0.7 * Math.log10(Math.max(p, 1e-6) / 1e-4) / 4.3, 0.3, 1);   // dimmer beam after ND filters
     _d.subVectors(b, a); const len = _d.length(); _d.divideScalar(len || 1);
     _u.crossVectors(_d, Math.abs(_d.y) > 0.9 ? V(1, 0, 0) : UP).normalize(); _v.crossVectors(_d, _u);
     for (let k = 0; k <= TUBE_K; k++) {
       const t = len * k / TUBE_K, w = gaussW({ re: q.re + t, im: q.im }, laserState.nm);
-      const rc = Math.max(w, 0.0006), rg = Math.max(w * 2.2, 0.0035);
+      const rc = Math.max(w, 0.0006), rg = Math.max(w * 2.2, 0.0035) * pf;
       const cx = a.x + _d.x * t, cy = a.y + _d.y * t, cz = a.z + _d.z * t;
       for (let j = 0; j < TUBE_SIDES; j++) {
         const ang = j / TUBE_SIDES * Math.PI * 2, cs = Math.cos(ang), sn = Math.sin(ang);
@@ -2626,13 +2693,13 @@ function traceBeam() {
   const nm = laserState.nm;
   const q = { re: 0, im: Math.PI * laserState.w0 * laserState.w0 / (nm * 1e-9) };   // waist at the laser
   let remaining = laserState.shutter ? LASER.maxDistance : 0, skip = null, port = null;
-  let meterHit = null, dumpHit = false, spannerHit = false;
+  let meterHit = null, dumpHit = false, spannerHit = false, power = laserState.watts, meterPower = 0, ndOD = 0;
   let nSpots = 0;
   opticHits.clear();
   const opticPath = [];                   // lenses / curved mirrors in beam order, with path length to each
   let pathLen = 0;
   const irisHits = [];
-  const step = (to, d) => { segs.push({ a: origin.clone(), b: to.clone(), q: { ...q } }); q.re += d; pathLen += d; };
+  const step = (to, d) => { segs.push({ a: origin.clone(), b: to.clone(), q: { ...q }, p: power }); q.re += d; pathLen += d; };
   for (let bounce = 0; bounce <= LASER.maxBounces && remaining > 0; bounce++) {
     const hit = raycast(origin, dir, remaining, skip);
     skip = null;
@@ -2659,7 +2726,7 @@ function traceBeam() {
       }
       break;
     }
-    if (hit.object.userData.sensor) { meterHit = hit.object.userData.grabRoot; break; }   // power meter absorbs it
+    if (hit.object.userData.sensor) { meterHit = hit.object.userData.grabRoot; meterPower = power; break; }   // power meter absorbs it
     if (hit.object.userData.dump) { dumpHit = true; break; }                               // beam dump: safely terminated
     if (hit.object.userData.grabRoot?.userData.kind === 'spanner') spannerHit = true;
     const optic = hit.object.userData.optic;
@@ -2671,6 +2738,11 @@ function traceBeam() {
       const cosI = dir.dot(_ax);
       if (_h.length() > OPTIC_R || Math.abs(cosI) < 0.25) break;          // hit the mount, or edge-on
       opticHits.set(hit.object.userData.grabRoot, _h.clone());
+      if (optic.type === 'nd') {                 // attenuate, and carry straight on
+        power *= 10 ** -optic.od; ndOD += optic.od;
+        skip = hit.object; origin.copy(hit.point).addScaledVector(dir, 0.0005); q.re += 0.0005; pathLen += 0.0005;
+        continue;
+      }
       opticPath.push({ f: optic.f, s: pathLen, p: hit.point.clone() });
       if (optic.type === 'cmirror') {
         if (cosI > 0) break;                                              // the back of the mirror
@@ -2712,7 +2784,7 @@ function traceBeam() {
   if (port && L?.need) port.ok = port.D >= L.need.dMin && port.D <= L.need.dMax && port.div <= L.need.divMax;
   game.port = port;
   game.irisHits = irisHits;
-  Object.assign(game, { meterHit, dumpHit, spannerHit, segs });
+  Object.assign(game, { meterHit, dumpHit, spannerHit, segs, meterPower, ndOD });
   updateSpacingTags(opticPath);
   for (const g of irises) {
     const ir = g.userData.collider.userData.iris, h = irisHits.find((x) => x.iris === ir);
