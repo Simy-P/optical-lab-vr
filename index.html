@@ -2149,7 +2149,9 @@ function startLevel() {
 }
 
 // ───────────────────────── Laser safety induction ─────────────────────────
+let shutterToggledAt = -1e9;
 function setShutter(open) {
+  if (open !== laserState.shutter) shutterToggledAt = performance.now();
   laserState.shutter = open;
   laser.userData.shutterBtn.material.color.set(open ? 0x22cc55 : 0xd8261c);
 }
@@ -2328,10 +2330,13 @@ function updateSafety(dt) {
   }
   S.wasOpen = sh;
   // body parts in the beam (VR only: we know where your head and hands are)
-  if (sh && renderer.xr.isPresenting) {
-    const head = camera.getWorldPosition(V());
+  // (not while you're working the shutter: your hand is on the laser, which is fine, and you get a moment to move it away)
+  if (sh && renderer.xr.isPresenting && performance.now() - shutterToggledAt > 1500) {
+    const head = camera.getWorldPosition(V()), laserAt = laser.getWorldPosition(V());
     for (const p of pointers) if (p.kind === 'xr' && p.src) {
       const gp = gripPos(p);
+      const lp = laser.worldToLocal(gp.clone());       // hand on the laser body or its button: behind the aperture is safe
+      if (lp.z < 0.01 && gp.distanceTo(laserAt) < 0.25) continue;
       if (segs.some(({ a, b, p: pw = laserState.watts }) => pw > 0.005 && segDist(gp, a, b) < 0.035)) { strike('hand', p); return; }
     }
     if (segs.some(({ a, b }) => segDist(head, a, b) < 0.12)) strike('eye');
