@@ -17,9 +17,9 @@ Stages: laser safety, mirrors, lenses, alignment, **experiments**, and a free bu
   17-plane through-focus stack (beads are drawn with the PSF at their own defocus; sectioning follows the axial response).
 
 ## 4 · Experiments: holographic beamlets (SLM)
-- Phase-only LCOS SLM (1920×1080, 8 µm, 8-bit, ~5 % unmodulated) on a 256×256 grid; Gerchberg–Saxton and weighted GS
+- Phase-only LCOS SLM (1920×1080, 8 µm, 8-bit, ~5 % unmodulated) on a 512×512 grid; Gerchberg–Saxton and weighted GS
   run in a Web Worker on the actual Gaussian illumination, with a blazed grating and quantised display phase.
 - The white screen shows the far field through the traced SLM-to-screen ray matrix: spots at x = Bθ, each blurred to
   √((A·w)² + (λB/πw)²), so only a Fourier plane (or its image) gives sharp beamlets. Beamlets are drawn in the air too.
-- Guided 8-step lesson and an open SLM Bench, each with Auto setup (normal-incidence SLM behind a splitter, Fourier
-  lens, 25× projection, screen solved onto the image plane).
+- Guided 8-step lesson and an open SLM Bench, each with Auto setup: normal-incidence SLM behind a splitter, then a 2f
+  Fourier system (one +1000 mm lens a focal length from the SLM, the screen a focal length beyond it).

@@ -1058,14 +1058,14 @@ scene.add(laser);
 const BEAM_LOW = laser.position.y - TABLE_PLANE.y;      // 0.04 m above the table (Unity laser height)
 const BEAM_HIGH = 0.20;                                 // height a periscope lifts the beam to
 const PART_NAMES = { mirror: 'mirrors', tallMirror: 'tall mirrors', periscope: 'periscopes', powerMeter: 'power meter', beamDump: 'beam dump', spanner: 'spanner',
-  lens50: '+50 mm convex lens', lens100: '+100 mm convex lens', lens200: '+200 mm convex lens', lens400: '+400 mm convex lens',
+  lens50: '+50 mm convex lens', lens100: '+100 mm convex lens', lens200: '+200 mm convex lens', lens400: '+400 mm convex lens', lens1000: '+1000 mm convex lens',
   lensN50: '−50 mm concave lens', lensN100: '−100 mm concave lens', cyl100: '+100 mm cylindrical lens',
   cmirror100: 'f 100 concave mirror', cmirror200: 'f 200 concave mirror', xmirror100: 'f −100 convex mirror',
   nd03: 'ND 0.3', nd05: 'ND 0.5', nd1: 'ND 1', nd2: 'ND 2', nd3: 'ND 3', graphCard: 'graph paper target',
   dm: 'deformable mirror', bs: '50:50 beamsplitter', wfs: 'Shack–Hartmann wavefront sensor', plate: 'phase plate', slm: 'spatial light modulator', screen: 'white screen' };
 // Lenses and curved mirrors (2" optics). f in metres; negative f diverges.
 const OPTICS = {
-  lens50: { type: 'lens', f: 0.05 }, lens100: { type: 'lens', f: 0.1 }, lens200: { type: 'lens', f: 0.2 }, lens400: { type: 'lens', f: 0.4 },
+  lens50: { type: 'lens', f: 0.05 }, lens100: { type: 'lens', f: 0.1 }, lens200: { type: 'lens', f: 0.2 }, lens400: { type: 'lens', f: 0.4 }, lens1000: { type: 'lens', f: 1.0 },
   lensN50: { type: 'lens', f: -0.05 }, lensN100: { type: 'lens', f: -0.1 },
   cyl100: { type: 'lens', f: 0.1, cyl: true },        // focuses in one plane only (its power axis); click its knob to turn it 90°
   cmirror100: { type: 'cmirror', f: 0.1 }, cmirror200: { type: 'cmirror', f: 0.2 }, xmirror100: { type: 'cmirror', f: -0.1 },
@@ -1623,13 +1623,13 @@ const EXPERIMENT_LEVELS = [
     say: "The AO bench is yours. Everything's in the tray and the controller is at the back left. Break things on purpose: that's how you learn which planes matter.",
     lavaSay: "AO bench, lava floor. Everything's in the tray. Break things on purpose, not your ankles." },
 ];
-const SLM_PARTS = ['mirror', 'lens50', 'lens100', 'lens200', 'lens400', 'bs', 'slm', 'beamDump'];
+const SLM_PARTS = ['mirror', 'lens50', 'lens100', 'lens200', 'lens400', 'lens1000', 'bs', 'slm', 'beamDump'];
 EXPERIMENT_LEVELS.push(
   { name: 'Holographic Beamlets', ao: true, kind: 'GUIDED', blurb: 'Phase-only SLM and Gerchberg–Saxton: beamlet arrays on a white screen', slm: true, parts: SLM_PARTS, par: null, riser: false, obstacles: [], beamD: 1, need: null,
-    intro: 'Split one laser into an array of beamlets with a phase-only spatial light modulator. Expand the beam onto the SLM, light it near-normal (the splitter trick), put a Fourier lens after it and the white screen at its focal plane. The SLM controller (back left) runs Gerchberg–Saxton: watch the phase pattern form on the SLM and the beamlets appear on the screen. Then deal with the zero order, even out the spots, and project the pattern large.',
+    intro: 'Split one laser into an array of beamlets with a phase-only spatial light modulator. The SLM sits in a Fourier plane: expand the beam onto it, light it near-normal (the splitter trick), then one lens forms the hologram’s pattern at its back focal plane, where the white screen goes. The SLM controller (back left) runs Gerchberg–Saxton: watch the phase pattern form on the SLM and the beamlets appear on the screen. Then move the pattern off the zero order, even out the spots, and make it a proper 2f system.',
     say: "Holography with a spatial light modulator. It's a phase-only mirror with two million pixels. Gerchberg–Saxton finds the phase that turns one beam into a pattern of beamlets. The white screen's already out; start by expanding the beam onto the SLM.",
     lavaSay: "SLM beamlets, lava edition. Expand onto the SLM, near-normal, Fourier lens, screen. Mind the floor." },
-  { name: 'SLM Bench', ao: true, kind: 'OPEN BENCH', blurb: 'Every pattern, plain vs weighted GS, the zero order, the Fourier plane', slm: true, sandbox: true, parts: [...SLM_PARTS, 'cyl100', 'lensN50'], par: null, riser: false, obstacles: [], beamD: 1, need: null,
+  { name: 'SLM Bench', ao: true, kind: 'OPEN BENCH', blurb: 'Every pattern, plain vs weighted GS, the zero order, the Fourier plane', slm: true, sandbox: true, parts: [...SLM_PARTS, 'cyl100'], par: null, riser: false, obstacles: [], beamD: 1, need: null,
     intro: 'An open SLM bench: phase-only SLM, splitter, lenses, a beam dump and the white screen. Try the screen out of the Fourier plane, a tilted SLM, a small beam, the grating, and every pattern with plain and weighted Gerchberg–Saxton.',
     say: "The SLM bench is yours. Break things on purpose: move the screen off the Fourier plane, underfill the SLM, tilt it.",
     lavaSay: "SLM bench over lava. Break the optics, not your ankles." },
@@ -3918,14 +3918,15 @@ function psfSchedule(out) {
 
 // ───────────────────────── Holographic beamlets: SLM + Gerchberg–Saxton (4 · Experiments) ─────────────────────────
 // A phase-only LCOS SLM (1920×1080, 8 µm pixels, 8-bit phase, ~5 % of the light unmodulated) is simulated on a
-// 256×256 grid spanning its 8.64 mm short side (33.75 µm per grid pixel). Gerchberg–Saxton (or weighted GS) runs in
+// 512×512 grid spanning its 8.64 mm short side (16.9 µm per grid pixel). Gerchberg–Saxton (or weighted GS) runs in
 // a Web Worker on the real Gaussian illumination: it bounces between the SLM plane (keep the beam's amplitude,
 // keep the phase) and the Fourier plane (impose the target spot amplitudes, keep the phase). The displayed phase
 // adds a blazed grating and is quantised to 8 bits; the far field of that, zero order included, is what you see.
 // On the screen, a beamlet leaving the SLM at angle θ lands at x = Bθ, where [A B; C D] is the traced ray-transfer
 // matrix from SLM to screen, and has radius √((A·w)² + (λB/πw)²): sharp dots at the Fourier plane (or an image of
 // it), fat blobs anywhere else.
-const SLM_N = 256, SLM_P = 8.64e-3 / SLM_N;                  // grid pixel on the SLM (m)
+const SLM_N = 512, SLM_P = 8.64e-3 / SLM_N;                  // grid pixel on the SLM (m): 2×2 binned 8 µm pixels
+const SLM_GX = SLM_N / 4;                                     // blazed grating: shifts the pattern a quarter of the field
 const SLM_SRC = `
 const N = ${SLM_N}, TAU = Math.PI * 2;
 const rev = new Uint16Array(N), cs = new Float32Array(N / 2), sn = new Float32Array(N / 2);
@@ -3978,7 +3979,8 @@ function display() {
   return { eff, uni };
 }
 function loop() {
-  gsStep(); const m = display(); hist.push([m.eff, m.uni]);
+  gsStep();
+  if (iter % 3 === 0 || iter >= cfg.iters) { const m = display(); hist.push([m.eff, m.uni, iter]); }   // a frame every 3 iterations keeps the headset smooth
   if (iter < cfg.iters) timer = setTimeout(loop, 40); else { timer = 0; display(); }
 }
 onmessage = (e) => {
@@ -3996,14 +3998,14 @@ const SLM = { worker: null, frame: null, pattern: 0, spacing: 24, weighted: fals
 function slmSpots() {
   const s = SLM.spacing, pts = [], name = SLM_PATTERNS[SLM.pattern];
   const grid = (n, sp = s) => { for (let b = 0; b < n; b++) for (let a = 0; a < n; a++) pts.push([Math.round((a - (n - 1) / 2) * sp), Math.round((b - (n - 1) / 2) * sp)]); };
-  if (name.startsWith('5')) grid(5); else if (name.startsWith('3')) grid(3); else if (name.startsWith('9')) grid(9, Math.min(s, 13));
+  if (name.startsWith('5')) grid(5); else if (name.startsWith('3')) grid(3); else if (name.startsWith('9')) grid(9, Math.min(s, 26));
   else if (name.startsWith('Line')) for (let a = 0; a < 8; a++) pts.push([Math.round((a - 3.5) * s * 0.75), 0]);
   else if (name.startsWith('Ring')) for (let a = 0; a < 12; a++) pts.push([Math.round(2 * s * Math.cos(a * Math.PI / 6)), Math.round(2 * s * Math.sin(a * Math.PI / 6))]);
-  else if (name === 'KCL') { const st = Math.max(4, Math.min(6, Math.round(s / 4))); 'KCL'.split('').forEach((ch, c) => SLM_FONT[ch].forEach((row, r) => row.split('').forEach((v, x) => { if (v === '1') pts.push([(c * 6 + x - 8) * st, (3 - r) * st]); }))); }
+  else if (name === 'KCL') { const st = Math.max(6, Math.min(12, Math.round(s / 4))); 'KCL'.split('').forEach((ch, c) => SLM_FONT[ch].forEach((row, r) => row.split('').forEach((v, x) => { if (v === '1') pts.push([(c * 6 + x - 8) * st, (3 - r) * st]); }))); }
   else { let t = 99; const rnd = () => { t = (t * 16807) % 2147483647; return t / 2147483647; }; while (pts.length < 30) { const r = 2 * s * Math.sqrt(rnd()), a = rnd() * 6.283, p = [Math.round(r * Math.cos(a)), Math.round(r * Math.sin(a))]; if (pts.every((q) => Math.hypot(q[0] - p[0], q[1] - p[1]) >= s * 0.45)) pts.push(p); } }
   // keep the pattern (plus the grating shift) inside the simulated field
-  const gx = SLM.grating ? 64 : 0, lim = 120 - gx, mx = Math.max(1, ...pts.map((p) => Math.abs(p[0]))), my = Math.max(1, ...pts.map((p) => Math.abs(p[1])));
-  const k = Math.min(1, lim / mx, 120 / my);
+  const half = SLM_N / 2 - 8, gx = SLM.grating ? SLM_GX : 0, lim = half - gx, mx = Math.max(1, ...pts.map((p) => Math.abs(p[0]))), my = Math.max(1, ...pts.map((p) => Math.abs(p[1])));
+  const k = Math.min(1, lim / mx, half / my);
   return k < 1 ? pts.map(([x, y]) => [Math.round(x * k), Math.round(y * k)]) : pts;
 }
 function slmPost(msg) { if (SLM.worker) SLM.worker.postMessage(msg); }
@@ -4020,8 +4022,8 @@ function pressSLM(id) {
   tone(1000, 0.04);
   if (id === 'pat+' || id === 'pat') SLM.pattern = (SLM.pattern + 1) % SLM_PATTERNS.length;
   if (id === 'pat-') SLM.pattern = (SLM.pattern + SLM_PATTERNS.length - 1) % SLM_PATTERNS.length;
-  if (id === 'sp-') SLM.spacing = Math.max(8, SLM.spacing - 4);
-  if (id === 'sp+') SLM.spacing = Math.min(40, SLM.spacing + 4);
+  if (id === 'sp-') SLM.spacing = Math.max(16, SLM.spacing - 8);
+  if (id === 'sp+') SLM.spacing = Math.min(80, SLM.spacing + 8);
   if (id === 'algo') SLM.weighted = !SLM.weighted;
   if (id === 'grat') SLM.grating = !SLM.grating;
   if (id === 'run') slmRun();
@@ -4040,7 +4042,7 @@ function slmSync(force) {
   const tr = game.ao, w = tr?.slm?.w;
   const aoi = tr?.slm ? tr.slm.aoi : 0;
   const zero = 0.05 + 0.3 * THREE.MathUtils.clamp((aoi - 10 * DEG) / (35 * DEG), 0, 1);   // tilted LCOS: fringing and polarisation mixing
-  const cfg = { gx: SLM.grating ? 64 : 0, gy: 0, zero: +zero.toFixed(3) };
+  const cfg = { gx: SLM.grating ? SLM_GX : 0, gy: 0, zero: +zero.toFixed(3) };
   const spots = slmSpots(), sk = JSON.stringify(spots);
   const msg = {};
   const wb = w || SLM.sent.w || 2e-3;                // before any light reaches the SLM, assume a 4 mm beam
@@ -4050,7 +4052,7 @@ function slmSync(force) {
   if (Object.keys(msg).length) { slmEnsureWorker(); slmPost(msg); }
 }
 // ── the white screen: beamlets as they land ──
-const scrCanvas = document.createElement('canvas'); scrCanvas.width = 512; scrCanvas.height = 384;
+const scrCanvas = document.createElement('canvas'); scrCanvas.width = 2048; scrCanvas.height = 1536;   // ~8.5 px per mm: a few-mm pattern stays crisp
 const scrTex = new THREE.CanvasTexture(scrCanvas); scrTex.colorSpace = THREE.SRGBColorSpace;
 const SCR_W = 0.24, SCR_H = 0.18;
 const beamletGeo = new THREE.BufferGeometry(); beamletGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(60 * 2 * 3), 3));
@@ -4062,23 +4064,23 @@ function slmScreenGeometry() {
   out.screen = s;
   if (!tr.slm) return out;
   const T = mMul(s.M, mInv(tr.slm.M)), lam = laserState.nm * 1e-9, w = tr.slm.w;
-  out.ok = true; out.A = T[0]; out.B = T[1]; out.w = w;
+  out.ok = true; out.A = T[0]; out.B = T[1]; out.D = T[3]; out.w = w;
   out.pxM = lam * T[1] / (SLM_N * SLM_P);                        // metres on the screen per Fourier-grid pixel
   out.r = Math.hypot(T[0] * w, lam * T[1] / (Math.PI * w));      // beamlet radius on the screen
   out.blur = Math.abs(T[0]) * w;
   return out;
 }
 function drawWhiteScreen(geo) {
-  const g = scrCanvas.getContext('2d'), W = 512, H = 384, k = W / SCR_W;
+  const g = scrCanvas.getContext('2d'), W = 2048, H = 1536, k = W / SCR_W;
   g.globalCompositeOperation = 'source-over'; g.fillStyle = '#f3f3ee'; g.fillRect(0, 0, W, H);
-  g.strokeStyle = '#d8d8d0'; g.lineWidth = 6; g.strokeRect(3, 3, W - 6, H - 6);
-  g.fillStyle = '#b9b9b0'; g.font = '600 14px system-ui'; g.fillText('SCREEN', 12, H - 12);
+  g.strokeStyle = '#d8d8d0'; g.lineWidth = 24; g.strokeRect(12, 12, W - 24, H - 24);
+  g.fillStyle = '#b9b9b0'; g.font = '600 56px system-ui'; g.fillText('SCREEN', 48, H - 48);
   const s = geo.screen, pts = [];
   if (s && laserState.shutter) {
     const p = s.face.worldToLocal(s.point.clone()), cx = (p.x / SCR_W + 0.5) * W, cy = (0.5 - p.y / SCR_H) * H;
     const col = beamMat.color, rgb = `${(col.r * 255) | 0},${(col.g * 255) | 0},${(col.b * 255) | 0}`;
     const dot = (x, y, r, a) => {
-      const rr = Math.max(1.3, r);
+      const rr = Math.max(2.5, r);
       const gr = g.createRadialGradient(x, y, 0, x, y, rr * 2.2);
       gr.addColorStop(0, `rgba(${rgb},${Math.min(1, a)})`); gr.addColorStop(0.45, `rgba(${rgb},${Math.min(1, a) * 0.55})`); gr.addColorStop(1, `rgba(${rgb},0)`);
       g.fillStyle = gr; g.beginPath(); g.arc(x, y, rr * 2.2, 0, 7); g.fill();
@@ -4088,12 +4090,12 @@ function drawWhiteScreen(geo) {
     if (geo.ok && F) {
       const N = SLM_N, I = F.I, list = [];
       for (let n = 0; n < I.length; n++) if (I[n] > 0.004) list.push(n);
-      list.sort((a, b) => I[b] - I[a]); list.length = Math.min(list.length, 700);
+      list.sort((a, b) => I[b] - I[a]); list.length = Math.min(list.length, 1200);
       const rpx = geo.r * k, spread = geo.pxM * k;
       for (const n of list) {
         const i = n % N, j = (n / N) | 0, x = cx - (i - N / 2) * spread, y = cy + (j - N / 2) * spread;   // the default fold reads the right way round
-        if (x < -20 || y < -20 || x > W + 20 || y > H + 20) continue;
-        const a = Math.sqrt(I[n]) * Math.min(1, 2.2 / Math.max(1.3, rpx));     // the same power over a bigger blob is dimmer
+        if (x < -40 || y < -40 || x > W + 40 || y > H + 40) continue;
+        const a = Math.sqrt(I[n]) * Math.min(1, 4 / Math.max(2.5, rpx));     // the same power over a bigger blob is dimmer
         dot(x, y, rpx, a);
         if (pts.length < 60 && I[n] > 0.02) pts.push([(x / W - 0.5) * SCR_W, (0.5 - y / H) * SCR_H]);
       }
@@ -4140,12 +4142,12 @@ function slmTaskList() {
   return [
     { id: 'expand', text: 'Expand the beam onto the SLM: 3–8.6 mm across its 8.6 mm short side', ok: d >= 3 && d <= 8.6 },
     { id: 'aoi', text: 'Light the SLM within 10° of normal (a splitter in front of it lets you use 0°)', ok: !!tr?.slm && tr.slm.aoi <= 10 * DEG },
-    { id: 'screen', text: 'Put a Fourier lens after the SLM and catch the beam on the white screen', ok: !!o.ok },
-    { id: 'fourier', text: 'Screen at the lens\'s Fourier plane, or an image of it: beamlets blur under 0.3 mm', ok: !!o.ok && o.blur <= 0.3e-3 },
+    { id: 'screen', text: 'Put one lens after the SLM (the +1000 mm makes a big pattern) and light the screen', ok: !!o.ok },
+    { id: 'fourier', text: 'Screen at the lens\'s back focal plane, where the hologram\'s pattern forms: blur under 0.3 mm', ok: !!o.ok && o.blur <= 0.3e-3 },
     { id: 'gs', text: 'Compute a hologram: Run Gerchberg–Saxton (20+ iterations)', ok: !!F && F.iter >= 20 },
     { id: 'grating', text: 'Turn on the blazed grating: move the beamlets off the zero-order spot', ok: SLM.grating && !!F && F.iter >= 20 },
     { id: 'gsw', text: 'Switch to weighted GS and rerun: uniformity above 90 %', ok: SLM.ranWeighted && !!F && F.iter >= 20 && F.uni >= 0.9 },
-    { id: 'magnify', text: 'Project the pattern 30 mm or more across on the screen (a second lens)', ok: (o.width || 0) >= 0.03 },
+    { id: 'twof', text: 'Make it a 2f system: the SLM one focal length in front of the lens (its Fourier plane)', ok: !!o.ok && o.blur <= 0.3e-3 && Math.abs(o.D ?? 1) <= 0.05 },
   ];
 }
 function drawSLM() {
@@ -4161,13 +4163,13 @@ function drawSLM() {
   if (F) { slmPhaseImage(F.ph8); g.imageSmoothingEnabled = false; g.drawImage(slmImg, 48, 84, 256, 256); g.imageSmoothingEnabled = true; }
   pane(352, 'FOCAL PLANE (SIMULATED)');
   if (F) {
-    const id = g.createImageData(256, 256), I = F.I;
+    const id = g.createImageData(SLM_N, SLM_N), I = F.I;
     for (let k = 0; k < I.length; k++) { const v = Math.sqrt(I[k]); id.data[k * 4] = Math.min(255, v * 400); id.data[k * 4 + 1] = Math.min(255, v * 260); id.data[k * 4 + 2] = Math.min(255, v * 120); id.data[k * 4 + 3] = 255; }
     // the simulated plane is drawn upright (row 0 at the top)
     const tmp = slmImg.getContext('2d'); tmp.putImageData(id, 0, 0);
     g.save(); g.translate(380, 84 + 256); g.scale(1, -1); g.drawImage(slmImg, 0, 0, 256, 256); g.restore();
     g.strokeStyle = 'rgba(120,200,255,0.5)'; g.lineWidth = 1;
-    for (const [x, y] of slmSpots()) { g.beginPath(); g.arc(380 + 128 + x + (SLM.grating ? 64 : 0), 84 + 128 - y, 5, 0, 7); g.stroke(); }
+    const ks = 256 / SLM_N; for (const [x, y] of slmSpots()) { g.beginPath(); g.arc(380 + 128 + (x + (SLM.grating ? SLM_GX : 0)) * ks, 84 + 128 - y * ks, 4, 0, 7); g.stroke(); }
     g.fillStyle = '#8b96a3'; g.font = '13px system-ui'; g.fillText('circles: target · centre: zero order', 362, 340);
   } else { g.fillStyle = '#5b6470'; g.font = '18px system-ui'; g.fillText('no hologram yet', 440, 210); }
   pane(684, 'CONVERGENCE');
@@ -4181,7 +4183,7 @@ function drawSLM() {
     g.strokeStyle = '#3a4350'; g.strokeRect(x0, y0 - ph, pw, ph);
     for (const [c, kk] of [['#39f07a', 1], ['#6fb4ff', 0]]) {
       g.strokeStyle = c; g.lineWidth = 2; g.beginPath();
-      hs.forEach((h, n) => { const x = x0 + n / 40 * pw, y = y0 - h[kk] * ph; n ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
+      hs.forEach((h, n) => { const x = x0 + (h[2] ?? n) / 40 * pw, y = y0 - h[kk] * ph; n ? g.lineTo(x, y) : g.moveTo(x, y); }); g.stroke();
     }
   }
   const line = (y, ok, t) => { g.fillStyle = ok === null ? '#8b96a3' : ok ? '#9fe6a8' : '#ffd23f'; g.font = '19px system-ui, sans-serif'; g.fillText(t, 20, y); };
@@ -4191,7 +4193,8 @@ function drawSLM() {
   } else line(372, null, 'SLM: the beam isn\'t on the SLM');
   if (o.ok) {
     line(398, o.blur <= 0.3e-3, o.blur <= 0.3e-3 ? `Screen: at a Fourier plane (beamlets ${(o.r * 2000).toFixed(2)} mm across)` : `Screen: not at a Fourier plane: each beamlet smeared to ${(o.blur * 2000).toFixed(1)} mm`);
-    line(424, (o.width || 0) >= 0.03, `Pattern on the screen: ${((o.width || 0) * 1000).toFixed(1)} mm across · spot spacing ${(Math.abs(o.pxM) * SLM.spacing * 1000).toFixed(2)} mm`);
+    line(424, null, `Pattern on the screen: ${((o.width || 0) * 1000).toFixed(1)} mm across · spot spacing ${(Math.abs(o.pxM) * SLM.spacing * 1000).toFixed(2)} mm · f = ${(Math.abs(o.B) * 1000).toFixed(0)} mm`);
+    line(450, Math.abs(o.D ?? 1) <= 0.05, Math.abs(o.D ?? 1) <= 0.05 ? 'SLM in the lens\'s front focal plane: a 2f Fourier system' : 'SLM not in the lens\'s front focal plane (fine for the pattern; the beamlets aren\'t parallel)');
   } else line(398, null, tr?.screen ? 'Screen: lit, but not by light from the SLM' : 'Screen: no light on it');
   g.fillStyle = '#c9d2dc'; g.font = 'italic 18px system-ui, sans-serif'; g.fillText(SLM.msg || '', 20, 470);
   g.fillStyle = '#8b96a3'; g.font = '15px system-ui'; g.fillText('PATTERN', 130, 515); g.fillText('SPACING', 398, 515); g.fillText('ALGORITHM', 560, 515);
@@ -4207,7 +4210,7 @@ function drawSLM() {
 }
 function resetSLM() {
   SLM.frame = null; SLM.sent = {}; SLM.msg = ''; SLM.sig = ''; SLM.scrSig = ''; SLM.ran = false; SLM.ranWeighted = false; SLM.out = {};
-  SLM.pattern = 0; SLM.spacing = 24; SLM.weighted = false; SLM.grating = false;
+  SLM.pattern = 0; SLM.spacing = 48; SLM.weighted = false; SLM.grating = false;
   if (SLM.worker) slmPost({ cmd: 'flat' });
   beamlets.visible = false;
 }
@@ -4219,7 +4222,7 @@ function updateSLM(dt, L) {
   const geo = slmScreenGeometry();
   if (geo.ok && SLM.frame) {                       // how wide the beamlet pattern is on the screen
     const I = SLM.frame.I, N = SLM_N; let lo = Infinity, hi = -Infinity, lo2 = Infinity, hi2 = -Infinity;
-    for (const [x, y] of slmSpots()) { const i = x + (SLM.grating ? 64 : 0); lo = Math.min(lo, i); hi = Math.max(hi, i); lo2 = Math.min(lo2, y); hi2 = Math.max(hi2, y); }
+    for (const [x, y] of slmSpots()) { const i = x + (SLM.grating ? SLM_GX : 0); lo = Math.min(lo, i); hi = Math.max(hi, i); lo2 = Math.min(lo2, y); hi2 = Math.max(hi2, y); }
     geo.width = Math.abs(geo.pxM) * Math.max(hi - lo, hi2 - lo2);
   }
   SLM.out = geo;
@@ -4241,9 +4244,9 @@ function updateSLM(dt, L) {
 }
 
 // Auto setup: 4× expander (+50, +200) onto the SLM at normal incidence behind a 50:50 splitter, which sends the
-// light coming back off the SLM sideways; a +200 Fourier lens, a +50 projection lens just past its focal plane
-// (about 25× magnification), a fold mirror and the screen, slid until it sits exactly on the image of the
-// Fourier plane. The forward half of the splitter goes into a beam dump. Then weighted GS on a 5×5 grid, grating on.
+// light coming back off the SLM sideways, into a 2f Fourier system: one +1000 mm lens a focal length from the SLM
+// and the screen a focal length beyond it. The forward half of the splitter goes into a beam dump. Then weighted
+// GS on a 5×5 grid, grating on.
 function slmAutoSetup() {
   for (const st of pointers) st.held = null;
   for (const c of [...components]) if (!isSpare(c)) removeComponent(c);
@@ -4254,22 +4257,27 @@ function slmAutoSetup() {
   traceBeam(); if (spacingInfo[0]) L2.position.x = L1.position.x - spacingInfo[0].best / 1000;
   const xb = 0.45;
   P('bs', xb, zb, 90); P('slm', xb - 0.1, zb, 90); P('beamDump', xb, zb - 0.25, 0);
-  P('lens200', xb, zb + 0.1, 0); P('lens50', xb, zb + 0.352, 0); P('mirror', xb, zb + 0.6, 45);
-  const scr = P('screen', xb - 1.05, zb + 0.6, 90);
-  // slide the screen along the beam until the beamlets are sharp (A = 0 in the SLM-to-screen ray matrix)
-  const A = () => { traceBeam(); const g = slmScreenGeometry(); return g.ok ? g.A : NaN; };
-  let xa = scr.position.x, xc = xa + 0.02, fa = A();
-  for (let i = 0; i < 8 && isFinite(fa) && Math.abs(fa) > 1e-4; i++) {
-    scr.position.x = xc; const fc = A(); if (!isFinite(fc) || fc === fa) break;
-    const xn = xc - fc * (xc - xa) / (fc - fa); xa = xc; fa = fc; xc = THREE.MathUtils.clamp(xn, -1.35, xb - 0.3);
-  }
-  scr.position.x = xa;
+  // SLM → splitter 0.1 m → fold 0.5 m → lens 0.4 m: one focal length; screen one focal length after the lens
+  P('mirror', xb, zb + 0.5, 45);
+  const lens = P('lens1000', xb - 0.4, zb + 0.5, -90), scr = P('screen', xb - 1.4, zb + 0.5, 90);
+  const geo = () => { traceBeam(); return slmScreenGeometry(); };
+  // slide the lens until D = 0 (SLM in its front focal plane), then the screen until A = 0 (its back focal plane)
+  const solve = (obj, get, lo, hi) => {
+    let xa = obj.position.x, xc = xa + 0.02, fa = get();
+    for (let i = 0; i < 8 && isFinite(fa) && Math.abs(fa) > 1e-4; i++) {
+      obj.position.x = xc; const fc = get(); if (!isFinite(fc) || fc === fa) break;
+      const xn = xc - fc * (xc - xa) / (fc - fa); xa = xc; fa = fc; xc = THREE.MathUtils.clamp(xn, lo, hi);
+    }
+    obj.position.x = xa;
+  };
+  solve(lens, () => { const g = geo(); return g.ok ? g.D : NaN; }, -0.3, xb - 0.1);
+  solve(scr, () => { const g = geo(); return g.ok ? g.A : NaN; }, -1.38, lens.position.x - 0.3);
   for (const c of components) if (!isSpare(c)) c.userData.lastSpot = c.position.clone();
   traceBeam();
-  SLM.pattern = 0; SLM.spacing = 24; SLM.weighted = true; SLM.grating = true; SLM.sent = {};
+  SLM.pattern = 0; SLM.spacing = 48; SLM.weighted = true; SLM.grating = true; SLM.sent = {};
   slmRun();
   SLM.sig = ''; panelSig = '';
-  say('There: expander, SLM behind the splitter at normal incidence, Fourier lens, a projection lens to blow the pattern up, and the screen on the image plane. Weighted GS, grating on. Watch the beamlets appear.');
+  say('There: expander, the SLM at normal incidence behind the splitter, and one +1000 mm lens a focal length away, with the screen a focal length beyond it. A 2f Fourier system. Weighted GS, grating on: watch the beamlets form.');
   tone(660, 0.1); tone(990, 0.12, 0.1);
 }
 const SLM_SAY = {
@@ -4280,7 +4288,7 @@ const SLM_SAY = {
   gs: 'Gerchberg–Saxton: bounce between the two planes, keep the phase, impose the amplitude. Look at the phase on the SLM.',
   grating: 'Grating on. Everything the SLM can\'t modulate stays in the zero order, so we steer the pattern away from it.',
   gsw: 'Weighted GS evens them out. Now they\'re all the same brightness.',
-  magnify: 'Projected and magnified. That\'s your beamlet array.',
+  twof: 'A 2f system: SLM in the front focal plane, pattern in the back focal plane. Every beamlet now leaves the lens parallel to the axis.',
 };
 
 // Spacing tags: between consecutive lenses / curved mirrors on the beam, show their separation along the
