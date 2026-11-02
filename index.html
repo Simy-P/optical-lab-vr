@@ -35,7 +35,7 @@
     <p>You come in to find every optic gone from your setup. Your supervisor wants light in the microscope's rear port, fast, and with as few optical components on the table as possible. Each level they add something new to the table.</p>
     <p>Lenses are labelled on their bases (+ = convex, converging; − = concave, diverging), and the wall panel and laser controller show the starting beam size. <b>★ Free build</b> puts every optic in the tray with a live readout at the port: try +100 then +400 mm, 500 mm apart, for a 4× bigger collimated beam. A floating tag between each pair of lenses shows their spacing along the beam, the best spacing for a collimated output (worked out from the real Gaussian beam: the second lens goes one focal length from the waist the first lens makes. That is f₁+f₂ when the waist lands at f₁, as in a 4× expander, but when contracting with a long first lens inside the laser's Rayleigh range the waist forms short of f₁, so +400 → +100 wants about 485 mm, not 500) and f₁+f₂; it turns green within 2 mm of best. The +100 mm <b>cylindrical lens</b> focuses in one plane only, so the beam becomes an ellipse and then a line at its focus; click the orange knob on top to turn it between horizontal and vertical focusing.</p>
     <p><b>0 · Safety</b> is a laser safety induction: close the door, switch on the warning lamp, pick the right goggles from the rack, find the stray reflection, measure the power, classify the laser, dump the beam and close the shutter. Do anything unsafe (shutter open too early, no or wrong goggles, a hand or your eye in the beam) and everything stops: you're back at the start and the supervisor tells you exactly what you did wrong. Finish to get a certificate.</p>
-    <p>Three stages: <b>1 · Mirrors</b> (steer the beam), <b>2 · Lenses</b> (expand and collimate the beam to fill the new objective's back aperture; lenses and curved mirrors centre themselves on the beam when you let go, and the beam's real width is drawn as it focuses and expands), <b>3 · Alignment</b> (two irises fixed on the microscope axis: the expanded beam must pass through the middle of both, so it arrives on axis and square), and <b>4 · Advanced</b> (polarisation and aberrations, coming next). Two labs: the normal lab, and <b>The Floor is Lava</b>, where the volcanology lab next door has sprung a leak. Stay on the stepping stones; the optical table is lava proof.</p>
+    <p>Three stages: <b>1 · Mirrors</b> (steer the beam), <b>2 · Lenses</b> (expand and collimate the beam to fill the new objective's back aperture; lenses and curved mirrors centre themselves on the beam when you let go, and the beam's real width is drawn as it focuses and expands), <b>3 · Alignment</b> (two irises fixed on the microscope axis: the expanded beam must pass through the middle of both, so it arrives on axis and square), and <b>4 · Experiments</b>: adaptive optics. Build a closed-loop AO system from a 37-actuator deformable mirror, a 50:50 beamsplitter and a 15×15 Shack–Hartmann wavefront sensor: expand the beam onto the DM, relay the DM onto the microscope pupil, and send the light returning from the sample (the guide star) back through the DM to the sensor, which must also be conjugate to the DM. The AO controller (back left of the table) shows the spots, the measured wavefront and the actuators, with Flat, Calibrate, Loop and gain buttons, and sets the phase plate's aberration (astigmatism, coma, trefoil, spherical or random) and size. Aberrations also come from tilted lenses and from the sample itself, which gets worse the deeper you focus into the spheroid. What's left uncorrected dims and blurs the confocal image, point by point across the field, so a DM that isn't conjugate to the pupil corrects the centre but not the edges. <b>AO Bench</b> is the same kit with no checklist. Two labs: the normal lab, and <b>The Floor is Lava</b>, where the volcanology lab next door has sprung a leak. Stay on the stepping stones; the optical table is lava proof.</p>
     <p><b>Quest:</b> <kbd>ENTER VR</kbd>. Point at the wall panel and pull the trigger to choose a game. Either hand grabs with grip or trigger: reach in and pick a part up to lift, tilt and carry it (or pass it to your other hand), and when you let go it drops back onto the table, upright, on the nearest grid spot and snap angle. Point at a part to slide it along the table from a distance. Let go of the trigger to point your index finger and you can press the buttons on the laser controller, the microscope pad and the wall panel by pushing them. While holding a part at a distance: twist your wrist to turn it, <kbd>A</kbd>/<kbd>X</kbd> and <kbd>B</kbd>/<kbd>Y</kbd> turn it one step, the thumbstick slides it (lenses and curved mirrors creep slowly, for fine focusing), and clicking the thumbstick changes the rotation snap (free, 1°, 5°, 15°, 45°; also on the wall panel; 5° to start). Put a part back in the tray to remove it. When the light is in, the monitor shows a live confocal image: grab the focus knobs on the microscope's right side and move your hand up or down to focus through the sample (big knob coarse, small knob fine), switch between confocal and widefield, set the pinhole and change the sample with the buttons under the monitor, and use the joystick to move the stage. The box beside the laser tunes it from 350 to 1064 nm; UV and IR beams are invisible, so pick up a detector card from the rack next to it and hold it in the beam to see where it goes, or pick up the IR viewer next to the controller and hold it to your eye: UV and near-IR beams show up green through it. Walking: the left stick moves you the way you're looking and the right stick turns (smooth by default). On the wall panel's title screen you can switch to snap turning (45° or 30°), swap the sticks, and set your eye height (1.75 m to start; 1.6, 1.9, or your real height).</p>
     <p><b>Desktop:</b> click the panel buttons; drag parts; mouse wheel over a part turns it one snap step, 5° to start (<kbd>Shift</kbd> for 1°; change the snap on the wall panel); drag the joystick; drag a focus knob up/down or use the mouse wheel over it to focus; click the buttons under the monitor; the box beside the laser changes its wavelength (350–1064 nm; UV and IR beams are invisible: drag a detector card from the rack into the beam to find them, or press <kbd>V</kbd> to look through the IR viewer); <kbd>[</kbd>/<kbd>]</kbd> nudge the lens or curved mirror under the mouse 1 mm along its axis (<kbd>Shift</kbd> for 5 mm); drag empty space to orbit; <kbd>M</kbd> returns to the main menu.</p>
   </div>
@@ -1061,7 +1061,8 @@ const PART_NAMES = { mirror: 'mirrors', tallMirror: 'tall mirrors', periscope: '
   lens50: '+50 mm convex lens', lens100: '+100 mm convex lens', lens200: '+200 mm convex lens', lens400: '+400 mm convex lens',
   lensN50: '−50 mm concave lens', lensN100: '−100 mm concave lens', cyl100: '+100 mm cylindrical lens',
   cmirror100: 'f 100 concave mirror', cmirror200: 'f 200 concave mirror', xmirror100: 'f −100 convex mirror',
-  nd03: 'ND 0.3', nd05: 'ND 0.5', nd1: 'ND 1', nd2: 'ND 2', nd3: 'ND 3', graphCard: 'graph paper target' };
+  nd03: 'ND 0.3', nd05: 'ND 0.5', nd1: 'ND 1', nd2: 'ND 2', nd3: 'ND 3', graphCard: 'graph paper target',
+  dm: 'deformable mirror', bs: '50:50 beamsplitter', wfs: 'Shack–Hartmann wavefront sensor', plate: 'phase plate' };
 // Lenses and curved mirrors (2" optics). f in metres; negative f diverges.
 const OPTICS = {
   lens50: { type: 'lens', f: 0.05 }, lens100: { type: 'lens', f: 0.1 }, lens200: { type: 'lens', f: 0.2 }, lens400: { type: 'lens', f: 0.4 },
@@ -1081,7 +1082,7 @@ function cylLensGeometry(f) {
   for (let i = 16; i >= 0; i--) { const x = -CYL_R + 2 * CYL_R * i / 16; const t = te + (tc - te) * (1 - (x / CYL_R) ** 2); sh.lineTo(x, t / 2); }
   return new THREE.ExtrudeGeometry(sh, { depth: 2 * CYL_R, bevelEnabled: false, curveSegments: 1 }).rotateX(Math.PI / 2).translate(0, CYL_R, 0);
 }
-const FACE_BEAM = new Set([...Object.keys(OPTICS), 'powerMeter', 'beamDump', 'graphCard']);
+const FACE_BEAM = new Set([...Object.keys(OPTICS), 'powerMeter', 'beamDump', 'graphCard', 'bs', 'wfs', 'plate']);
 const fineStep = (kind) => (OPTICS[kind] ? 0.001 : kind === 'graphCard' ? 0.005 : SNAP.gridSize);
 function opticLabel(text, sub = null, tint = '#e9edf2') {
   const H = sub ? 160 : 96, c = document.createElement('canvas'); c.width = 256; c.height = H; const g = c.getContext('2d');
@@ -1165,6 +1166,47 @@ function buildComponent(kind) {
       root.userData.cylLabels = { h: [lab, lab2], v: [lv, lv2] }; root.userData.cylGlass = glass;
       setCylAxis(root, 'h');
     }
+  } else if (kind === 'dm') {
+    // deformable mirror: 4.4 mm aperture in a gold housing on a post; its face shows the actuator strokes
+    const post = nc(new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, yLow - 0.012, 16), postMat)); post.position.set(0, (yLow - 0.012) / 2 - 0.004, -0.01); root.add(post);
+    const body = nc(box(0.05, 0.05, 0.02, std(0x2b2e33, 0.5, 0.4))); body.position.set(0, yLow, -0.014); root.add(body);
+    const face = box(0.032, 0.032, 0.004, new THREE.MeshStandardMaterial({ map: dmTex, metalness: 0.6, roughness: 0.25, emissive: 0xffffff, emissiveMap: dmTex, emissiveIntensity: 0.35 }));
+    face.position.set(0, yLow, -0.002); face.userData.mirror = true; face.userData.dm = true; root.add(face);
+    const cable = nc(new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.08, 8), MAT.dark)); cable.rotation.x = Math.PI / 2; cable.position.set(0.018, yLow - 0.02, -0.06); root.add(cable);
+    const lab = opticLabel('DM', '37 ACT', '#ffd88a'); lab.rotation.x = -Math.PI / 2; lab.position.set(0, -0.0075, 0.012); lab.scale.setScalar(0.9); root.add(lab);
+  } else if (kind === 'bs') {
+    // 25 mm cube beamsplitter: the 45° diagonal (normal along local X+Z) reflects half, transmits half
+    const cube = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.025, 0.025), new THREE.MeshStandardMaterial({ color: 0xcfe8ff, transparent: true, opacity: 0.35, roughness: 0.05, metalness: 0.1 }));
+    cube.position.y = yLow; cube.userData.bs = { n: V(1, 0, 1).normalize() }; root.add(cube);
+    const diag = nc(new THREE.Mesh(new THREE.PlaneGeometry(0.0354, 0.025), new THREE.MeshStandardMaterial({ color: 0x9ad0ff, transparent: true, opacity: 0.55, side: THREE.DoubleSide, metalness: 0.6, roughness: 0.1 })));
+    diag.position.y = yLow; diag.rotation.y = Math.PI / 4; root.add(diag);
+    const post = nc(new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, yLow - 0.0125, 16), postMat)); post.position.y = (yLow - 0.0125) / 2 - 0.004; root.add(post);
+    const lab = opticLabel('BS', '50:50', '#cfe8ff'); lab.rotation.set(-Math.PI / 2, 0, Math.PI / 2); lab.position.set(0.02, -0.0075, 0); lab.scale.setScalar(0.9); root.add(lab);
+  } else if (kind === 'wfs') {
+    // Shack–Hartmann sensor: lenslet array on the front (+Z) of a camera body
+    const post = nc(new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, yLow - 0.03, 16), postMat)); post.position.y = (yLow - 0.03) / 2 - 0.004; root.add(post);
+    const body = box(0.05, 0.05, 0.06, std(0x1d2026, 0.4, 0.5)); body.position.set(0, yLow, -0.03); root.add(body);
+    const c = document.createElement('canvas'); c.width = c.height = 128; const gg = c.getContext('2d');
+    gg.fillStyle = '#20303c'; gg.fillRect(0, 0, 128, 128);
+    for (let i = 0; i < 15; i++) for (let j = 0; j < 15; j++) { gg.fillStyle = 'rgba(160,210,255,0.55)'; gg.beginPath(); gg.arc(5 + i * 8.4, 5 + j * 8.4, 3.4, 0, 7); gg.fill(); }
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+    const face = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.003), [MAT.dark, MAT.dark, MAT.dark, MAT.dark, new THREE.MeshStandardMaterial({ map: t, roughness: 0.2, metalness: 0.3 }), MAT.dark]);
+    face.position.set(0, yLow, 0.0015); root.add(face);
+    const accept = (d) => d.dot(V(0, 0, 1).transformDirection(face.matrixWorld)) < -Math.cos(12 * DEG);
+    face.userData.wfs = { accept }; body.userData.wfs = { accept };
+    const lab = opticLabel('WFS', 'SH 15×15', '#bfe3ff'); lab.rotation.set(-Math.PI / 2, 0, Math.PI / 2); lab.position.set(0.028, -0.0075, -0.02); lab.scale.setScalar(0.9); root.add(lab);
+  } else if (kind === 'plate') {
+    // phase plate: a 30 mm square of figured glass; its aberration is chosen on the AO controller
+    const c = document.createElement('canvas'); c.width = c.height = 128; const gg = c.getContext('2d');
+    for (let y = 0; y < 128; y++) for (let x = 0; x < 128; x++) { const u = (x - 64) / 64, w = (y - 64) / 64, v = Math.sin(6 * (u * u - w * w) + 3 * u); gg.fillStyle = `rgba(${150 + 60 * v},${190 + 40 * v},255,1)`; gg.fillRect(x, y, 1, 1); }
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+    const glass = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.03, 0.003), new THREE.MeshStandardMaterial({ map: t, transparent: true, opacity: 0.6, roughness: 0.05 }));
+    glass.position.y = yLow; glass.userData.plate = true; root.add(glass);
+    for (const [w, h, x, y] of [[0.04, 0.005, 0, 0.0175], [0.04, 0.005, 0, -0.0175], [0.005, 0.03, 0.0175, 0], [0.005, 0.03, -0.0175, 0]]) {
+      const bar = nc(box(w, h, 0.006, MAT.dark)); bar.position.set(x, yLow + y, 0); root.add(bar);
+    }
+    const post = nc(new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, yLow - 0.02, 16), postMat)); post.position.y = (yLow - 0.02) / 2 - 0.004; root.add(post);
+    const lab = opticLabel('PHASE', 'PLATE', '#e2d4ff'); lab.rotation.set(-Math.PI / 2, 0, Math.PI / 2); lab.position.set(0.026, -0.0075, 0); lab.scale.setScalar(0.9); root.add(lab);
   } else if (kind === 'powerMeter') {
     // thermal power-meter head on a post (axis = local Z) with its readout box behind it
     const post = nc(new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, yLow + 0.008 - 0.02, 16), postMat)); post.position.y = (yLow - 0.012) / 2 - 0.004; root.add(post);
@@ -1555,7 +1597,19 @@ SAFETY_LEVELS.push({ name: 'Safety 3: The Invisible Beam', safety: true, hideBea
 SAFETY_LEVELS.push({ name: 'Safety 4: Shielding', safety: true, shielding: true, parts: [], par: null, riser: false, obstacles: [], beamD: 2,
   say: "Lesson four is a demonstration: shielding. Same 2 watt laser, and the experiment sends the beam across the bench. The red volume shows everywhere the beam or its reflections could reach. Right now, that's most of the room, including you. Goggles on, open the shutter with the button on the board, and watch what an enclosure does.",
   lavaSay: "Lesson four, a demonstration: shielding. The red volume is the hazard zone. Goggles on, open the shutter, and watch an enclosure shrink it." });
-const LEVEL_SETS = { safety: SAFETY_LEVELS, mirrors: MIRROR_LEVELS, lenses: LENS_LEVELS, align: ALIGN_LEVELS, sandbox: SANDBOX_LEVELS };
+// 4 · Experiments: adaptive optics, guided, then an open bench
+const AO_PARTS = ['mirror', 'lens50', 'lens100', 'lens200', 'lens400', 'bs', 'dm', 'wfs', 'plate'];
+const EXPERIMENT_LEVELS = [
+  { name: 'Adaptive Optics', ao: true, parts: AO_PARTS, par: null, riser: false, obstacles: [], beamD: 1, need: NEED,
+    intro: 'Build a closed-loop adaptive optics system, then use it to image deep. Expand the 1 mm laser onto a 37-actuator deformable mirror and relay the DM onto the microscope pupil. Light from the focus comes back out of the port: a beamsplitter before the DM sends it to a Shack–Hartmann sensor, which must be conjugate to the DM too. Calibrate, add the phase plate, close the loop. The checklist on this board updates as you go; the AO controller is the screen at the back left of the table.',
+    say: "Adaptive optics. A deformable mirror, a wavefront sensor and a control loop. Every plane that matters must be imaged onto every other: the DM, the sensor and the objective pupil. Start by getting a 4 mm beam onto the DM.",
+    lavaSay: "Adaptive optics, over lava. DM, sensor, loop, and keep every plane conjugate. Start with a 4 mm beam on the DM." },
+  { name: 'AO Bench', ao: true, sandbox: true, parts: [...AO_PARTS, 'cyl100'], par: null, riser: false, obstacles: [], beamD: 1, need: NEED,
+    intro: 'An open adaptive optics bench: deformable mirror, beamsplitter, Shack–Hartmann sensor, phase plate and every lens. The AO controller at the back left shows the spots, the measured wavefront and the DM. Try the sensor straight in the beam, after the DM, or on the guide-star return; tilt a lens to make astigmatism; move the DM off the pupil and watch the image edges.',
+    say: "The AO bench is yours. Everything's in the tray and the controller is at the back left. Break things on purpose: that's how you learn which planes matter.",
+    lavaSay: "AO bench, lava floor. Everything's in the tray. Break things on purpose, not your ankles." },
+];
+const LEVEL_SETS = { safety: SAFETY_LEVELS, mirrors: MIRROR_LEVELS, lenses: LENS_LEVELS, align: ALIGN_LEVELS, sandbox: SANDBOX_LEVELS, experiments: EXPERIMENT_LEVELS };
 let LEVELS = MIRROR_LEVELS;
 
 // ───────────────────────── Confocal microscope simulator ─────────────────────────
@@ -1577,11 +1631,12 @@ const confocalRT = new THREE.WebGLRenderTarget(RT_W, RT_H, { depthBuffer: false 
 confocalRT.texture.colorSpace = THREE.SRGBColorSpace;
 const confocalMat = new THREE.ShaderMaterial({
   uniforms: { uCenter: { value: new THREE.Vector2() }, uFov: { value: 110 }, uAspect: { value: RT_H / RT_W }, uZ: { value: 2 },
-    uPinhole: { value: 1 }, uSample: { value: 0 }, uRange: { value: 14 }, uSeed: { value: 0 }, uMode: { value: 0 }, uResScale: { value: 1 }, uBright: { value: 1 }, uRes: { value: new THREE.Vector2(RT_W, RT_H) } },
+    uPinhole: { value: 1 }, uSample: { value: 0 }, uRange: { value: 14 }, uSeed: { value: 0 }, uMode: { value: 0 }, uResScale: { value: 1 }, uBright: { value: 1 }, uS: { value: new Array(9).fill(1) }, uRes: { value: new THREE.Vector2(RT_W, RT_H) } },
   vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
   fragmentShader: /* glsl */`
     precision highp float;
     uniform vec2 uCenter, uRes; uniform float uFov, uAspect, uZ, uPinhole, uSample, uRange, uSeed, uMode, uResScale, uBright;
+    uniform float uS[9];             // Strehl ratio at 3×3 points of the field (adaptive optics experiments; 1 elsewhere)
     varying vec2 vUv;
     #define NZ 16
     #define WF_GAIN 0.9
@@ -1669,7 +1724,11 @@ const confocalMat = new THREE.ShaderMaterial({
       // widefield epifluorescence: the whole field is lit and the camera collects light from every depth,
       // so nothing rejects the blurred out-of-focus light. The thicker the sample, the more haze.
       bool wf = uMode > 0.5;
-      float rmin = (wf ? 0.33 : 0.25) * uResScale;               // underfilling the back aperture lowers the effective NA                             // slightly poorer lateral resolution than confocal
+      // aberrations: Strehl ratio S across the field (bilinear over 3×3 points). Lower S spreads the focus and dims it
+      vec2 fg = clamp((vUv - 0.1) / 0.4, 0.0, 1.999); ivec2 fi = ivec2(fg); vec2 ff = fract(fg);
+      float s00 = uS[fi.y * 3 + fi.x], s10 = uS[fi.y * 3 + fi.x + 1], s01 = uS[(fi.y + 1) * 3 + fi.x], s11 = uS[(fi.y + 1) * 3 + fi.x + 1];
+      float strehl = mix(mix(s00, s10, ff.x), mix(s01, s11, ff.x), ff.y);
+      float rmin = (wf ? 0.33 : 0.25) * uResScale * (1.0 + 2.0 * (1.0 - strehl));               // underfilling the back aperture lowers the effective NA                             // slightly poorer lateral resolution than confocal
       vec3 acc = vec3(0.0);
       if (uSample > 2.5) {                                       // beads: point sources, solved analytically
         vec2 g = floor(xy / 6.0);
@@ -1698,7 +1757,7 @@ const confocalMat = new THREE.ShaderMaterial({
         }
         acc *= wf ? WF_GAIN : 1.6;
       }
-      acc *= (wf ? 1.0 : eff) * uBright;
+      acc *= (wf ? 1.0 : eff) * uBright * (0.3 + 0.7 * strehl);
       vec2 px = floor(vUv * uRes);                               // photon shot noise
       float n = h21(px + uSeed) + h21(px * 1.7 + uSeed * 3.1) - 1.0;
       vec3 ph = acc * 60.0;
@@ -1708,6 +1767,7 @@ const confocalMat = new THREE.ShaderMaterial({
       gl_FragColor = vec4(min(rgb, 1.0), 1.0);
     }`,
 });
+const AO_ONES = new Array(9).fill(1);
 const confocalScene = new THREE.Scene();
 confocalScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), confocalMat));
 const confocalCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -1718,7 +1778,8 @@ function renderConfocal() {
   const S = SAMPLES[scopeState.sample], u = confocalMat.uniforms;
   u.uCenter.value.set(scopeState.x, scopeState.y); u.uFov.value = S.fov; u.uZ.value = scopeState.z;
   u.uPinhole.value = PINHOLES[scopeState.ph]; const wfMode = scopeState.mode === 1;             // widefield is lit by the LED, so the laser's fill and collimation don't matter
-  u.uResScale.value = wfMode ? 1 : scopeState.resScale; u.uBright.value = wfMode ? 1 : scopeState.bright; u.uMode.value = scopeState.mode; u.uSample.value = scopeState.sample; u.uRange.value = S.range;
+  u.uResScale.value = wfMode ? 1 : scopeState.resScale; u.uBright.value = wfMode ? 1 : scopeState.bright;
+  u.uS.value = aoActive() ? AO.fieldS : AO_ONES; u.uMode.value = scopeState.mode; u.uSample.value = scopeState.sample; u.uRange.value = S.range;
   u.uSeed.value = (scopeState.seed = (scopeState.seed + 17.3) % 997);
   const xr = renderer.xr.enabled, prev = renderer.getRenderTarget();
   renderer.xr.enabled = false;
@@ -1936,7 +1997,7 @@ const TIERS = [
   { id: 'tier:mirrors', tier: 'mirrors', title: '1 · Mirrors', sub: 'Steer the beam: mirrors, periscopes' },
   { id: 'tier:lenses', tier: 'lenses', title: '2 · Lenses', sub: 'Expand, focus and collimate' },
   { id: 'tier:align', tier: 'align', title: '3 · Alignment', sub: 'Irises: on axis, at the right angle' },
-  { id: 'tier:advanced', title: '4 · Advanced', sub: 'Polarisation & aberrations: next', locked: true },
+  { id: 'tier:experiments', tier: 'experiments', title: '4 · Experiments', sub: 'Adaptive optics: DM + wavefront sensor' },
   { id: 'tier:sandbox', tier: 'sandbox', title: '★ Free build', sub: 'Every optic, live beam readout' },
 ];
 function buttonsFor(state) {
@@ -1970,7 +2031,7 @@ function drawPanel() {
   const irisSig = (game.irisHits || []).map((x) => `${x.iris.index}${x.pass}${x.off.toFixed(1)}`).join(',');
   const spSig = spacingInfo.map((x) => `${x.d.toFixed(0)}/${x.best.toFixed(0)}`).join(',');
   const sfSig = game.safety ? JSON.stringify([shield.on ? Math.round((shield.fraction || 0) * 100) : 0, laserState.shutter, game.safety.done, game.safety.strikes, game.safety.quiz, wornGoggles?.name, game.meterHit ? (game.meterPower * 1e4 | 0) : -1, game.ndOD]) : '';
-  const sig = [frameError, vrPrefs.turn, vrPrefs.moveHand, vrPrefs.eye, sfSig, spSig, irisSig, game.mode, game.tier, game.level, game.state, n, lit, game.hover, Math.floor(t / 1000), game.burns, rotSnap, L.need ? portStr : ''].join('|');
+  const sig = [frameError, vrPrefs.turn, vrPrefs.moveHand, vrPrefs.eye, sfSig, spSig, irisSig, game.mode, game.tier, game.level, game.state, n, lit, game.hover, Math.floor(t / 1000), game.burns, rotSnap, L.need ? portStr : '', L.ao ? JSON.stringify(game.aoDone) + (AO.out?.S0 ?? -1).toFixed(2) + (AO.out?.meas?.rms ?? -1).toFixed(3) + AO.loop : ''].join('|');
   if (sig === panelSig) return; panelSig = sig;
   const g = pctx, lava = game.mode === 'lava';
   g.fillStyle = '#101317'; g.fillRect(0, 0, PW, PH);
@@ -2004,7 +2065,7 @@ function drawPanel() {
     panelTex.needsUpdate = true; return;
   }
   g.fillStyle = '#8b96a3'; g.font = '600 26px system-ui, sans-serif';
-  g.fillText(`${lava ? 'THE FLOOR IS LAVA' : 'OPTICAL LAB VR'}  ·  ${game.tier === 'safety' ? 'LASER SAFETY INDUCTION' : game.tier === 'sandbox' ? 'FREE BUILD' : `STAGE ${({ mirrors: 1, lenses: 2, align: 3 })[game.tier]}  ·  LEVEL ${game.level + 1} OF ${LEVELS.length}`}`, 40, 56);
+  g.fillText(`${lava ? 'THE FLOOR IS LAVA' : 'OPTICAL LAB VR'}  ·  ${game.tier === 'safety' ? 'LASER SAFETY INDUCTION' : game.tier === 'sandbox' ? 'FREE BUILD' : game.tier === 'experiments' ? `EXPERIMENT ${game.level + 1} OF ${LEVELS.length}` : `STAGE ${({ mirrors: 1, lenses: 2, align: 3 })[game.tier]}  ·  LEVEL ${game.level + 1} OF ${LEVELS.length}`}`, 40, 56);
   g.fillStyle = '#eef2f6'; g.font = 'bold 54px system-ui, sans-serif'; g.fillText(L.name, 40, 122);
   const rec = records[game.mode][recKey()];
   const parts = L.parts.map((k) => PART_NAMES[k]).join(', ');
@@ -2014,14 +2075,24 @@ function drawPanel() {
       wrapText(g, "Before anyone touches an optic, you'll make the lab safe for today's laser: 532 nm, 2 W, Class 4. Follow the checklist: door, warning lamp, the right goggles, stray reflections, measure the power, classify the laser, dump the beam, close the shutter.", 40, 180, PW - 80, 38);
       g.fillStyle = '#ffb32b'; g.font = 'bold 28px system-ui, sans-serif'; wrapText(g, 'Strikes for: no or wrong goggles with the shutter open, hands in the beam, eyes near the beam, bending down to beam height.', 40, 400, PW - 80, 34);
     } else
-    wrapText(g, L.need ? `The laser gives a collimated beam ${L.beamD} mm across. Fill the objective's ${L.need.bfp} mm back aperture: the beam must reach the rear port ${L.need.dMin}–${L.need.dMax} mm across and collimated (under ${L.need.divMax} mrad).`
+    wrapText(g, L.intro ? L.intro : L.need ? `The laser gives a collimated beam ${L.beamD} mm across. Fill the objective's ${L.need.bfp} mm back aperture: the beam must reach the rear port ${L.need.dMin}–${L.need.dMax} mm across and collimated (under ${L.need.divMax} mrad).`
       : 'Get the laser into the rear port of the microscope with as few optical components on the table as you can.', 40, 180, PW - 80, 40);
-    if (!L.safety) { g.font = '26px system-ui, sans-serif'; wrapText(g, `In the tray: ${parts}`, 40, L.need ? 318 : 300, PW - 80, 32); }
-    if (!L.safety) {
+    if (!L.safety && !L.ao) { g.font = '26px system-ui, sans-serif'; wrapText(g, `In the tray: ${parts}`, 40, L.need ? 318 : 300, PW - 80, 32); }
+    if (!L.safety && !L.ao) {
     g.fillStyle = '#eef2f6'; g.font = 'bold 38px system-ui, sans-serif'; g.fillText(L.par ? `Par: ${L.par} component${L.par === 1 ? '' : 's'}` : 'Free build: no par', 40, 370);
     g.fillStyle = '#8b96a3'; g.font = '28px system-ui, sans-serif';
     g.fillText(rec ? `Your best: ${rec.n} components in ${fmt(rec.t)}` : 'Not completed yet', 40, 420);
     }
+  } else if (game.state === 'playing' && L.ao && !L.sandbox) {
+    const tasks = aoTaskList(), next = tasks.find((t) => !game.aoDone[t.id]);
+    tasks.forEach((T, i) => {
+      const y = 170 + i * 40, d = game.aoDone[T.id], cur = T === next;
+      g.fillStyle = d ? '#39f07a' : cur ? '#ffd23f' : '#5d6773'; g.font = `${cur ? 'bold ' : ''}21px system-ui, sans-serif`;
+      g.fillText(`${d ? '✓' : cur ? '▶' : '·'}  ${i + 1}. ${T.text}`, 40, y);
+    });
+    const o = AO.out || {};
+    g.fillStyle = '#8b96a3'; g.font = '22px ui-monospace, monospace';
+    g.fillText(`Strehl ${o.S0 !== undefined ? o.S0.toFixed(2) : '—'}   ·   sensor RMS ${o.meas ? o.meas.rms.toFixed(3) + ' λ' : '—'}   ·   loop ${AO.loop ? 'ON' : 'off'}`, 40, 492);
   } else if (game.state === 'playing' && L.safety && game.safety) {
     const S = game.safety, next = safetyTasks().find((t) => !S.done[t.id]);
     g.fillStyle = S.strikes ? '#ffb32b' : '#9fe6a8'; g.font = 'bold 30px system-ui, sans-serif'; g.textAlign = 'right';
@@ -2081,6 +2152,12 @@ function drawPanel() {
       });
     }
     if (lava) { g.fillStyle = '#ff9a3c'; g.font = 'bold 28px system-ui, sans-serif'; g.fillText(`Burns: ${game.burns}`, 40, spacingInfo.length ? 498 : 476); }
+  } else if (game.result?.ao) {
+    const r = game.result;
+    g.fillStyle = '#39f07a'; g.font = 'bold 50px system-ui, sans-serif'; g.fillText(`✓  Loop closed, deep and sharp`, 40, 200);
+    g.fillStyle = '#eef2f6'; g.font = 'bold 34px system-ui, sans-serif'; g.fillText(`Time ${fmt(r.t)}   ·   Strehl ${r.S ? r.S.toFixed(2) : '—'}`, 40, 262);
+    g.fillStyle = '#b6c0cb'; g.font = '28px system-ui, sans-serif';
+    wrapText(g, 'Try the AO Bench next: put the sensor on the other side of the splitter, move the DM off the pupil and watch the image edges, or let the loop run with a tilted lens on the sensor arm (a non-common-path error the loop can\'t see).', 40, 320, PW - 80, 38);
   } else if (game.result?.safety) {
     const r = game.result, k = r.safety.strikes;
     const grade = k === 0 ? ['GOLD', 'Fully certified laser user', '#ffd23f'] : k <= 2 ? ['SILVER', 'Certified (on probation)', '#d6dde5']
@@ -2154,7 +2231,7 @@ function setMode(mode) {
 }
 function showTitle() {
   clearTable(); resetEnclosure(false);
-  game.state = 'title'; panelSig = '';
+  game.state = 'title'; panelSig = ''; aoGroup.visible = false; game.ao = null;
   say('Ah, you\'re in. Pick a stage on the board behind the table: mirrors first, then lenses.');
 }
 function loadLevel(i) {
@@ -2179,8 +2256,9 @@ function loadLevel(i) {
   microscope.position.copy(MICROSCOPE_BASE).setY(L.riser ? RISER_H : 0);
   say(game.mode === 'lava' ? L.lavaSay : L.say);
   laserState.w0 = (L.beamD || 1) / 2000;          // waist radius at the laser, metres
-  game.burns = 0; game.port = null;
+  game.burns = 0; game.port = null; game.ao = null;
   game.safety = null;
+  resetAO();
   resetEnclosure(!!L.shielding);
   if (L.safety) {
     laserState.watts = 2.0; setWavelength(532); setShutter(false);
@@ -2682,7 +2760,7 @@ function updateGame(dt) {
       say(`There it is: Ø ${P ? P.D.toFixed(1) : '?'} mm and collimated. Keep playing.`);
     }
     if (game.litTime === 0) game.sandboxGood = false;
-  } else if (game.state === 'playing' && game.litTime > 0.5) {
+  } else if (game.state === 'playing' && game.litTime > 0.5 && !L.ao) {
     const n = componentsUsed(), t = performance.now() - game.start;
     game.state = 'solved'; game.time = t; game.result = { n, t, fill: L.need && P ? Math.min(P.D / L.need.bfp, 9) : 0 };
     game.result.burns = game.burns;
@@ -2694,6 +2772,7 @@ function updateGame(dt) {
       : n === L.par ? 'Spot on. That is exactly how I would have done it. Now, show me those cells.'
       : `It works... but I count ${n} components. I could do it with ${L.par}.`);
   }
+  if (aoActive()) updateAO(dt, L);
   updateLavaHazard(dt);
   updateSafety(dt);
   // joystick → stage
@@ -3018,6 +3097,473 @@ function raycast(origin, dir, maxDist, skip = null) {
   return best;
 }
 
+// ───────────────────────── Adaptive optics (4 · Experiments) ─────────────────────────
+// Wavefronts live on a square grid in beam-normalised pupil coordinates (radius 1 = the beam's 1/e² radius
+// at that element), in waves. Every element that shapes the wavefront (deformable mirror, phase plate,
+// tilted lens, the sample) is logged by the beam trace with its ray-transfer (ABCD) matrix, so we know
+// where each one sits relative to the microscope pupil and the wavefront sensor:
+//  · a plane conjugate to the pupil needs B = 0 in the transfer to it; otherwise it is effectively δ = −B/A
+//    away, which (1) shears its pattern sideways for off-axis points of the scan (δ·θ), and (2) blurs its
+//    fine structure by Fresnel propagation over δ (~√(λδ)).
+//  · the Shack–Hartmann sensor samples local wavefront slopes with a 15×15, 320 µm lenslet array.
+//  · calibration pokes each actuator and records the slope response (interaction matrix); the loop applies
+//    a regularised least-squares reconstructor with a gain.
+const aoActive = () => game.tier === 'experiments';
+function abcdProp(M, d) { return [M[0] + d * M[2], M[1] + d * M[3], M[2], M[3]]; }
+function abcdLens(M, f) { return [M[0], M[1], M[2] - M[0] / f, M[3] - M[1] / f]; }
+const mMul = (X, Y) => [X[0] * Y[0] + X[1] * Y[2], X[0] * Y[1] + X[1] * Y[3], X[2] * Y[0] + X[3] * Y[2], X[2] * Y[1] + X[3] * Y[3]];
+const mInv = (M) => { const d = M[0] * M[3] - M[1] * M[2] || 1; return [M[3] / d, -M[1] / d, -M[2] / d, M[0] / d]; };
+const mRev = (M) => [M[3], M[1], M[2], M[0]];                    // the same optics traversed backwards
+const conjDelta = (T) => (Math.abs(T[0]) < 1e-6 ? Infinity : -T[1] / T[0]);   // distance to the conjugate plane, in input space
+
+const AO_N = 28, AO_L = 1.4, AO_H = 2 * AO_L / AO_N, AO_NN = AO_N * AO_N;
+const AO_RAP = 2.2e-3;                                              // DM clear aperture radius (4.4 mm)
+const AO_PITCH = 0.32e-3, AO_NL = 15;                               // lenslet pitch, lenslets across (4.8 mm array)
+const AO_FOBJ = 3.33e-3;                                            // 60× objective with a 200 mm tube lens
+const aoGx = new Float32Array(AO_NN), aoGy = new Float32Array(AO_NN), aoPupil = [];
+for (let j = 0; j < AO_N; j++) for (let i = 0; i < AO_N; i++) {
+  const k = j * AO_N + i, x = -AO_L + (i + 0.5) * AO_H, y = -AO_L + (j + 0.5) * AO_H;
+  aoGx[k] = x; aoGy[k] = y; if (x * x + y * y <= 1) aoPupil.push(k);
+}
+const aoMap = (fn) => { const m = new Float32Array(AO_NN); for (let k = 0; k < AO_NN; k++) m[k] = fn(aoGx[k], aoGy[k]); return m; };
+// piston, tip and tilt don't blur the focus (they just move it), so they're fitted out before taking the RMS
+const aoPTT = (() => {
+  let S = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  for (const k of aoPupil) { const v = [1, aoGx[k], aoGy[k]]; for (let a = 0; a < 3; a++) for (let b = 0; b < 3; b++) S[a * 3 + b] += v[a] * v[b]; }
+  const [a, b, c, d, e, f, g, h, i] = S, det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+  return [(e * i - f * h) / det, (c * h - b * i) / det, (b * f - c * e) / det, (f * g - d * i) / det, (a * i - c * g) / det, (c * d - a * f) / det,
+    (d * h - e * g) / det, (b * g - a * h) / det, (a * e - b * d) / det];
+})();
+function aoResidual(W) {                       // W minus its best piston/tip/tilt, and the RMS over the pupil (waves)
+  let r0 = 0, r1 = 0, r2 = 0;
+  for (const k of aoPupil) { r0 += W[k]; r1 += W[k] * aoGx[k]; r2 += W[k] * aoGy[k]; }
+  const P = aoPTT, c0 = P[0] * r0 + P[1] * r1 + P[2] * r2, c1 = P[3] * r0 + P[4] * r1 + P[5] * r2, c2 = P[6] * r0 + P[7] * r1 + P[8] * r2;
+  const R = new Float32Array(AO_NN); let ss = 0;
+  for (let k = 0; k < AO_NN; k++) R[k] = W[k] - c0 - c1 * aoGx[k] - c2 * aoGy[k];
+  for (const k of aoPupil) ss += R[k] * R[k];
+  return { R, rms: Math.sqrt(ss / aoPupil.length) };
+}
+const aoStrehl = (rms) => Math.exp(-((2 * Math.PI * rms) ** 2));     // Maréchal approximation
+// Zernike modes (Noll normalisation: 1 wave RMS over the pupil)
+const ZERN = {
+  astig: aoMap((x, y) => Math.sqrt(6) * (x * x - y * y)),
+  coma: aoMap((x, y) => Math.sqrt(8) * (3 * (x * x + y * y) - 2) * x),
+  trefoil: aoMap((x, y) => Math.sqrt(8) * (x * x * x - 3 * x * y * y)),
+  spherical: aoMap((x, y) => { const r2 = x * x + y * y; return Math.sqrt(5) * (6 * r2 * r2 - 6 * r2 + 1); }),
+};
+// Gaussian-random-field phase screen with a power-law spectrum (tissue-like: mostly low order, some fine detail)
+function aoPhaseScreen(seed, beta = 3.6) {
+  let t = seed >>> 0;
+  const rnd = () => { t = (t + 0x6D2B79F5) >>> 0; let r = Math.imul(t ^ (t >>> 15), 1 | t); r ^= r + Math.imul(r ^ (r >>> 7), 61 | r); return ((r ^ (r >>> 14)) >>> 0) / 4294967296; };
+  const W = new Float32Array(AO_NN);
+  for (let ky = -9; ky <= 9; ky++) for (let kx = 0; kx <= 9; kx++) {
+    if (kx === 0 && ky <= 0) continue;
+    const k2 = kx * kx + ky * ky, amp = Math.pow(k2, -beta / 4) * Math.sqrt(-2 * Math.log(rnd() + 1e-9)), ph = rnd() * Math.PI * 2;
+    for (let n = 0; n < AO_NN; n++) W[n] += amp * Math.cos(Math.PI * 0.5 * (kx * aoGx[n] + ky * aoGy[n]) + ph);   // k cycles per pupil diameter
+  }
+  const { R, rms } = aoResidual(W);
+  for (let n = 0; n < AO_NN; n++) R[n] /= rms;
+  return R;
+}
+const AO_SCREEN_SAMPLE = aoPhaseScreen(1717), AO_SCREEN_PLATE = aoPhaseScreen(4242);
+const PLATE_TYPES = [['astig', 'Astigmatism'], ['coma', 'Coma'], ['trefoil', 'Trefoil'], ['spherical', 'Spherical'], ['random', 'Random (turbulence)']];
+// 37-actuator deformable mirror: hexagonal grid, 0.68 mm pitch, ±3 µm stroke (±6 µm of wavefront), 15 % coupling
+const AO_ACT = [];
+for (let r = -3; r <= 3; r++) for (let qq = -3; qq <= 3; qq++) if (Math.abs(r + qq) <= 3) AO_ACT.push([0.31 * (qq + r / 2), 0.31 * r * Math.sqrt(3) / 2]);
+const AO_NA = AO_ACT.length, AO_SIG = 0.31 / 1.948;
+const aoBasisCache = new Map();
+function aoBasis(s) {                          // s = DM aperture radius / beam radius on the DM
+  const key = Math.round(s * 100);
+  if (aoBasisCache.has(key)) return aoBasisCache.get(key);
+  const ss = key / 100, B = AO_ACT.map(([ax, ay]) => aoMap((x, y) => { const dx = x - ax * ss, dy = y - ay * ss; return Math.exp(-(dx * dx + dy * dy) / (2 * (AO_SIG * ss) ** 2)); }));
+  if (aoBasisCache.size > 40) aoBasisCache.clear();
+  aoBasisCache.set(key, B); return B;
+}
+function aoDmMap(c, s) { const B = aoBasis(s), W = new Float32Array(AO_NN); for (let a = 0; a < AO_NA; a++) if (c[a]) { const b = B[a], v = c[a]; for (let k = 0; k < AO_NN; k++) W[k] += v * b[k]; } return W; }
+function aoBlur(W, sigN) {                     // Fresnel smoothing of fine structure, σ in pupil units
+  const sp = sigN / AO_H;
+  if (!(sp > 0.3)) return W;
+  const r = Math.min(AO_N, Math.ceil(sp * 3)), ker = []; let sum = 0;
+  for (let i = -r; i <= r; i++) { const v = Math.exp(-i * i / (2 * sp * sp)); ker.push(v); sum += v; }
+  const T = new Float32Array(AO_NN), O = new Float32Array(AO_NN);
+  for (let j = 0; j < AO_N; j++) for (let i = 0; i < AO_N; i++) { let a = 0; for (let t = -r; t <= r; t++) a += ker[t + r] * W[j * AO_N + Math.min(AO_N - 1, Math.max(0, i + t))]; T[j * AO_N + i] = a / sum; }
+  for (let j = 0; j < AO_N; j++) for (let i = 0; i < AO_N; i++) { let a = 0; for (let t = -r; t <= r; t++) a += ker[t + r] * T[Math.min(AO_N - 1, Math.max(0, j + t)) * AO_N + i]; O[j * AO_N + i] = a / sum; }
+  return O;
+}
+function aoAt(W, x, y) {                       // bilinear lookup, clamped at the grid edge
+  const fx = Math.min(AO_N - 1.001, Math.max(0, (x + AO_L) / AO_H - 0.5)), fy = Math.min(AO_N - 1.001, Math.max(0, (y + AO_L) / AO_H - 0.5));
+  const i = fx | 0, j = fy | 0, u = fx - i, v = fy - j, k = j * AO_N + i;
+  return (W[k] * (1 - u) + W[k + 1] * u) * (1 - v) + (W[k + AO_N] * (1 - u) + W[k + AO_N + 1] * u) * v;
+}
+const aoShift = (W, sx, sy) => (Math.abs(sx) + Math.abs(sy) < 1e-4 ? W : aoMap((x, y) => aoAt(W, x - sx, y - sy)));
+const aoFresnel = (delta, w, lam) => (isFinite(delta) ? Math.min(1, 0.5 * Math.sqrt(lam * Math.abs(delta)) / w) : 1);
+function aoAdd(A, B, k = 1) { for (let n = 0; n < AO_NN; n++) A[n] += k * B[n]; return A; }
+
+const AO = { c: new Float32Array(AO_NA), loop: false, gain: 0.3, plate: { type: 0, amp: 0.25 }, calib: null, calibAnim: null,
+  out: null, last: 0, fieldS: new Array(9).fill(1), msg: '', dmTexDirty: true };
+const aoStroke = () => 6e-6 / (laserState.nm * 1e-9);
+function aoSampleDepth() { const S = SAMPLES[scopeState.sample]; return Math.max(0, scopeState.z - S.z0); }
+function aoSampleMap() {
+  // refractive-index mismatch gives spherical aberration growing with depth; cells and nuclei add a random screen
+  const d = aoSampleDepth(), k = [0, 1, 0.55, 0][scopeState.sample] || 0;
+  return aoMap(() => 0).map((_, n) => k * (0.0018 * d * ZERN.spherical[n] + 0.0016 * d * AO_SCREEN_SAMPLE[n]));
+}
+function aoEventMap(e) {
+  if (e.kind === 'dm') return aoDmMap(AO.c, AO_RAP / e.w);
+  if (e.kind === 'plate') { const t = PLATE_TYPES[AO.plate.type][0], base = t === 'random' ? AO_SCREEN_PLATE : ZERN[t]; return base.map((v) => v * AO.plate.amp); }
+  if (e.kind === 'astig') return ZERN.astig.map((v) => v * e.a);
+  return new Float32Array(AO_NN);
+}
+// what the wavefront sensor sees: the static part, the DM's contribution (kept apart for calibration), and its lenslets
+function aoSensorView(tr, H, lam) {
+  const list = [];                              // [event, transfer matrix from the event's plane to the sensor]
+  if (H.path === 'main') tr.events.forEach((e, i) => { if (i < H.idx && (e.path === 'up' || e.path === 'common')) list.push([e, mMul(H.M, mInv(e.M))]); });
+  if (H.path === 'fwd') tr.events.forEach((e) => { if (e.path === 'up' || e.path === 'fwd') list.push([e, mMul(H.M, mInv(e.M))]); });
+  if (H.path === 'ret') {
+    const back = (M) => mMul(H.M, mRev(mMul(M, mInv(tr.bs.M))));       // from a plane on the common path, back out to the splitter, on to the sensor
+    tr.events.forEach((e) => {
+      if (e.path === 'common') list.push([e, back(e.M)]);
+      if (e.path === 'ret') list.push([e, mMul(H.M, mInv(e.M))]);
+    });
+    if (tr.port) list.push([{ kind: 'sample', w: tr.port.w }, back(tr.port.M)]);
+  }
+  const stat = new Float32Array(AO_NN); let dm = null;
+  for (const [e, T] of list) {
+    const dl = conjDelta(T), sig = aoFresnel(dl, e.w, lam);
+    if (e.kind === 'dm') { if (!dm) dm = { s: AO_RAP / e.w, sig, delta: dl, A: T[0] }; continue; }
+    aoAdd(stat, aoBlur(e.kind === 'sample' ? aoSampleMap() : aoEventMap(e), sig));
+  }
+  const p = AO_PITCH / H.w, lens = [];
+  for (let j = 0; j < AO_NL; j++) for (let i = 0; i < AO_NL; i++) {
+    const cx = (i - (AO_NL - 1) / 2) * p, cy = (j - (AO_NL - 1) / 2) * p;
+    if (Math.hypot(cx, cy) + 0.35 * p <= 1) lens.push([cx, cy, i, j]);
+  }
+  return { stat, dm, p, lens, w: H.w, path: H.path };
+}
+function aoSlopes(view, W) {
+  const s = new Float32Array(view.lens.length * 2), h = view.p / 2; let mx = 0, my = 0;
+  view.lens.forEach(([cx, cy], n) => {
+    s[2 * n] = (aoAt(W, cx + h, cy) - aoAt(W, cx - h, cy)) / view.p;
+    s[2 * n + 1] = (aoAt(W, cx, cy + h) - aoAt(W, cx, cy - h)) / view.p;
+    mx += s[2 * n]; my += s[2 * n + 1];
+  });
+  mx /= view.lens.length || 1; my /= view.lens.length || 1;           // overall tip/tilt is left to the alignment
+  for (let n = 0; n < view.lens.length; n++) { s[2 * n] -= mx; s[2 * n + 1] -= my; }
+  return s;
+}
+function aoMeasured(view, c) { const W = view.stat.slice(); if (view.dm) aoAdd(W, aoBlur(aoDmMap(c, view.dm.s), view.dm.sig)); return W; }
+const aoViewSig = (v) => (v && v.dm ? { n: v.lens.length, w: v.w, s: v.dm.s, sig: v.dm.sig, path: v.path } : null);
+const aoSigMatch = (a, b) => a && b && a.n === b.n && a.path === b.path && Math.abs(a.w / b.w - 1) < 0.04 && Math.abs(a.s / b.s - 1) < 0.04 && Math.abs(a.sig - b.sig) < 0.03;
+function aoCalibrate() {
+  const out = AO.out, view = out?.view;
+  if (!view) { AO.msg = 'Nothing on the wavefront sensor to calibrate with.'; return false; }
+  if (!view.dm) { AO.msg = 'The sensor can\'t see the DM: it must be on the light path to the sensor.'; return false; }
+  const cols = [], unit = new Float32Array(AO_NA); let norm = 0;
+  for (let a = 0; a < AO_NA; a++) {
+    unit.fill(0); unit[a] = 1;
+    const s = aoSlopes(view, aoBlur(aoDmMap(unit, view.dm.s), view.dm.sig)); cols.push(s);
+    for (const v of s) norm += v * v;
+  }
+  if (norm < 1e-6) { AO.msg = 'Calibration failed: poking the DM doesn\'t move the spots.'; return false; }
+  // reconstructor C = (IᵀI + αI)⁻¹ Iᵀ (Tikhonov-regularised least squares)
+  const n = AO_NA, m = cols[0].length, G = new Float64Array(n * n);
+  for (let a = 0; a < n; a++) for (let b = a; b < n; b++) { let v = 0; for (let k = 0; k < m; k++) v += cols[a][k] * cols[b][k]; G[a * n + b] = G[b * n + a] = v; }
+  let tr = 0; for (let a = 0; a < n; a++) tr += G[a * n + a];
+  const alpha = 0.03 * tr / n, A = new Float64Array(n * 2 * n);
+  for (let a = 0; a < n; a++) { for (let b = 0; b < n; b++) A[a * 2 * n + b] = G[a * n + b] + (a === b ? alpha : 0); A[a * 2 * n + n + a] = 1; }
+  for (let c = 0; c < n; c++) {                 // Gauss–Jordan inverse (symmetric positive definite, so no pivoting trouble)
+    const pv = A[c * 2 * n + c];
+    for (let k = 0; k < 2 * n; k++) A[c * 2 * n + k] /= pv;
+    for (let r = 0; r < n; r++) if (r !== c) { const f = A[r * 2 * n + c]; if (f) for (let k = 0; k < 2 * n; k++) A[r * 2 * n + k] -= f * A[c * 2 * n + k]; }
+  }
+  const C = [];
+  for (let a = 0; a < n; a++) { const row = new Float32Array(m); for (let b = 0; b < n; b++) { const g = A[a * 2 * n + n + b]; for (let k = 0; k < m; k++) row[k] += g * cols[b][k]; } C.push(row); }
+  AO.calib = { C, sig: aoViewSig(view) };
+  AO.msg = `Calibrated: ${AO_NA} actuators × ${view.lens.length} lenslets.`;
+  return true;
+}
+// the whole AO picture, about 12 times a second
+function aoCompute() {
+  const tr = game.ao, lam = laserState.nm * 1e-9, out = { tr };
+  const samp = aoSampleMap();
+  out.wfS = aoStrehl(aoResidual(samp).rms);                      // widefield: lit by the LED, so the DM doesn't help it
+  if (tr?.port) {
+    const Mp = tr.port.M, wp = tr.port.w, parts = [];
+    for (const e of tr.events) {
+      if (e.path !== 'up' && e.path !== 'common') continue;
+      const dl = conjDelta(mMul(Mp, mInv(e.M)));
+      parts.push({ map: aoBlur(aoEventMap(e), aoFresnel(dl, e.w, lam)), k: isFinite(dl) ? dl * wp / (e.w * e.w) : 0 });
+      if (e.kind === 'dm') out.dmDelta = dl;
+      if (e.kind === 'plate') out.plateDelta = dl;
+    }
+    const thMax = SAMPLES[scopeState.sample].fov * 1e-6 / 2 / AO_FOBJ * 0.8;
+    out.fieldS = [];
+    for (let fy = -1; fy <= 1; fy++) for (let fx = -1; fx <= 1; fx++) {
+      const W = samp.slice();
+      for (const pt of parts) aoAdd(W, aoShift(pt.map, pt.k * fx * thMax, pt.k * fy * thMax));
+      const r = aoResidual(W);
+      if (fx === 0 && fy === 0) { out.exc = r; out.S0 = aoStrehl(r.rms); }
+      out.fieldS.push(aoStrehl(r.rms));
+    }
+  }
+  const H = tr?.wfsHits[0];
+  if (H) {
+    const view = aoSensorView(tr, H, lam);
+    out.view = view;
+    out.meas = aoResidual(aoMeasured(view, AO.c));
+    out.slopes = aoSlopes(view, out.meas.R);
+    if (view.dm) out.dmWfsDelta = view.dm.delta;
+  }
+  AO.out = out;
+  return out;
+}
+function aoLoopStep() {
+  const out = AO.out, v = out?.view;
+  if (!AO.loop) return;
+  if (!AO.calib || !v || !aoSigMatch(AO.calib.sig, aoViewSig(v))) { AO.loop = false; AO.msg = AO.calib ? 'Loop opened: the sensor\'s view of the DM changed. Recalibrate.' : 'Calibrate first.'; return; }
+  const s = aoSlopes(v, aoMeasured(v, AO.c)), st = aoStroke();
+  for (let a = 0; a < AO_NA; a++) { const row = AO.calib.C[a]; let d = 0; for (let k = 0; k < s.length; k++) d += row[k] * s[k]; AO.c[a] = THREE.MathUtils.clamp(AO.c[a] - AO.gain * d, -st, st); }
+  AO.dmTexDirty = true;
+}
+
+// a beamsplitter branch: the reflected half of the laser, or the guide-star light returning from the microscope
+function traceBranch(b, segs, ao, nm) {
+  const origin = b.origin.clone(), dir = b.dir.clone(), q = { ...b.q }, qv = { ...b.qv };
+  let M = b.M.slice(), skip = b.skip, remaining = 6, power = b.power;
+  const adv = (d) => { q.re += d; qv.re += d; if (ao) M = abcdProp(M, d); };
+  const tag = b.tag, hx = V(), vx = V(), c = V(), ax = V(), hh = V(), tmp = V();
+  for (let i = 0; i < 24 && remaining > 0; i++) {
+    const hit = raycast(origin, dir, remaining, skip);
+    skip = null;
+    if (!hit) { segs.push({ a: origin.clone(), b: origin.clone().addScaledVector(dir, remaining), q: { ...q }, qv: { ...qv }, p: power, miss: true, branch: tag }); break; }
+    const ud = hit.object.userData, optic = ud.optic;
+    if (optic?.type === 'lens' || ud.bs) {                  // thin elements act at their centre plane
+      hit.object.getWorldPosition(c); ax.set(0, 0, 1).transformDirection(hit.object.matrixWorld);
+      if (ud.bs) ax.copy(ud.bs.n).transformDirection(hit.object.matrixWorld);
+      const den = dir.dot(ax);
+      if (Math.abs(den) > 0.2) { const t = tmp.subVectors(c, origin).dot(ax) / den; if (t > 0) { hit.point.copy(origin).addScaledVector(dir, t); hit.distance = t; } }
+    }
+    segs.push({ a: origin.clone(), b: hit.point.clone(), q: { ...q }, qv: { ...qv }, p: power, branch: tag });
+    adv(hit.distance); remaining -= hit.distance;
+    const pass = () => { skip = hit.object; origin.copy(hit.point).addScaledVector(dir, 0.0005); adv(0.0005); };
+    if (ud.bs) { power *= 0.5; pass(); continue; }
+    if (ud.plate) { if (ao) ao.events.push({ kind: 'plate', M: M.slice(), w: gaussW(q, nm), path: tag }); pass(); continue; }
+    if (ud.wfs) { if (ao && ud.wfs.accept(dir)) ao.wfsHits.push({ path: tag, M: M.slice(), w: gaussW(q, nm), idx: ao.events.length }); break; }
+    if (ud.iris) { pass(); continue; }
+    if (optic) {
+      if (optic.type === 'nd') { power *= 10 ** -optic.od; pass(); continue; }
+      hit.object.getWorldPosition(c); ax.set(0, 0, 1).transformDirection(hit.object.matrixWorld);
+      hh.subVectors(hit.point, c); hh.addScaledVector(ax, -hh.dot(ax));
+      const cosI = dir.dot(ax);
+      if (hh.length() > OPTIC_R || Math.abs(cosI) < 0.25) break;
+      const cylAx = optic.cyl ? ud.grabRoot.userData.cylAxis : null;
+      if (optic.type === 'cmirror') { if (cosI > 0) break; dir.reflect(ax); }
+      if (cylAx) {
+        hx.crossVectors(dir, Math.abs(dir.y) > 0.9 ? V(1, 0, 0) : UP).normalize(); vx.crossVectors(dir, hx).normalize();
+        const a = cylAx === 'h' ? hx : vx;
+        dir.addScaledVector(a, -hh.dot(a) / optic.f).normalize(); gaussFocus(cylAx === 'h' ? q : qv, optic.f);
+      } else { dir.addScaledVector(hh, -1 / optic.f).normalize(); gaussFocus(q, optic.f); gaussFocus(qv, optic.f); }
+      if (ao) {
+        if (!cylAx || cylAx === 'h') M = abcdLens(M, optic.f);
+        const th = Math.acos(Math.min(1, Math.abs(cosI)));
+        if (optic.type === 'lens' && th > 2 * DEG) {
+          const h = gaussW(q, nm), Wpv = h * h * th * th / (2 * Math.abs(optic.f)) / (nm * 1e-9);
+          ao.events.push({ kind: 'astig', a: Wpv / (2 * Math.sqrt(6)), M: M.slice(), w: h, path: tag });
+        }
+      }
+      pass(); continue;
+    }
+    if (!ud.mirror) break;
+    if (ao && ud.dm) ao.events.push({ kind: 'dm', M: M.slice(), w: gaussW(q, nm), path: tag });
+    dir.reflect(hit.normal).normalize();
+    origin.copy(hit.point).addScaledVector(dir, LASER.beamEndPadding); adv(LASER.beamEndPadding);
+  }
+}
+
+// ── AO controller screen: Shack–Hartmann spots, measured wavefront, DM actuators, status and controls ──
+const AO_W = 1024, AO_HPX = 600;
+const aoCanvas = document.createElement('canvas'); aoCanvas.width = AO_W; aoCanvas.height = AO_HPX;
+const aoTex = new THREE.CanvasTexture(aoCanvas); aoTex.colorSpace = THREE.SRGBColorSpace; aoTex.anisotropy = 8;
+const aoGroup = new THREE.Group(); aoGroup.position.set(1.02, 0, 0.84); aoGroup.rotation.y = Math.PI + 0.32; aoGroup.visible = false; table.add(aoGroup);
+{
+  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.3, 12), std(0x9aa1a9, 0.9, 0.3)); post.position.y = 0.15; aoGroup.add(post);
+  const foot = box(0.18, 0.012, 0.12, std(0x1b1d21, 0.4, 0.45)); foot.position.y = 0.006; aoGroup.add(foot);
+  const bezel = box(0.66, 0.4, 0.025, std(0x15171a, 0.3, 0.5)); bezel.position.set(0, 0.47, -0.014); aoGroup.add(bezel);
+}
+const aoScreen = new THREE.Mesh(new THREE.PlaneGeometry(0.64, 0.375), new THREE.MeshBasicMaterial({ map: aoTex, toneMapped: false }));
+aoScreen.position.set(0, 0.47, 0); aoGroup.add(aoScreen);
+const AO_BTNS = [
+  { id: 'flat', label: 'Flat', x: 20, y: 520, w: 110 }, { id: 'calib', label: 'Calibrate', x: 140, y: 520, w: 160 },
+  { id: 'loop', label: 'Loop', x: 310, y: 520, w: 150 }, { id: 'gain-', label: '−', x: 470, y: 520, w: 50 }, { id: 'gain+', label: '+', x: 600, y: 520, w: 50 },
+  { id: 'plate', label: 'Plate', x: 664, y: 520, w: 170 }, { id: 'amp-', label: '−', x: 844, y: 520, w: 50 }, { id: 'amp+', label: '+', x: 960, y: 520, w: 50 },
+];
+let aoHover = null, aoSig = '';
+function aoButtonAt(uv) { const x = uv.x * AO_W, y = (1 - uv.y) * AO_HPX; return AO_BTNS.find((b) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + 64)?.id ?? null; }
+function pressAO(id) {
+  if (!id) return;
+  tone(1000, 0.04);
+  if (id === 'flat') { AO.c.fill(0); AO.loop = false; AO.msg = 'DM flattened, loop open.'; AO.dmTexDirty = true; }
+  if (id === 'calib') { AO.loop = false; AO.c.fill(0); AO.calibAnim = { t0: performance.now(), t: 0 }; AO.msg = 'Calibrating: poking each actuator…'; }
+  if (id === 'loop') {
+    if (AO.calibAnim) AO.msg = 'Still calibrating…';
+    else if (AO.loop) { AO.loop = false; AO.msg = 'Loop open.'; }
+    else if (!AO.calib) AO.msg = 'Calibrate first: the loop needs to know how each actuator moves the spots.';
+    else if (!aoSigMatch(AO.calib.sig, aoViewSig(AO.out?.view))) AO.msg = 'The sensor\'s view of the DM has changed since calibration. Recalibrate.';
+    else { AO.loop = true; AO.msg = 'Loop closed.'; }
+  }
+  if (id === 'gain-') AO.gain = Math.max(0.1, +(AO.gain - 0.1).toFixed(1));
+  if (id === 'gain+') AO.gain = Math.min(1.2, +(AO.gain + 0.1).toFixed(1));
+  if (id === 'plate') AO.plate.type = (AO.plate.type + 1) % PLATE_TYPES.length;
+  if (id === 'amp-') AO.plate.amp = Math.max(0, +(AO.plate.amp - 0.05).toFixed(2));
+  if (id === 'amp+') AO.plate.amp = Math.min(0.6, +(AO.plate.amp + 0.05).toFixed(2));
+  aoSig = '';
+}
+function resetAO() {
+  AO.c.fill(0); AO.loop = false; AO.calib = null; AO.calibAnim = null; AO.msg = ''; AO.out = null; AO.fieldS = new Array(9).fill(1);
+  AO.plate = { type: 0, amp: 0.25 }; AO.dmTexDirty = true; aoSig = '';
+  game.aoDone = {};
+  aoGroup.visible = aoActive();
+}
+// shared texture for the face of every deformable mirror: actuator strokes, red up / blue down
+const dmCanvas = document.createElement('canvas'); dmCanvas.width = dmCanvas.height = 128;
+const dmTex = new THREE.CanvasTexture(dmCanvas); dmTex.colorSpace = THREE.SRGBColorSpace;
+const wfColor = (v) => { const t = Math.max(-1, Math.min(1, v)); return t >= 0 ? `rgb(255,${(255 * (1 - t)) | 0},${(255 * (1 - t)) | 0})` : `rgb(${(255 * (1 + t)) | 0},${(255 * (1 + t)) | 0},255)`; };
+function drawDmFace(g, cx, cy, R, c, poke = -1) {
+  const st = aoStroke(), scale = Math.max(...Array.from(c, Math.abs), st * 0.05);
+  AO_ACT.forEach(([x, y], a) => {
+    g.fillStyle = a === poke ? '#ffd23f' : wfColor(c[a] / scale);
+    g.beginPath(); for (let k = 0; k < 6; k++) { const an = Math.PI / 6 + k * Math.PI / 3, r = R * 0.31 * 0.56; g.lineTo(cx + x * R + r * Math.cos(an), cy - y * R + r * Math.sin(an)); } g.fill();
+  });
+}
+function updateDmTex(poke) {
+  const g = dmCanvas.getContext('2d');
+  g.fillStyle = '#c9a14a'; g.fillRect(0, 0, 128, 128);
+  drawDmFace(g, 64, 64, 58, AO.c, poke);
+  dmTex.needsUpdate = true;
+}
+function aoTaskList() {
+  const o = AO.out || {}, tr = game.ao, v = o.view, L = LEVELS[game.level];
+  const dmD = tr?.dm ? 2 * tr.dm.w * 1000 : 0, wfsD = v ? 2 * v.w * 1000 : 0;
+  const plateCommon = !!tr?.events.some((e) => e.kind === 'plate' && e.path === 'common');
+  const deep = scopeState.sample === 1 && aoSampleDepth() >= 50;
+  return [
+    { id: 'dm', text: 'Expand the beam onto the deformable mirror: 3.0–4.4 mm on its 4.4 mm aperture', ok: dmD >= 3 && dmD <= 4.4 },
+    { id: 'relay', text: 'Relay the DM to the pupil: collimated into the port, DM conjugate (±15 mm)', ok: !!(tr?.port && game.port?.ok && tr.dm && Math.abs(o.dmDelta ?? 1) <= 0.015) },
+    { id: 'wfs', text: 'Splitter before the DM: catch the light returning from the sample on the sensor', ok: v?.path === 'ret' },
+    { id: 'wfsconj', text: 'Sensor conjugate to the DM (±15 mm), beam 3.0–4.8 mm across the lenslets', ok: v?.path === 'ret' && Math.abs(o.dmWfsDelta ?? 1) <= 0.015 && wfsD >= 3 && wfsD <= 4.8 },
+    { id: 'calib', text: 'Calibrate: press Calibrate on the AO controller to poke every actuator', ok: !!(AO.calib && aoSigMatch(AO.calib.sig, aoViewSig(v))) },
+    { id: 'plate', text: 'Phase plate between the splitter and the microscope: see it on the sensor', ok: plateCommon && AO.plate.amp >= 0.1 && (o.meas?.rms ?? 0) > 0.05 },
+    { id: 'loop', text: 'Close the loop and correct the plate: Strehl above 0.8 at the sample', ok: plateCommon && AO.loop && (o.S0 ?? 0) > 0.8 },
+    { id: 'deep', text: 'Spheroid sample, focus 50 µm deep: correct the tissue itself, Strehl above 0.8', ok: deep && AO.loop && (o.S0 ?? 0) > 0.8 },
+  ];
+}
+function drawAO(force) {
+  const o = AO.out || {}, tr = game.ao, v = o.view, poke = AO.calibAnim ? Math.min(AO_NA - 1, (AO.calibAnim.t / 1.6 * AO_NA) | 0) : -1;
+  const sig = [force, aoHover, AO.loop, AO.gain, AO.plate.type, AO.plate.amp, AO.msg, poke, (o.meas?.rms ?? -1).toFixed(3), (o.S0 ?? -1).toFixed(3),
+    v?.lens.length, (o.dmDelta ?? 9).toFixed(3), (o.dmWfsDelta ?? 9).toFixed(3), tr?.dm ? tr.dm.w.toFixed(5) : '', v ? v.w.toFixed(5) : '', Array.from(AO.c, (x) => x.toFixed(2)).join()].join('|');
+  if (sig === aoSig) return; aoSig = sig;
+  const g = aoCanvas.getContext('2d');
+  g.fillStyle = '#0d0f12'; g.fillRect(0, 0, AO_W, AO_HPX);
+  g.fillStyle = '#ff3b2f'; g.fillRect(0, 0, AO_W, 6);
+  g.fillStyle = '#eef2f6'; g.font = 'bold 26px system-ui, sans-serif'; g.fillText('AO CONTROLLER', 20, 40);
+  g.fillStyle = '#8b96a3'; g.font = '18px system-ui, sans-serif'; g.fillText('37-actuator DM · 15×15 Shack–Hartmann, 320 µm lenslets', 250, 40);
+  const pane = (x, title) => { g.fillStyle = '#161a20'; g.fillRect(x, 56, 316, 290); g.fillStyle = '#8b96a3'; g.font = '600 16px system-ui, sans-serif'; g.fillText(title, x + 10, 76); };
+  // 1. spots
+  pane(20, 'SENSOR SPOTS (shifts ×150)');
+  const cx0 = 178, cy0 = 210, cell = 17;
+  g.strokeStyle = '#262c35'; g.lineWidth = 1;
+  for (let i = 0; i <= AO_NL; i++) { const t = (i - AO_NL / 2) * cell; g.beginPath(); g.moveTo(cx0 + t, cy0 - AO_NL / 2 * cell); g.lineTo(cx0 + t, cy0 + AO_NL / 2 * cell); g.moveTo(cx0 - AO_NL / 2 * cell, cy0 + t); g.lineTo(cx0 + AO_NL / 2 * cell, cy0 + t); g.stroke(); }
+  if (v && o.slopes) {
+    const rPix = v.w / AO_PITCH * cell; g.strokeStyle = '#3b6ea8'; g.beginPath(); g.arc(cx0, cy0, rPix, 0, 7); g.stroke();
+    const k = 150 * 5e-3 * (laserState.nm * 1e-9) / v.w / AO_PITCH * cell;    // lenslet f = 5 mm: spot shift = f × slope
+    v.lens.forEach(([, , i, j], n) => {
+      const x = cx0 + (i - (AO_NL - 1) / 2) * cell + o.slopes[2 * n] * k, y = cy0 - (j - (AO_NL - 1) / 2) * cell - o.slopes[2 * n + 1] * k;
+      g.fillStyle = '#3a4350'; g.fillRect(cx0 + (i - (AO_NL - 1) / 2) * cell - 1, cy0 - (j - (AO_NL - 1) / 2) * cell - 1, 2, 2);   // reference: flat wavefront
+      g.fillStyle = '#9dff8a'; g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill();
+    });
+  } else { g.fillStyle = '#5b6470'; g.font = '18px system-ui'; g.textAlign = 'center'; g.fillText('no light on the sensor', cx0, cy0); g.textAlign = 'left'; }
+  // 2. measured wavefront
+  pane(352, 'MEASURED WAVEFRONT');
+  if (v && o.meas) {
+    const R = o.meas.R, sc = Math.max(0.15, 2.5 * o.meas.rms), x0 = 510, y0 = 205, px = 9;
+    for (const k of aoPupil) { const i = k % AO_N, j = (k / AO_N) | 0; g.fillStyle = wfColor(R[k] / sc); g.fillRect(x0 + (i - AO_N / 2) * px, y0 - (j - AO_N / 2 + 1) * px, px + 0.5, px + 0.5); }
+    g.fillStyle = '#eef2f6'; g.font = 'bold 20px ui-monospace, monospace'; g.fillText(`RMS ${o.meas.rms.toFixed(3)} λ`, 362, 336);
+    g.fillStyle = '#8b96a3'; g.font = '14px system-ui'; g.fillText(`±${sc.toFixed(2)} λ`, 600, 336);
+  }
+  // 3. DM
+  pane(684, `DEFORMABLE MIRROR · gain ${AO.gain.toFixed(1)}`);
+  drawDmFace(g, 842, 210, 120, AO.c, poke);
+  const st = aoStroke(), used = Math.max(...Array.from(AO.c, Math.abs)) / st;
+  g.fillStyle = used > 0.95 ? '#ff6b5e' : '#8b96a3'; g.font = '14px system-ui'; g.fillText(`stroke used ${(used * 100).toFixed(0)}%`, 694, 336);
+  // status
+  const line = (y, ok, text) => { g.fillStyle = ok === null ? '#8b96a3' : ok ? '#9fe6a8' : '#ffd23f'; g.font = '19px system-ui, sans-serif'; g.fillText(text, 20, y); };
+  const mm = (d) => `${(Math.abs(d) * 1000).toFixed(0)} mm ${d > 0 ? 'past' : 'short of'}`;
+  if (tr?.dm) {
+    const d = 2 * tr.dm.w * 1000;
+    line(372, d >= 3 && d <= 4.4, `DM: beam Ø ${d.toFixed(1)} mm on the 4.4 mm aperture${d > 4.4 ? ' (clipped)' : d < 3 ? ' (few actuators in use)' : ''}`);
+    if (o.dmDelta !== undefined) line(398, Math.abs(o.dmDelta) <= 0.015, Math.abs(o.dmDelta) <= 0.015 ? `DM → pupil: conjugate (${(Math.abs(o.dmDelta) * 1000).toFixed(0)} mm)` : `DM → pupil: not conjugate; the pupil image is ${mm(-o.dmDelta)} the DM`);
+    else line(398, null, 'DM → pupil: no light in the microscope port yet');
+  } else line(372, null, 'DM: the beam isn\'t on the deformable mirror');
+  if (v) {
+    const d = 2 * v.w * 1000, src = { ret: 'guide star (light from the sample)', fwd: 'laser, reflected by the splitter', main: 'laser, direct' }[v.path];
+    line(424, null, `Sensor sees: ${src} · Ø ${d.toFixed(1)} mm · ${v.lens.length} lenslets`);
+    if (v.dm) line(450, Math.abs(o.dmWfsDelta) <= 0.015, Math.abs(o.dmWfsDelta) <= 0.015 ? `DM → sensor: conjugate (${(Math.abs(o.dmWfsDelta) * 1000).toFixed(0)} mm)` : `DM → sensor: not conjugate (${(Math.abs(o.dmWfsDelta) * 1000).toFixed(0)} mm off): fine detail blurs`);
+    else line(450, false, 'DM → sensor: the sensor can\'t see the DM');
+  } else line(424, null, 'Sensor: no light on it');
+  if (o.S0 !== undefined) { g.fillStyle = o.S0 > 0.8 ? '#39f07a' : '#ffd23f'; g.font = 'bold 22px system-ui, sans-serif'; g.fillText(`Strehl at the sample: ${o.S0.toFixed(2)}`, 600, 372); }
+  g.fillStyle = '#c9d2dc'; g.font = 'italic 18px system-ui, sans-serif'; g.fillText(AO.msg || '', 20, 500);
+  g.fillStyle = '#8b96a3'; g.font = '15px system-ui'; g.fillText('GAIN', 538, 515); g.fillText('PHASE PLATE', 700, 515); g.fillText('RMS', 910, 515);
+  for (const b of AO_BTNS) {
+    const on = b.id === 'loop' && AO.loop;
+    g.fillStyle = aoHover === b.id ? '#ff3b2f' : on ? '#1f6e3d' : '#262c35'; g.beginPath(); g.roundRect(b.x, b.y, b.w, 64, 10); g.fill();
+    g.fillStyle = '#eef2f6'; g.font = 'bold 24px system-ui, sans-serif'; g.textAlign = 'center';
+    const label = b.id === 'loop' ? (AO.loop ? 'Loop ON' : 'Loop OFF') : b.id === 'plate' ? PLATE_TYPES[AO.plate.type][1].split(' ')[0] : b.label;
+    g.fillText(label, b.x + b.w / 2, b.y + 41); g.textAlign = 'left';
+  }
+  g.fillStyle = '#eef2f6'; g.font = 'bold 24px ui-monospace, monospace'; g.textAlign = 'center';
+  g.fillText(AO.gain.toFixed(1), 560, 561); g.fillText(`${AO.plate.amp.toFixed(2)}λ`, 927, 561); g.textAlign = 'left';
+  aoTex.needsUpdate = true;
+}
+function updateAO(dt, L) {
+  AO.acc = (AO.acc || 0) + dt;
+  if (AO.calibAnim) {
+    AO.calibAnim.t = (performance.now() - AO.calibAnim.t0) / 1000;     // real time, so it takes 1.6 s at any frame rate
+    if (AO.calibAnim.t >= 1.6) { AO.calibAnim = null; aoCompute(); aoCalibrate(); aoSig = ''; }
+  }
+  if (AO.acc < 1 / 12) return;
+  AO.acc = 0;
+  const out = aoCompute();
+  aoLoopStep();
+  const S = scopeState.mode === 1 ? new Array(9).fill(out.wfS) : (out.fieldS || new Array(9).fill(1));
+  if (S.some((v, i) => Math.abs(v - AO.fieldS[i]) > 0.01)) { AO.fieldS = S; scopeState.dirty = true; }
+  const poke = AO.calibAnim ? Math.min(AO_NA - 1, (AO.calibAnim.t / 1.6 * AO_NA) | 0) : -1;
+  if (AO.dmTexDirty || poke >= 0) { updateDmTex(poke); AO.dmTexDirty = poke >= 0; }
+  if (L.ao && !L.sandbox && game.state === 'playing') {
+    const tasks = aoTaskList();
+    for (const t of tasks) if (t.ok && !game.aoDone[t.id]) {
+      game.aoDone[t.id] = true; panelSig = ''; tone(880, 0.12); tone(1320, 0.12, 0.1);
+      const lines = AO_SAY[t.id]; if (lines) say(lines);
+    }
+    if (tasks.every((t) => game.aoDone[t.id])) {
+      const t = performance.now() - game.start;
+      game.state = 'solved'; game.time = t; game.result = { ao: true, t, S: out.S0 };
+      [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.35, i * 0.11));
+      say('That is adaptive optics. Sensor, mirror, loop: the same three things on every AO microscope, telescope and eye scanner. Now go and image something deep.');
+    }
+  }
+  drawAO();
+}
+const AO_SAY = {
+  dm: 'Beam on the DM. Fill it, or the outer actuators do nothing.',
+  relay: 'The DM is imaged onto the objective pupil. A correction there is the same for every point in the scan.',
+  wfs: 'Light from the focus, back out through the DM to the sensor. That\'s your guide star.',
+  wfsconj: 'Sensor conjugate to the DM: it sees exactly the surface the mirror can change.',
+  calib: 'Interaction matrix recorded. Now the loop knows which spots each actuator moves.',
+  plate: 'There it is on the sensor. That plate is costing you most of your signal.',
+  loop: 'Loop closed, spots back on their grid, Strehl up. Look at the monitor.',
+  deep: 'Fifty microns into a spheroid and still sharp. That\'s why we do AO.',
+};
+
 // Spacing tags: between consecutive lenses / curved mirrors on the beam, show their separation along the
 // beam next to f₁ + f₂, the spacing that makes a telescope (beam expander or relay) afocal.
 const spacingTags = [];
@@ -3074,6 +3620,10 @@ function traceBeam() {
   const nm = laserState.nm;
   const q = { re: 0, im: Math.PI * laserState.w0 * laserState.w0 / (nm * 1e-9) };   // waist at the laser; q: horizontal plane
   const qv = { ...q };                                                                 // and the vertical plane (differs after a cylindrical lens)
+  // adaptive optics bookkeeping (experiments only): ray-transfer matrix from the laser, and every element that shapes the wavefront
+  const ao = aoActive() ? { events: [], wfsHits: [], bs: null, dm: null, port: null } : null;
+  let M = [1, 0, 0, 1];
+  const branches = [];
   let remaining = laserState.shutter ? LASER.maxDistance : 0, skip = null, port = null;
   let graphHit = false, graphStray = false, strayBounce = false, meterHit = null, dumpHit = false, spannerHit = false, power = laserState.watts, meterPower = 0, ndOD = 0;
   let nSpots = 0;
@@ -3081,15 +3631,16 @@ function traceBeam() {
   const opticPath = [];                   // lenses / curved mirrors in beam order, with path length to each
   let pathLen = 0;
   const irisHits = [];
-  const adv = (d) => { q.re += d; qv.re += d; pathLen += d; };
+  const adv = (d) => { q.re += d; qv.re += d; pathLen += d; if (ao) M = abcdProp(M, d); };
   const step = (to, d) => { segs.push({ a: origin.clone(), b: to.clone(), q: { ...q }, qv: { ...qv }, p: power }); adv(d); };
   const _hx = V(), _vx = V();
   for (let bounce = 0; bounce <= LASER.maxBounces && remaining > 0; bounce++) {
     const hit = raycast(origin, dir, remaining, skip);
     skip = null;
     if (!hit) { step(origin.clone().addScaledVector(dir, remaining), remaining); segs[segs.length - 1].miss = true; break; }
-    if (hit.object.userData.optic?.type === 'lens') {     // a thin lens acts at its centre plane, not its front surface
+    if (hit.object.userData.optic?.type === 'lens' || hit.object.userData.bs) {     // a thin lens (or the splitter's diagonal) acts at its centre plane
       hit.object.getWorldPosition(_c); _ax.set(0, 0, 1).transformDirection(hit.object.matrixWorld);
+      if (hit.object.userData.bs) _ax.copy(hit.object.userData.bs.n).transformDirection(hit.object.matrixWorld);
       const den = dir.dot(_ax);
       if (Math.abs(den) > 0.2) {
         const t = _h.subVectors(_c, origin).dot(_ax) / den;
@@ -3115,6 +3666,25 @@ function traceBeam() {
     if (hit.object.userData.sensor) { meterHit = hit.object.userData.grabRoot; meterPower = power; break; }   // power meter absorbs it
     if (hit.object.userData.dump) { dumpHit = true; break; }                               // beam dump: safely terminated
     if (hit.object.userData.grabRoot?.userData.kind === 'spanner' || hit.object.userData.grabRoot?.userData.stray) { spannerHit = true; strayBounce = true; }
+    if (hit.object.userData.bs) {                  // beamsplitter: half carries straight on, half reflects off the diagonal
+      if (!ao?.bs && branches.length < 2) {
+        const n = _ax.clone(), rd = dir.clone().reflect(n).normalize();
+        branches.push({ origin: hit.point.clone(), dir: rd, q: { ...q }, qv: { ...qv }, M: M.slice(), power: power * 0.5, tag: 'fwd', skip: hit.object });
+        if (ao) ao.bs = { point: hit.point.clone(), dirIn: dir.clone(), n, M: M.slice(), q: { ...q }, qv: { ...qv }, w: gaussW(q, nm), idx: ao.events.length, obj: hit.object };
+      }
+      power *= 0.5;
+      skip = hit.object; origin.copy(hit.point).addScaledVector(dir, 0.0005); adv(0.0005);
+      continue;
+    }
+    if (hit.object.userData.plate) {                // phase plate: adds its aberration, otherwise just glass
+      if (ao) ao.events.push({ kind: 'plate', M: M.slice(), w: gaussW(q, nm), path: ao.bs ? 'common' : 'up' });
+      skip = hit.object; origin.copy(hit.point).addScaledVector(dir, 0.0005); adv(0.0005);
+      continue;
+    }
+    if (hit.object.userData.wfs) {                  // wavefront sensor straight in the beam: it measures, and stops it
+      if (ao && hit.object.userData.wfs.accept(dir)) ao.wfsHits.push({ path: 'main', M: M.slice(), w: gaussW(q, nm), idx: ao.events.length });
+      break;
+    }
     const optic = hit.object.userData.optic;
     if (optic) {
       // offset of the hit from the optic's centre, across its axis: off-centre light gets steered by h/f
@@ -3146,6 +3716,15 @@ function traceBeam() {
         gaussFocus(q, optic.f); gaussFocus(qv, optic.f);
       }
       opticPath.push({ f: optic.f, s: s0, p: hit.point.clone(), cyl: cylAx, qh: { ...q }, qv: { ...qv } });
+      if (ao) {
+        if (!cylAx || cylAx === 'h') M = abcdLens(M, optic.f);
+        // a tilted lens is astigmatic: the two planes focus at f·cos²θ and f, i.e. astigmatism W ≈ h²θ²/(2f) across the beam
+        const th = Math.acos(Math.min(1, Math.abs(cosI)));
+        if (optic.type === 'lens' && th > 2 * DEG) {
+          const h = gaussW(q, nm), Wpv = h * h * th * th / (2 * Math.abs(optic.f)) / (nm * 1e-9);
+          ao.events.push({ kind: 'astig', a: Wpv / (2 * Math.sqrt(6)), M: M.slice(), w: h, path: ao.bs ? 'common' : 'up' });
+        }
+      }
       skip = hit.object;
       origin.copy(hit.point).addScaledVector(dir, 0.0005); adv(0.0005);
       continue;
@@ -3168,12 +3747,26 @@ function traceBeam() {
       if (hit.object.userData.accept) {          // astigmatic beam: the narrower axis sets the fill, the worse axis the divergence
         const Dh = gaussW(q, nm) * 2000, Dv = gaussW(qv, nm) * 2000, dh = gaussDiv(q, nm), dv = gaussDiv(qv, nm);
         port = { D: Math.min(Dh, Dv), Dh, Dv, div: Math.max(dh, dv) };
+        if (ao) ao.port = { M: M.slice(), w: gaussW(q, nm) };
       }
     }
     if (!hit.object.userData.mirror) break;
+    if (ao && hit.object.userData.dm && !ao.dm) {
+      ao.dm = { M: M.slice(), w: gaussW(q, nm), path: ao.bs ? 'common' : 'up', idx: ao.events.length };
+      ao.events.push({ kind: 'dm', M: M.slice(), w: gaussW(q, nm), path: ao.dm.path });
+    }
     dir.reflect(hit.normal).normalize();
     origin.copy(hit.point).addScaledVector(dir, LASER.beamEndPadding); adv(LASER.beamEndPadding);
   }
+  // beamsplitter branches: the reflected half of the laser, and (with light in the port) the guide-star light
+  // coming back out of the microscope, which the splitter sends out of its other side
+  for (const b of branches) traceBranch(b, segs, ao, nm);
+  if (ao && ao.bs && ao.port) {
+    const bs = ao.bs, rd = bs.dirIn.clone().negate().reflect(bs.n).normalize();
+    traceBranch({ origin: bs.point.clone(), dir: rd, q: { re: -bs.q.re, im: bs.q.im }, qv: { re: -bs.qv.re, im: bs.qv.im }, M: [1, 0, 0, 1],
+      power: Math.min(power, 1e-4), tag: 'ret', skip: bs.obj }, segs, ao, nm);
+  }
+  game.ao = ao;
   for (const r of activeTargets) if (!nextTargets.has(r)) r.onBeamExit();
   activeTargets = nextTargets;
   for (let i = nSpots; i < cardSpots.length; i++) cardSpots[i].visible = false;
@@ -3346,12 +3939,13 @@ function pickGrabbable(st, rc = aimRay(st)) {
   const pad = microscope.userData.pad;
   // hidden things (the laser-enclosure ghosts, lid and cable port when that task isn't on) still intersect a ray,
   // and used to swallow it whenever you pointed across the table: skip anything that isn't actually showing
-  const h = rc.intersectObjects([...meshes, ...clickables, ...microscope.userData.knobMeshes, pad, laserPanel, tableTop, panel, ...obstacleGroup.children, ...room.children], false)
+  const h = rc.intersectObjects([...meshes, ...clickables, ...microscope.userData.knobMeshes, pad, laserPanel, tableTop, panel, aoScreen, ...obstacleGroup.children, ...room.children], false)
     .find((x) => x.object.userData.grabRoot || shownInWorld(x.object));
   lastPick = h || null;
   if (!h) return null;
   if (h.object.userData.onClick && h.object.visible && h.object.parent?.visible !== false) return { dist: h.distance, click: h.object.userData.onClick };
   if (h.object === panel) return { dist: h.distance, button: buttonAt(h.uv) };
+  if (h.object === aoScreen) { const id = aoButtonAt(h.uv); return { dist: h.distance, aoBtn: id, click: id ? () => pressAO(id) : null }; }
   if (h.object === pad) return { dist: h.distance, pad: padButtonAt(h.uv) };
   if (h.object === laserPanel) return { dist: h.distance, laserBtn: laserButtonAt(h.uv) };
   if (h.object.userData.focusKnob) return { dist: h.distance, knob: h.object.userData.focusKnob };
@@ -3556,7 +4150,7 @@ function updatePointer(st, dt) {
     if (st.line) st.line.scale.z = 0.2;
   } else if (st.kind === 'xr' && st.src) {
     const h = pickGrabbable(st);
-    st.hover = h?.obj || (h?.joystick ? joystick : null); st.hoverButton = h?.button || null; st.hoverPad = h?.pad || null; st.hoverLaser = h?.laserBtn || null;
+    st.hover = h?.obj || (h?.joystick ? joystick : null); st.hoverButton = h?.button || null; st.hoverPad = h?.pad || null; st.hoverLaser = h?.laserBtn || null; st.hoverAO = h?.aoBtn || null;
     st.line.scale.z = h ? h.dist : 1.5;
     const hot = st.hover || st.hoverButton || st.hoverPad || st.hoverLaser || h?.knob || h?.click;
     st.line.material.color.set(hot ? 0xff3b2f : 0xffffff);
@@ -3638,7 +4232,7 @@ el.addEventListener('pointermove', (e) => {
   setNdc(e);
   if (renderer.xr.isPresenting || mouse.held) return;
   const mh = pickGrabbable(mouse);
-  mouse.hover = mh?.obj || (mh?.joystick ? joystick : null); mouse.hoverButton = mh?.button || null; mouse.hoverPad = mh?.pad || null; mouse.hoverLaser = mh?.laserBtn || null; mouse.hoverClick = !!mh?.click;
+  mouse.hover = mh?.obj || (mh?.joystick ? joystick : null); mouse.hoverButton = mh?.button || null; mouse.hoverPad = mh?.pad || null; mouse.hoverLaser = mh?.laserBtn || null; mouse.hoverAO = mh?.aoBtn || null; mouse.hoverClick = !!mh?.click;
   mouse.hoverKnob = mh?.knob || null;
   el.style.cursor = mouse.hover ? 'grab' : mouse.hoverKnob ? 'ns-resize' : mouse.hoverButton || mouse.hoverPad || mouse.hoverLaser || mouse.hoverClick ? 'pointer' : '';
   orbit.enableZoom = !mouse.hover && !mouse.hoverKnob;
@@ -3740,6 +4334,7 @@ function frame() {
   game.hover = pointers.find((p) => p.hoverButton)?.hoverButton ?? null;
   padHover = pointers.find((p) => p.hoverPad)?.hoverPad ?? null;
   laserHover = pointers.find((p) => p.hoverLaser)?.hoverLaser ?? null; drawLaserPanel();
+  aoHover = pointers.find((p) => p.hoverAO)?.hoverAO ?? null;
   updateGame(dt);
   // speech bubble turns to face you
   const eye = camera.getWorldPosition(V());
