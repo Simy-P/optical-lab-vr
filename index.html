@@ -1980,11 +1980,12 @@ function say(text) {
 }
 
 // ───────────────────────── Game flow + wall panel ─────────────────────────
-const PW = 1024, PH = 600;
+const PW = 1024, PH = 770;                  // taller board: room for two rows of stage tiles
+const BTN_Y = PH - 94;                      // bottom row of buttons
 const panelCanvas = document.createElement('canvas'); panelCanvas.width = PW; panelCanvas.height = PH;
 const pctx = panelCanvas.getContext('2d');
 const panelTex = new THREE.CanvasTexture(panelCanvas); panelTex.colorSpace = THREE.SRGBColorSpace; panelTex.anisotropy = 8;
-const panel = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.5 * PH / PW), new THREE.MeshBasicMaterial({ map: panelTex, toneMapped: false }));
+const panel = new THREE.Mesh(new THREE.PlaneGeometry(2.0, 2.0 * PH / PW), new THREE.MeshBasicMaterial({ map: panelTex, toneMapped: false }));
 panel.position.set(0, 1.75, 2.99); panel.rotation.y = Math.PI;
 scene.add(panel);
 const game = { mode: 'normal', tier: 'mirrors', port: null, level: 0, state: 'title', start: 0, time: 0, litTime: 0, hover: null, result: null,
@@ -2007,20 +2008,20 @@ function buttonsFor(state) {
     { id: 'vr:turn', label: 'TURN\n' + (TURN_LABEL[vrPrefs.turn] || 'Turn: smooth').slice(6), x: 590, y: 30, w: 132, h: 62, small: true },
     { id: 'vr:sticks', label: 'MOVE\n' + (vrPrefs.moveHand === 'left' ? 'left stick' : 'right stick'), x: 730, y: 30, w: 132, h: 62, small: true },
     { id: 'vr:eye', label: 'EYE HEIGHT\n' + (vrPrefs.eye ? vrPrefs.eye.toFixed(2) + ' m' : 'real'), x: 870, y: 30, w: 132, h: 62, small: true },
-    ...TIERS.map((t, i) => ({ ...t, x: 40 + i * 158, y: 300, w: 150, h: 150 })),
-    { id: 'normal', label: 'Normal lab', x: 40, y: 486, w: 440, h: 90 },
-    { id: 'lava', label: '🌋  The Floor is Lava', x: 544, y: 486, w: 440, h: 90 }];
-  const snapBtn = { id: 'snap', label: `Rotation snap: ${snapLabel()}`, x: 40, y: 506, w: 380, h: 70 };
-  if (state === 'intro') return [snapBtn, { id: 'menu', label: 'Menu', x: 440, y: 506, w: 200, h: 70 }, { id: 'start', label: 'Start  ▶', x: 664, y: 506, w: 320, h: 70, hot: true }];
+    ...TIERS.map((t, i) => ({ ...t, x: 40 + (i % 3) * 320, y: 300 + Math.floor(i / 3) * 162, w: 304, h: 150 })),
+    { id: 'normal', label: 'Normal lab', x: 40, y: PH - 118, w: 440, h: 90 },
+    { id: 'lava', label: '🌋  The Floor is Lava', x: 544, y: PH - 118, w: 440, h: 90 }];
+  const snapBtn = { id: 'snap', label: `Rotation snap: ${snapLabel()}`, x: 40, y: BTN_Y, w: 380, h: 70 };
+  if (state === 'intro') return [snapBtn, { id: 'menu', label: 'Menu', x: 440, y: BTN_Y, w: 200, h: 70 }, { id: 'start', label: 'Start  ▶', x: 664, y: BTN_Y, w: 320, h: 70, hot: true }];
   const LL = LEVELS[game.level];
   if (state === 'playing' && LL?.safety && game.safety?.quiz && !game.safety.done.class)
-    return ['1', '2', '3R', '3B', '4'].map((c, i) => ({ id: `class:${c}`, label: `Class ${c}`, x: 40 + i * 196, y: 506, w: 180, h: 70 }));
-  if (state === 'playing' && LL?.shielding) return [{ id: 'shutter', label: laserState.shutter ? 'Close shutter' : 'Open shutter', x: 40, y: 506, w: 380, h: 70, hot: !laserState.shutter },
-    { id: 'menu', label: 'Menu', x: 440, y: 506, w: 200, h: 70 }, { id: 'restart', label: '↺  Start again', x: 664, y: 506, w: 320, h: 70 }];
-  if (state === 'playing' && LL?.safety) return [{ id: 'menu', label: 'Menu', x: 440, y: 506, w: 200, h: 70 }, { id: 'restart', label: '↺  Start again', x: 664, y: 506, w: 320, h: 70 }];
-  if (state === 'playing') return [snapBtn, { id: 'menu', label: 'Menu', x: 440, y: 506, w: 200, h: 70 }, { id: 'restart', label: '↺  Restart level', x: 664, y: 506, w: 320, h: 70 }];
-  return [{ id: 'menu', label: 'Menu', x: 40, y: 506, w: 220, h: 70 }, { id: 'restart', label: '↺  Try again', x: 300, y: 506, w: 320, h: 70 },
-    { id: last ? 'menu' : 'next', label: last ? 'Main menu' : 'Next level  ▶', x: 664, y: 506, w: 320, h: 70, hot: true }];
+    return ['1', '2', '3R', '3B', '4'].map((c, i) => ({ id: `class:${c}`, label: `Class ${c}`, x: 40 + i * 196, y: BTN_Y, w: 180, h: 70 }));
+  if (state === 'playing' && LL?.shielding) return [{ id: 'shutter', label: laserState.shutter ? 'Close shutter' : 'Open shutter', x: 40, y: BTN_Y, w: 380, h: 70, hot: !laserState.shutter },
+    { id: 'menu', label: 'Menu', x: 440, y: BTN_Y, w: 200, h: 70 }, { id: 'restart', label: '↺  Start again', x: 664, y: BTN_Y, w: 320, h: 70 }];
+  if (state === 'playing' && LL?.safety) return [{ id: 'menu', label: 'Menu', x: 440, y: BTN_Y, w: 200, h: 70 }, { id: 'restart', label: '↺  Start again', x: 664, y: BTN_Y, w: 320, h: 70 }];
+  if (state === 'playing') return [snapBtn, { id: 'menu', label: 'Menu', x: 440, y: BTN_Y, w: 200, h: 70 }, { id: 'restart', label: '↺  Restart level', x: 664, y: BTN_Y, w: 320, h: 70 }];
+  return [{ id: 'menu', label: 'Menu', x: 40, y: BTN_Y, w: 220, h: 70 }, { id: 'restart', label: '↺  Try again', x: 300, y: BTN_Y, w: 320, h: 70 },
+    { id: last ? 'menu' : 'next', label: last ? 'Main menu' : 'Next level  ▶', x: 664, y: BTN_Y, w: 320, h: 70, hot: true }];
 }
 const fmt = (ms) => { const s = Math.floor(ms / 1000); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
 let panelSig = '';
@@ -2042,7 +2043,7 @@ function drawPanel() {
     g.fillStyle = '#b6c0cb'; g.font = '28px system-ui, sans-serif';
     wrapText(g, 'Someone has stripped every optic off your setup. Get the laser into the microscope fast, with as few components as possible.', 40, 150, PW - 80, 36);
     g.fillStyle = '#8b96a3'; g.font = '600 24px system-ui, sans-serif'; g.fillText('CHOOSE A STAGE TO START', 40, 284);
-    g.fillText('LAB', 40, 478);
+    g.fillText('LAB', 40, PH - 130);
     for (const b of buttonsFor('title')) {
       if (b.small) {
         g.fillStyle = game.hover === b.id ? '#ff3b2f' : '#2b3340'; g.beginPath(); g.roundRect(b.x, b.y, b.w, b.h, 12); g.fill();
@@ -2057,8 +2058,8 @@ function drawPanel() {
       g.beginPath(); g.roundRect(b.x, b.y, b.w, b.h, 14); g.fill();
       g.fillStyle = '#eef2f6'; g.textAlign = 'center';
       if (isTier) {
-        g.font = 'bold 24px system-ui, sans-serif'; g.fillText(b.title, b.x + b.w / 2, b.y + 46);
-        g.font = '18px system-ui, sans-serif'; wrapText(g, b.sub, b.x + b.w / 2, b.y + 82, b.w - 16, 23);
+        g.font = 'bold 32px system-ui, sans-serif'; g.fillText(b.title, b.x + b.w / 2, b.y + 56);
+        g.font = '22px system-ui, sans-serif'; wrapText(g, b.sub, b.x + b.w / 2, b.y + 96, b.w - 24, 28);
       } else { g.font = 'bold 34px system-ui, sans-serif'; g.fillText((selected ? '✓ ' : '') + b.label, b.x + b.w / 2, b.y + 57); }
       g.textAlign = 'left'; g.globalAlpha = 1;
     }
