@@ -2019,6 +2019,8 @@ function buttonsFor(state) {
   if (state === 'playing' && LL?.shielding) return [{ id: 'shutter', label: laserState.shutter ? 'Close shutter' : 'Open shutter', x: 40, y: BTN_Y, w: 380, h: 70, hot: !laserState.shutter },
     { id: 'menu', label: 'Menu', x: 440, y: BTN_Y, w: 200, h: 70 }, { id: 'restart', label: '↺  Start again', x: 664, y: BTN_Y, w: 320, h: 70 }];
   if (state === 'playing' && LL?.safety) return [{ id: 'menu', label: 'Menu', x: 440, y: BTN_Y, w: 200, h: 70 }, { id: 'restart', label: '↺  Start again', x: 664, y: BTN_Y, w: 320, h: 70 }];
+  if (state === 'playing' && LL?.ao) return [{ ...snapBtn, w: 250, label: `Snap: ${snapLabel()}` }, { id: 'aosetup', label: '⚙  Auto setup', x: 304, y: BTN_Y, w: 270, h: 70, hot: true },
+    { id: 'menu', label: 'Menu', x: 588, y: BTN_Y, w: 160, h: 70 }, { id: 'restart', label: '↺  Restart', x: 762, y: BTN_Y, w: 222, h: 70 }];
   if (state === 'playing') return [snapBtn, { id: 'menu', label: 'Menu', x: 440, y: BTN_Y, w: 200, h: 70 }, { id: 'restart', label: '↺  Restart level', x: 664, y: BTN_Y, w: 320, h: 70 }];
   return [{ id: 'menu', label: 'Menu', x: 40, y: BTN_Y, w: 220, h: 70 }, { id: 'restart', label: '↺  Try again', x: 300, y: BTN_Y, w: 320, h: 70 },
     { id: last ? 'menu' : 'next', label: last ? 'Main menu' : 'Next level  ▶', x: 664, y: BTN_Y, w: 320, h: 70, hot: true }];
@@ -2205,6 +2207,7 @@ function pressButton(id) {
   if (id === 'restart') { loadLevel(game.level); startLevel(); }
   if (id === 'next') loadLevel(game.level + 1);
   if (id === 'snap') { cycleRotSnap(); return; }
+  if (id === 'aosetup') { aoAutoSetup(); return; }
   if (id === 'vr:turn') { vrPrefs.turn = { smooth: 'snap45', snap45: 'snap30', snap30: 'smooth' }[vrPrefs.turn] || 'smooth'; saveVrPrefs(); return; }
   if (id === 'vr:eye') { const opts = [1.6, 1.75, 1.9, 0]; vrPrefs.eye = opts[(opts.indexOf(vrPrefs.eye) + 1) % opts.length]; saveVrPrefs(); applyEyeHeight(); return; }
   if (id === 'vr:sticks') { vrPrefs.moveHand = vrPrefs.moveHand === 'left' ? 'right' : 'left'; saveVrPrefs(); return; }
@@ -2781,7 +2784,7 @@ function updateGame(dt) {
   joystick.userData.pivot.rotation.set(tilt.y * 0.45, 0, -tilt.x * 0.45);
   if (tilt.lengthSq() > 0.0004) {
     const v = SAMPLES[scopeState.sample].fov * 0.5 * dt;                  // half a field of view per second at full tilt
-    scopeState.x = THREE.MathUtils.clamp(scopeState.x + tilt.x * v, -2000, 2000);
+    scopeState.x = THREE.MathUtils.clamp(scopeState.x - tilt.x * v, -2000, 2000);     // table +x is your left, so this way round the image follows the stick
     scopeState.y = THREE.MathUtils.clamp(scopeState.y + tilt.y * v, -2000, 2000);
     scopeState.dirty = true;
   }
@@ -3418,6 +3421,49 @@ function pressAO(id) {
   if (id === 'amp-') AO.plate.amp = Math.max(0, +(AO.plate.amp - 0.05).toFixed(2));
   if (id === 'amp+') AO.plate.amp = Math.min(0.6, +(AO.plate.amp + 0.05).toFixed(2));
   aoSig = '';
+}
+// Auto setup: a complete, aligned AO system. 4× expander (+50, +200) onto the DM, a 4f relay (+200, +200)
+// from the DM to the microscope pupil, a splitter before the DM, and a 1:1 relay (+100, +100) from the DM to the
+// sensor. The fold mirrors and the sensor are then nudged until both relays image the DM exactly, and the
+// system is calibrated, ready for you to close the loop.
+function aoAutoSetup() {
+  for (const st of pointers) st.held = null;
+  for (const c of [...components]) if (!isSpare(c)) removeComponent(c);
+  scene.updateMatrixWorld();
+  const lp = table.worldToLocal(laser.getWorldPosition(V())), x0 = lp.x, zb = lp.z;
+  const P = (k, x, z, yaw) => { const c = spawn(k, V(x, SNAP.tableHeightOffset, z), yaw * DEG); c.userData.lastSpot = c.position.clone(); return c; };
+  const L1 = P('lens50', x0 - 0.2, zb, -90), L2 = P('lens200', x0 - 0.45, zb, -90);
+  traceBeam(); if (spacingInfo[0]) L2.position.x = L1.position.x - spacingInfo[0].best / 1000;
+  const xd = -0.786;
+  P('bs', xd + 0.05, zb, 0); P('dm', xd, zb, 45);
+  const M1 = P('mirror', xd, zb + 0.1, 45), L3 = P('lens200', xd - 0.1, zb + 0.1, -90), M2 = P('mirror', -1.2, zb + 0.1, 135), L4 = P('lens200', -1.2, zb + 0.014, 180);
+  P('plate', xd, zb + 0.05, 0);
+  const La = P('lens100', xd + 0.05, zb - 0.05, 0), Lb = P('lens100', xd + 0.05, zb - 0.25, 0), W = P('wfs', xd + 0.05, zb - 0.35, 0);
+  AO.c.fill(0); AO.loop = false; AO.plate.amp = 0.25;
+  const measure = () => { traceBeam(); return aoCompute(); };
+  // the fold leg sets the DM-to-pupil path: moving it by z adds 2z, so solve δ(z) = 0 with a few secant steps
+  const setFold = (z) => { for (const m of [M1, L3, M2]) m.position.z = z; L4.position.z = z - 0.086; };
+  let za = zb + 0.1, zc = za + 0.01;
+  setFold(za); let da = measure().dmDelta;
+  for (let i = 0; i < 6 && isFinite(da) && Math.abs(da) > 2e-4; i++) {
+    setFold(zc); const dc = measure().dmDelta; if (!isFinite(dc) || dc === da) break;
+    const zn = zc - dc * (zc - za) / (dc - da); za = zc; da = dc; zc = THREE.MathUtils.clamp(zn, zb + 0.02, 0.6);
+  }
+  setFold(za);
+  // and the sensor sits where the second relay images the DM
+  let wa = W.position.z, wc = wa - 0.01; let ea = measure().dmWfsDelta;
+  for (let i = 0; i < 6 && isFinite(ea) && Math.abs(ea) > 2e-4; i++) {
+    W.position.z = wc; const ec = measure().dmWfsDelta; if (!isFinite(ec) || ec === ea) break;
+    const wn = wc - ec * (wc - wa) / (ec - ea); wa = wc; ea = ec; wc = THREE.MathUtils.clamp(wn, -0.64, zb - 0.27);
+  }
+  W.position.z = wa;
+  for (const c of components) if (!isSpare(c)) c.userData.lastSpot = c.position.clone();
+  const out = measure();
+  const ok = aoCalibrate();
+  AO.msg = ok ? `Auto setup: conjugate to ${(Math.abs(out.dmDelta ?? 0) * 1000).toFixed(1)} mm (pupil) and ${(Math.abs(out.dmWfsDelta ?? 0) * 1000).toFixed(1)} mm (sensor), calibrated. Close the loop.` : 'Auto setup placed the parts but couldn\'t calibrate: ' + AO.msg;
+  aoSig = ''; panelSig = ''; AO.dmTexDirty = true;
+  say('There. Expander, DM, relay to the pupil, splitter and sensor arm, all conjugate and calibrated, with a quarter wave of astigmatism on the plate. Close the loop and watch the beads.');
+  tone(660, 0.1); tone(990, 0.12, 0.1);
 }
 function resetAO() {
   AO.c.fill(0); AO.loop = false; AO.calib = null; AO.calibAnim = null; AO.msg = ''; AO.out = null; AO.fieldS = new Array(9).fill(1);
