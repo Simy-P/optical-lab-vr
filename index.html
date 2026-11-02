@@ -3454,7 +3454,8 @@ function traceBranch(b, segs, ao, nm) {
 const AO_W = 1024, AO_HPX = 600;
 const aoCanvas = document.createElement('canvas'); aoCanvas.width = AO_W; aoCanvas.height = AO_HPX;
 const aoTex = new THREE.CanvasTexture(aoCanvas); aoTex.colorSpace = THREE.SRGBColorSpace; aoTex.anisotropy = 8;
-const aoGroup = new THREE.Group(); aoGroup.position.set(1.02, 0, 0.84); aoGroup.rotation.y = Math.PI + 0.32; aoGroup.visible = false; table.add(aoGroup);
+// back left corner, stand well on the table (its top edge is at z 0.75)
+const aoGroup = new THREE.Group(); aoGroup.position.set(1.05, 0, 0.56); aoGroup.rotation.y = Math.PI + 0.32; aoGroup.visible = false; table.add(aoGroup);
 {
   const post = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.3, 12), std(0x9aa1a9, 0.9, 0.3)); post.position.y = 0.15; aoGroup.add(post);
   const foot = box(0.18, 0.012, 0.12, std(0x1b1d21, 0.4, 0.45)); foot.position.y = 0.006; aoGroup.add(foot);
@@ -3536,6 +3537,7 @@ function resetAO() {
   AO.plate = { type: 0, amp: 0.25 }; AO.dmTexDirty = true; aoSig = '';
   game.aoDone = {};
   aoGroup.visible = aoActive();
+  if (aoActive()) footprints.push([0.94, 1.16, 0.48, 0.64]);   // nothing goes under the controller's stand
 }
 // shared texture for the face of every deformable mirror: actuator strokes, red up / blue down
 const dmCanvas = document.createElement('canvas'); dmCanvas.width = dmCanvas.height = 128;
