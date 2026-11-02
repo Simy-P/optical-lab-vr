@@ -1045,6 +1045,7 @@ function wearGoggles(G) {
 const gogglesBlock = (nm) => !!wornGoggles && wornGoggles.ranges.some(([a, b]) => nm >= a && nm <= b);
 const laser = buildLaser();
 function toggleShutter() {
+  if (!laserState.shutter && interlockBlocks()) { tone(140, 0.2); say("Interlock: the lid's open, so the shutter stays shut. Close the lid first."); return; }
   setShutter(!laserState.shutter);
   tone(laserState.shutter ? 880 : 440, 0.07);
   if (!laserState.shutter && !game.safety) say('Shutter closed.');
@@ -1513,6 +1514,9 @@ SAFETY_LEVELS.push({ name: 'Safety 3: The Invisible Beam', safety: true, hideBea
   par: null, riser: false, obstacles: [], beamD: 2,
   say: "Confession: until now we've been drawing the beam in the air for you. Real beams are invisible in clean air. You only see light where it hits something. Same laser, same rules, and someone's left a mirror in the beam again. Use the graph paper target from the tray to find the beam, and where the mirror sends it.",
   lavaSay: "Confession: we've been drawing the beam for you. Real beams are invisible in clean air. Use the graph paper target to find it, spot by spot. And stay on the stones." });
+SAFETY_LEVELS.push({ name: 'Safety 4: Shielding', safety: true, shielding: true, parts: [], par: null, riser: false, obstacles: [], beamD: 2,
+  say: "Lesson four is a demonstration: shielding. Same 2 watt laser, and the experiment sends the beam across the bench. The red volume shows everywhere the beam or its reflections could reach. Right now, that's most of the room, including you. Goggles on, open the shutter with the button on the board, and watch what an enclosure does.",
+  lavaSay: "Lesson four, a demonstration: shielding. The red volume is the hazard zone. Goggles on, open the shutter, and watch an enclosure shrink it." });
 const LEVEL_SETS = { safety: SAFETY_LEVELS, mirrors: MIRROR_LEVELS, lenses: LENS_LEVELS, align: ALIGN_LEVELS, sandbox: SANDBOX_LEVELS };
 let LEVELS = MIRROR_LEVELS;
 
@@ -1910,6 +1914,8 @@ function buttonsFor(state) {
   const LL = LEVELS[game.level];
   if (state === 'playing' && LL?.safety && game.safety?.quiz && !game.safety.done.class)
     return ['1', '2', '3R', '3B', '4'].map((c, i) => ({ id: `class:${c}`, label: `Class ${c}`, x: 40 + i * 196, y: 506, w: 180, h: 70 }));
+  if (state === 'playing' && LL?.shielding) return [{ id: 'shutter', label: laserState.shutter ? 'Close shutter' : 'Open shutter', x: 40, y: 506, w: 380, h: 70, hot: !laserState.shutter },
+    { id: 'menu', label: 'Menu', x: 440, y: 506, w: 200, h: 70 }, { id: 'restart', label: '↺  Start again', x: 664, y: 506, w: 320, h: 70 }];
   if (state === 'playing' && LL?.safety) return [{ id: 'menu', label: 'Menu', x: 440, y: 506, w: 200, h: 70 }, { id: 'restart', label: '↺  Start again', x: 664, y: 506, w: 320, h: 70 }];
   if (state === 'playing') return [snapBtn, { id: 'menu', label: 'Menu', x: 440, y: 506, w: 200, h: 70 }, { id: 'restart', label: '↺  Restart level', x: 664, y: 506, w: 320, h: 70 }];
   return [{ id: 'menu', label: 'Menu', x: 40, y: 506, w: 220, h: 70 }, { id: 'restart', label: '↺  Try again', x: 300, y: 506, w: 320, h: 70 },
@@ -1923,7 +1929,7 @@ function drawPanel() {
   const P = game.port, portStr = P ? `${P.D.toFixed(1)}|${P.div.toFixed(1)}|${P.ok}` : '-';
   const irisSig = (game.irisHits || []).map((x) => `${x.iris.index}${x.pass}${x.off.toFixed(1)}`).join(',');
   const spSig = spacingInfo.map((x) => x.d.toFixed(0)).join(',');
-  const sfSig = game.safety ? JSON.stringify([game.safety.done, game.safety.strikes, game.safety.quiz, wornGoggles?.name, game.meterHit ? (game.meterPower * 1e4 | 0) : -1, game.ndOD]) : '';
+  const sfSig = game.safety ? JSON.stringify([shield.on ? Math.round((shield.fraction || 0) * 100) : 0, laserState.shutter, game.safety.done, game.safety.strikes, game.safety.quiz, wornGoggles?.name, game.meterHit ? (game.meterPower * 1e4 | 0) : -1, game.ndOD]) : '';
   const sig = [frameError, vrPrefs.turn, vrPrefs.moveHand, vrPrefs.eye, sfSig, spSig, irisSig, game.mode, game.tier, game.level, game.state, n, lit, game.hover, Math.floor(t / 1000), game.burns, rotSnap, L.need ? portStr : ''].join('|');
   if (sig === panelSig) return; panelSig = sig;
   const g = pctx, lava = game.mode === 'lava';
@@ -1990,6 +1996,12 @@ function drawPanel() {
       g.fillStyle = '#eef2f6'; g.font = 'bold 26px system-ui, sans-serif';
       g.fillText(L.attenuation ? `${(S.attenPower * 1000).toFixed(2)} mW at ${laserState.nm} nm. The attenuated beam is equivalent to which class?`
         : `The meter reads ${laserState.watts.toFixed(2)} W at ${laserState.nm} nm. What class is this laser?`, 40, 490);
+    } else if (L.shielding) {
+      const f = shield.fraction ?? 1, lab1 = S.done.class1;
+      const txt = !laserState.shutter ? 'Shutter closed: no beam, no hazard zone'
+        : lab1 ? 'Hazard zone: inside the enclosure only  ·  CLASS 1 LASER PRODUCT'
+        : `Hazard zone: ${Math.round(f * 100)}% of the room${f > 0.3 ? '  ·  Class 4 hazard, open bench' : '  ·  partly enclosed'}`;
+      g.fillStyle = lab1 ? '#39f07a' : f > 0.3 ? '#ff6b5e' : '#ffd23f'; g.font = 'bold 24px system-ui, sans-serif'; g.fillText(txt, 40, 486);
     } else if (L.hideBeam) {
       g.fillStyle = '#9fb3c8'; g.font = 'italic 22px system-ui, sans-serif';
       g.fillText('The beam is not drawn: real beams are invisible in air. Use the graph paper target.', 40, 486);
@@ -2039,7 +2051,7 @@ function drawPanel() {
     g.fillStyle = '#eef2f6'; g.font = '32px system-ui, sans-serif'; g.fillText(grade[1], PW / 2, 310);
     g.fillStyle = '#b6c0cb'; g.font = '26px system-ui, sans-serif';
     g.fillText(`Strikes: ${k}   ·   Supervisors injured: ${r.safety.zaps}   ·   Time ${fmt(r.t)}`, PW / 2, 366);
-    g.font = 'italic 21px system-ui, sans-serif'; g.fillText(L.hideBeam ? 'Door shut · lamp on · right goggles · invisible beam traced with a target · stray removed · beam dumped' : L.attenuation ? 'Door shut · lamp on · right goggles · 2 W measured · attenuated to 1 mW with ND filters · beam dumped'
+    g.font = 'italic 21px system-ui, sans-serif'; g.fillText(L.shielding ? 'Hazard zone shown · enclosure fitted · cable port plugged · interlock tested · Class 1 laser product' : L.hideBeam ? 'Door shut · lamp on · right goggles · invisible beam traced with a target · stray removed · beam dumped' : L.attenuation ? 'Door shut · lamp on · right goggles · 2 W measured · attenuated to 1 mW with ND filters · beam dumped'
       : 'Door shut · lamp on · right goggles · no stray reflections · power measured · beam dumped', PW / 2, 432);
     g.textAlign = 'left';
   } else {
@@ -2070,6 +2082,7 @@ function buttonAt(uv) {
 function pressButton(id) {
   tone(880, 0.06);
   if (id === 'start') startLevel();
+  if (id === 'shutter') { toggleShutter(); return; }
   if (id === 'restart') { loadLevel(game.level); startLevel(); }
   if (id === 'next') loadLevel(game.level + 1);
   if (id === 'snap') { cycleRotSnap(); return; }
@@ -2099,7 +2112,7 @@ function setMode(mode) {
   game.health = 100; game.offLava = 0;
 }
 function showTitle() {
-  clearTable();
+  clearTable(); resetEnclosure(false);
   game.state = 'title'; panelSig = '';
   say('Ah, you\'re in. Pick a stage on the board behind the table: mirrors first, then lenses.');
 }
@@ -2127,9 +2140,10 @@ function loadLevel(i) {
   laserState.w0 = (L.beamD || 1) / 2000;          // waist radius at the laser, metres
   game.burns = 0; game.port = null;
   game.safety = null;
+  resetEnclosure(!!L.shielding);
   if (L.safety) {
     laserState.watts = 2.0; setWavelength(532); setShutter(false);
-    labDoor.target = DOOR_OPEN; setLabLamp(false);
+    labDoor.target = L.shielding ? 0 : DOOR_OPEN; setLabLamp(!!L.shielding);
     if (wornGoggles) wearGoggles(wornGoggles);           // take them off: you have to choose
     game.safety = { done: {}, strikes: 0, zaps: 0, quiz: false, answered: false, cool: 0, log: [] };
   } else {
@@ -2145,9 +2159,153 @@ function startLevel() {
     // lesson 1: someone has left a shiny spanner propped up on the table, angled straight at the supervisor.
     // Later lessons: a mirror left over from someone's experiment, at an angle, doing the same.
     if (game.level === 0) spawn('spanner', V(0.3, SNAP.tableHeightOffset, 0), 92.85 * DEG);
-    else { const m = spawn('mirror', V(0.3, SNAP.tableHeightOffset, 0), 135 * DEG); m.userData.stray = true; }   // sends it off the table, at the door
+    else { const m = spawn('mirror', V(-0.5, SNAP.tableHeightOffset, 0), 135 * DEG); m.userData.stray = true; }   // sends it off the table at the door (half a metre from where you start)
     say("Off you go. First things first: the lab door and the warning lamp.");
   } else say("Clock's running.");
+}
+
+// ───────────────────────── Safety 4: the laser enclosure (a demonstration) ─────────────────────────
+// Orange laser-safety acrylic panels round the table, a cable port someone left open, and an interlocked
+// lid. A translucent red volume shows the hazard zone: the whole room on an open bench, shrinking to the
+// inside of the box as it's enclosed. Fully enclosed and interlocked, a Class 4 laser is a Class 1 product.
+const ENC = { x0: -1.545, x1: 1.545, z0: 0.035, z1: 1.565, y0: 0.91, y1: 1.75, port: { x: -0.5, y: 0.955, w: 0.08, h: 0.07 } };
+const shield = { on: false, sides: { front: false, back: false, left: false, right: false }, plugged: false, lid: false, lidOpen: false,
+  interlockTested: false, zone: new THREE.Box3(), lidAng: 0 };
+const enclosure = new THREE.Group(); enclosure.visible = false; scene.add(enclosure);
+const acrylic = new THREE.MeshStandardMaterial({ color: 0xff7a1a, transparent: true, opacity: 0.38, roughness: 0.15, metalness: 0, side: THREE.DoubleSide, depthWrite: false });
+const ghostMat = new THREE.MeshBasicMaterial({ color: 0xffb36b, transparent: true, opacity: 0.12, side: THREE.DoubleSide, depthWrite: false });
+const encFrame = std(0x2b2e33, 0.6, 0.4);
+const encParts = {};                       // side → { group, colliders, ghost }
+function encPanel(name, w, h, cx, cy, cz, rotY, pieces) {
+  const g = new THREE.Group(); g.position.set(cx, cy, cz); g.rotation.y = rotY; enclosure.add(g);
+  const colliders = [];
+  for (const [pw, ph, px, py] of pieces || [[w, h, 0, 0]]) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(pw, ph, 0.01), acrylic); m.position.set(px, py, 0); g.add(m); colliders.push(m);
+  }
+  for (const [fw, fh, fx, fy] of [[w, 0.03, 0, h / 2], [w, 0.03, 0, -h / 2], [0.03, h, -w / 2, 0], [0.03, h, w / 2, 0]]) {
+    const f = box(fw, fh, 0.025, encFrame, false); f.position.set(fx, fy, 0); g.add(f);
+  }
+  g.visible = false;
+  const ghost = new THREE.Mesh(new THREE.PlaneGeometry(w, h), ghostMat.clone()); ghost.position.set(cx, cy, cz); ghost.rotation.y = rotY;
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(w, h)), new THREE.LineDashedMaterial({ color: 0xffb36b, dashSize: 0.05, gapSize: 0.04 }));
+  edges.computeLineDistances(); ghost.add(edges); enclosure.add(ghost);
+  ghost.userData.onClick = () => fitPanel(name); clickables.push(ghost);
+  encParts[name] = { group: g, colliders, ghost };
+}
+{
+  const W = ENC.x1 - ENC.x0, D = ENC.z1 - ENC.z0, H = ENC.y1 - ENC.y0, cy = (ENC.y0 + ENC.y1) / 2, cz = (ENC.z0 + ENC.z1) / 2;
+  // the front panel has a cable port, right where the experiment's beam happens to cross it
+  const P = ENC.port, hx0 = P.x - P.w / 2, hx1 = P.x + P.w / 2, hy0 = P.y - P.h / 2 - cy, hy1 = P.y + P.h / 2 - cy;
+  encPanel('front', W, H, 0, cy, ENC.z0, 0, [
+    [hx0 - ENC.x0, H, (ENC.x0 + hx0) / 2, 0], [ENC.x1 - hx1, H, (hx1 + ENC.x1) / 2, 0],
+    [P.w, H / 2 - hy1, P.x, (hy1 + H / 2) / 2], [P.w, hy0 + H / 2, P.x, (-H / 2 + hy0) / 2]]);
+  encPanel('back', W, H, 0, cy, ENC.z1, 0);
+  encPanel('left', D, H, ENC.x0, cy, cz, Math.PI / 2);
+  encPanel('right', D, H, ENC.x1, cy, cz, Math.PI / 2);
+  // a cable running out through the port, and the grommet that should be in it
+  const cable = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.5, 8).rotateX(Math.PI / 2), std(0x111111, 0, 0.7));
+  cable.position.set(P.x + 0.025, P.y - 0.02, ENC.z0); encParts.front.group.add(cable); cable.position.sub(encParts.front.group.position);
+  const plug = new THREE.Mesh(new THREE.BoxGeometry(P.w, P.h, 0.02), std(0x151515, 0, 0.8));
+  plug.position.set(P.x, P.y - cy, 0); plug.visible = false; encParts.front.group.add(plug); shield.plugMesh = plug;
+  const portHit = new THREE.Mesh(new THREE.BoxGeometry(P.w + 0.04, P.h + 0.04, 0.05), new THREE.MeshBasicMaterial({ visible: false }));
+  portHit.position.copy(plug.position); encParts.front.group.add(portHit);
+  portHit.userData.onClick = () => plugPort(); clickables.push(portHit); shield.portHit = portHit;
+  // the lid, hinged along the back edge
+  const pivot = new THREE.Group(); pivot.position.set(0, ENC.y1, ENC.z1); enclosure.add(pivot);
+  const lid = new THREE.Mesh(new THREE.BoxGeometry(W, 0.01, D), acrylic); lid.position.set(0, 0, -D / 2); pivot.add(lid);
+  const lidFrame = box(W, 0.03, 0.03, encFrame, false); lidFrame.position.set(0, 0, -D); pivot.add(lidFrame);
+  const handle = box(0.3, 0.03, 0.04, std(0xc9ced4, 0.9, 0.3), false); handle.position.set(0, 0.02, -D - 0.01); pivot.add(handle);
+  pivot.visible = false; shield.lidPivot = pivot; shield.lidMesh = lid;
+  for (const m of [lid, lidFrame, handle]) { m.userData.onClick = () => toggleLid(); clickables.push(m); }
+  const lg = new THREE.Mesh(new THREE.PlaneGeometry(W, D).rotateX(-Math.PI / 2), ghostMat.clone()); lg.position.set(0, ENC.y1, cz);
+  const le = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.PlaneGeometry(W, D).rotateX(-Math.PI / 2)), new THREE.LineDashedMaterial({ color: 0xffb36b, dashSize: 0.05, gapSize: 0.04 }));
+  le.computeLineDistances(); lg.add(le); enclosure.add(lg); lg.userData.onClick = () => fitLid(); clickables.push(lg); shield.lidGhost = lg;
+  // the interlock switch on the front edge, and the label that appears when it's all done
+  const sw = box(0.06, 0.03, 0.03, std(0xffd400, 0.2, 0.5), false); sw.position.set(-0.5, ENC.y1 + 0.015, ENC.z0 + 0.02); enclosure.add(sw);
+  const c = document.createElement('canvas'); c.width = 640; c.height = 220; const g2 = c.getContext('2d');
+  g2.fillStyle = '#ffd400'; g2.fillRect(0, 0, 640, 220); g2.strokeStyle = '#111'; g2.lineWidth = 10; g2.strokeRect(10, 10, 620, 200);
+  g2.fillStyle = '#111'; g2.textAlign = 'center'; g2.font = 'bold 76px system-ui, sans-serif'; g2.fillText('CLASS 1', 320, 100);
+  g2.font = 'bold 50px system-ui, sans-serif'; g2.fillText('LASER PRODUCT', 320, 172);
+  const lt = new THREE.CanvasTexture(c); lt.colorSpace = THREE.SRGBColorSpace;
+  const label = new THREE.Mesh(new THREE.PlaneGeometry(0.4, 0.1375), new THREE.MeshBasicMaterial({ map: lt }));
+  label.position.set(-0.6, 1.5, ENC.z0 - 0.012); label.rotation.y = Math.PI; label.visible = false; enclosure.add(label); shield.label = label;
+}
+// the hazard zone itself
+const zoneMesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xff2020, transparent: true, opacity: 0.1, side: THREE.DoubleSide, depthWrite: false }));
+zoneMesh.add(new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(1, 1, 1)), new THREE.LineBasicMaterial({ color: 0xff4040, transparent: true, opacity: 0.6 })));
+zoneMesh.renderOrder = 2; zoneMesh.visible = false; scene.add(zoneMesh);
+const leakMesh = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial({ color: 0xff2020, transparent: true, opacity: 0.22, depthWrite: false }));
+leakMesh.visible = false; scene.add(leakMesh);
+const _zt = new THREE.Box3();
+function setCollider(m, on) { const k = beamColliders.indexOf(m); if (on && k < 0) beamColliders.push(m); if (!on && k >= 0) beamColliders.splice(k, 1); }
+function syncEnclosure() {
+  for (const [name, P] of Object.entries(encParts)) {
+    const on = shield.on && shield.sides[name];
+    P.group.visible = on; P.ghost.visible = shield.on && !shield.sides[name];
+    for (const m of P.colliders) setCollider(m, on);
+  }
+  const allSides = Object.values(shield.sides).every(Boolean);
+  shield.plugMesh.visible = shield.plugged; setCollider(shield.plugMesh, shield.on && shield.plugged && shield.sides.front);
+  shield.portHit.visible = shield.on && shield.sides.front && !shield.plugged;
+  shield.lidPivot.visible = shield.on && shield.lid; shield.lidGhost.visible = shield.on && allSides && !shield.lid;
+  setCollider(shield.lidMesh, shield.on && shield.lid && !shield.lidOpen);
+  panelSig = '';
+}
+function resetEnclosure(on) {
+  Object.assign(shield, { on, plugged: false, lid: false, lidOpen: false, interlockTested: false, lidAng: 0 });
+  for (const k in shield.sides) shield.sides[k] = false;
+  shield.label.visible = false; shield.lidPivot.rotation.x = 0;
+  enclosure.visible = on; zoneMesh.visible = leakMesh.visible = false;
+  shield.zone.set(V(-3, 0, -3), V(3, 3, 3));
+  syncEnclosure();
+}
+function fitPanel(name) {
+  if (!shield.on || shield.sides[name]) return;
+  shield.sides[name] = true; tone(300, 0.12); tone(200, 0.1, 0.08); syncEnclosure();
+  const left = Object.values(shield.sides).filter((x) => !x).length;
+  if (left) say(`Panel on. Watch the red zone: it can't get past that side any more. ${left} to go.`);
+  else if (!shield.plugged) say("All four sides on. But look: there's still a red streak escaping out of the front. Someone's left the cable port open, and the beam goes straight through it. Plug it.");
+}
+function plugPort() {
+  if (!shield.on || shield.plugged || !shield.sides.front) return;
+  shield.plugged = true; tone(500, 0.08); syncEnclosure();
+  say("Port plugged. A shield is only as good as its gaps: cable ports, missing screws, a lid propped open 'just for a minute'. Now the lid.");
+}
+function fitLid() {
+  if (!shield.on || shield.lid) return;
+  shield.lid = true; shield.lidOpen = false; tone(260, 0.15); syncEnclosure();
+  say("Lid on, and it's interlocked: that yellow switch. Test it. With the shutter open, lift the lid.");
+}
+function toggleLid() {
+  if (!shield.on || !shield.lid) return;
+  shield.lidOpen = !shield.lidOpen; tone(shield.lidOpen ? 420 : 260, 0.1); syncEnclosure();
+  if (shield.lidOpen && laserState.shutter) {
+    setShutter(false); shield.interlockTested = true; tone(140, 0.25, 0.05);
+    say("CLUNK. The interlock shut the laser the instant the lid moved. That's what it's for. And never, ever tape a magnet over the switch to defeat it. Close the lid and open the shutter again.");
+  } else if (shield.lidOpen) say("Lid open, shutter closed: the interlock won't let the shutter open now.");
+  panelSig = '';
+}
+const interlockBlocks = () => shield.on && shield.lid && shield.lidOpen;
+function updateEnclosure(dt) {
+  if (!shield.on) return;
+  shield.lidAng += ((shield.lidOpen ? -1.1 : 0) - shield.lidAng) * Math.min(1, dt * 6);
+  shield.lidPivot.rotation.x = shield.lidAng;
+  const S = shield.sides, sh = laserState.shutter, lidShut = shield.lid && !shield.lidOpen;
+  const all = Object.values(S).every(Boolean);
+  // where could the beam, or a reflection of it, reach right now?
+  if (sh) _zt.set(V(S.left ? ENC.x0 : -3, all ? ENC.y0 : 0, S.front && shield.plugged ? ENC.z0 : S.front ? ENC.z0 : -3),
+    V(S.right ? ENC.x1 : 3, lidShut ? ENC.y1 : 3, S.back ? ENC.z1 : 3));
+  else { const l = laser.getWorldPosition(V()); _zt.set(l.clone(), l.clone()); }
+  const k = Math.min(1, dt * 3);
+  shield.zone.min.lerp(_zt.min, k); shield.zone.max.lerp(_zt.max, k);
+  const sz = shield.zone.getSize(V());
+  zoneMesh.visible = sz.x > 0.02 && sz.y > 0.02;
+  zoneMesh.scale.set(Math.max(sz.x, 0.001), Math.max(sz.y, 0.001), Math.max(sz.z, 0.001)); shield.zone.getCenter(zoneMesh.position);
+  // the leak through the open cable port: a red streak from the port across the room
+  const leak = sh && S.front && !shield.plugged && game.segs?.some((sg) => sg.a.z > ENC.z0 && sg.b.z < ENC.z0 - 0.05);
+  leakMesh.visible = !!leak;
+  if (leak) { const zEnd = -3.0; leakMesh.scale.set(0.14, 0.14, ENC.z0 - zEnd); leakMesh.position.set(ENC.port.x, ENC.port.y, (ENC.z0 + zEnd) / 2); }
+  shield.fraction = (sz.x * sz.y * sz.z) / (6 * 3 * 6);
 }
 
 // ───────────────────────── Laser safety induction ─────────────────────────
@@ -2191,7 +2349,17 @@ const INVIS_TASKS = [
   { id: 'dump', text: 'Terminate the beam on a beam dump' },
   { id: 'close', text: 'Finished for the day: close the shutter' },
 ];
-const safetyTasks = () => (LEVELS[game.level]?.hideBeam ? INVIS_TASKS : LEVELS[game.level]?.attenuation ? ATTEN_TASKS : SAFETY_TASKS);
+const SHIELD_TASKS = [
+  { id: 'goggles', text: 'Wear the right goggles: the bench is still open' },
+  { id: 'shutter', text: 'Open the shutter (button below) and look at the red hazard zone' },
+  { id: 'panels', text: 'Fit the four side panels: touch the outlines round the table' },
+  { id: 'port', text: 'Find the leak and plug the open cable port' },
+  { id: 'lid', text: 'Fit the lid (touch the outline on top)' },
+  { id: 'interlock', text: 'Test the interlock: lift the lid with the shutter open' },
+  { id: 'class1', text: 'Close the lid and open the shutter: fully contained' },
+  { id: 'close', text: 'Finished: close the shutter' },
+];
+const safetyTasks = () => (LEVELS[game.level]?.shielding ? SHIELD_TASKS : LEVELS[game.level]?.hideBeam ? INVIS_TASKS : LEVELS[game.level]?.attenuation ? ATTEN_TASKS : SAFETY_TASKS);
 const ATTEN_ANSWERS = {
   '1': "Class 1 for green is under about 0.4 milliwatts. You've got more than that. Close, but no.",
   '2': "Class 2 equivalent. Correct: visible, up to 1 milliwatt, the blink reflex protects you. But the laser itself is still Class 4: take the filters out and you're back to 2 watts. The goggles stay on.",
@@ -2301,13 +2469,23 @@ function updateSafety(dt) {
   if (labLamp.userData.on) done.lamp = true;
   if (wornGoggles?.correct) done.goggles = true;
   if (sh) done.shutter = true;
-  if (sh && game.spannerHit && game.level > 0 && !S.strayHinted && performance.now() - shutterToggledAt > 1200) {
+  if (sh && game.spannerHit && game.level > 0 && !L.shielding && !S.strayHinted && performance.now() - shutterToggledAt > 1200) {
     S.strayHinted = true;
     say(L.hideBeam ? "Hang on. Is that a spot on the door? Something on the table is sending the beam off the edge. Find it with the target."
       : "Look at the door! Someone's left a mirror at 45 degrees and it's sending 2 watts straight at the door. Whoever walks in next gets it in the stomach. Get it off the table.");
   }
   if (sh && !game.spannerHit && (!L.hideBeam || (done.trace && !game.graphHit))) done.stray = true;   // (not just hiding it behind the target)
-  if (L.hideBeam) {
+  if (L.shielding) {
+    if (sh && wornGoggles?.correct) done.shutter = true;
+    if (Object.values(shield.sides).every(Boolean)) done.panels = true;
+    if (shield.plugged) done.port = true;
+    if (shield.lid) done.lid = true;
+    if (shield.interlockTested) done.interlock = true;
+    if (done.panels && done.port && done.interlock && shield.lid && !shield.lidOpen && sh && !done.class1) {
+      done.class1 = true; shield.label.visible = true;
+      say("And there it is. Same 2 watt Class 4 laser, but enclosed and interlocked it's a Class 1 laser product. See that microscope? Class 1 product, with a Class 3B laser inside. This is why. Close the shutter and you're done.");
+    }
+  } else if (L.hideBeam) {
     if (sh && game.graphHit) done.find = true;
     if (sh && game.graphHit && game.graphStray) done.trace = true;
     if (sh && game.dumpHit && done.find) done.dump = true;
@@ -3450,7 +3628,7 @@ renderer.xr.addEventListener('sessionend', () => {
 const clock = new THREE.Clock();
 setMode(location.hash === '#lava' ? 'lava' : 'normal');
 loadLevel(0); showTitle();
-window.lab = { get failing() { return failing; }, strike, doris, dorisSays, abyssOpened, dorisBubble, abyss, octo, marineSound, hinge, removeComponent, wearGoggles, GOGGLES, setShutter, labDoor, setLabLamp, get supervisor() { return supervisor; }, get irises() { return irises; }, opticHits, endGrabTest: (m) => { const st = { held: { obj: m, how: 't', mode: 'ray' } }; endGrab(st, 't'); }, setTier, LEVEL_SETS, gaussW, viewer, get viewing() { return viewing; }, setDesktopViewing: (v) => { desktopViewing = v; }, cards, cardSpots, blockedAt, setWavelength, laserState, laserCtl, THREE, scene, microscope, game, setMode, showTitle, pressButton, LEVELS, spawn, components, componentsUsed, loadLevel, startLevel, joystick, scopeState, get levels() { return LEVELS; }, pressPad, turnFocus, setFocus, camera, orbit, table, laser, buildGlove, setGloveCurl, buildGoalPort, buildBeamBlockerBox, traceBeam, rotateBy };
+window.lab = { get frameError() { return frameError; }, shield, fitPanel, plugPort, fitLid, toggleLid, toggleShutter, get failing() { return failing; }, strike, doris, dorisSays, abyssOpened, dorisBubble, abyss, octo, marineSound, hinge, removeComponent, wearGoggles, GOGGLES, setShutter, labDoor, setLabLamp, get supervisor() { return supervisor; }, get irises() { return irises; }, opticHits, endGrabTest: (m) => { const st = { held: { obj: m, how: 't', mode: 'ray' } }; endGrab(st, 't'); }, setTier, LEVEL_SETS, gaussW, viewer, get viewing() { return viewing; }, setDesktopViewing: (v) => { desktopViewing = v; }, cards, cardSpots, blockedAt, setWavelength, laserState, laserCtl, THREE, scene, microscope, game, setMode, showTitle, pressButton, LEVELS, spawn, components, componentsUsed, loadLevel, startLevel, joystick, scopeState, get levels() { return LEVELS; }, pressPad, turnFocus, setFocus, camera, orbit, table, laser, buildGlove, setGloveCurl, buildGoalPort, buildBeamBlockerBox, traceBeam, rotateBy };
 
 let frameError = null;
 function reportError(e) {
@@ -3490,6 +3668,7 @@ function frame() {
   const eye = camera.getWorldPosition(V());
   bubble.rotation.y = Math.atan2(eye.x - bubble.position.x, eye.z - bubble.position.z);
   updateFailure(dt);
+  updateEnclosure(dt);
 }
 </script>
 </body>
