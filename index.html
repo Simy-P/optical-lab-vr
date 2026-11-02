@@ -33,7 +33,7 @@
   <div class="top"><h1>Optical Lab <i>VR</i></h1><button id="hudToggle">hide help</button></div>
   <div class="more">
     <p>You come in to find every optic gone from your setup. Your supervisor wants light in the microscope's rear port, fast, and with as few optical components on the table as possible. Each level they add something new to the table.</p>
-    <p>Lenses are labelled on their bases (+ = convex, converging; − = concave, diverging), and the wall panel and laser controller show the starting beam size. <b>★ Free build</b> puts every optic in the tray with a live readout at the port: try +100 then +400 mm, 500 mm apart, for a 4× bigger collimated beam. A floating tag between each pair of lenses shows their spacing along the beam against f₁+f₂ (green when within 2 mm).</p>
+    <p>Lenses are labelled on their bases (+ = convex, converging; − = concave, diverging), and the wall panel and laser controller show the starting beam size. <b>★ Free build</b> puts every optic in the tray with a live readout at the port: try +100 then +400 mm, 500 mm apart, for a 4× bigger collimated beam. A floating tag between each pair of lenses shows their spacing along the beam, the best spacing for a collimated output (worked out from the real Gaussian beam: the second lens goes one focal length from the waist the first lens makes. That is f₁+f₂ when the waist lands at f₁, as in a 4× expander, but when contracting with a long first lens inside the laser's Rayleigh range the waist forms short of f₁, so +400 → +100 wants about 485 mm, not 500) and f₁+f₂; it turns green within 2 mm of best. The +100 mm <b>cylindrical lens</b> focuses in one plane only, so the beam becomes an ellipse and then a line at its focus; click the orange knob on top to turn it between horizontal and vertical focusing.</p>
     <p><b>0 · Safety</b> is a laser safety induction: close the door, switch on the warning lamp, pick the right goggles from the rack, find the stray reflection, measure the power, classify the laser, dump the beam and close the shutter. Do anything unsafe (shutter open too early, no or wrong goggles, a hand or your eye in the beam) and everything stops: you're back at the start and the supervisor tells you exactly what you did wrong. Finish to get a certificate.</p>
     <p>Three stages: <b>1 · Mirrors</b> (steer the beam), <b>2 · Lenses</b> (expand and collimate the beam to fill the new objective's back aperture; lenses and curved mirrors centre themselves on the beam when you let go, and the beam's real width is drawn as it focuses and expands), <b>3 · Alignment</b> (two irises fixed on the microscope axis: the expanded beam must pass through the middle of both, so it arrives on axis and square), and <b>4 · Advanced</b> (polarisation and aberrations, coming next). Two labs: the normal lab, and <b>The Floor is Lava</b>, where the volcanology lab next door has sprung a leak. Stay on the stepping stones; the optical table is lava proof.</p>
     <p><b>Quest:</b> <kbd>ENTER VR</kbd>. Point at the wall panel and pull the trigger to choose a game. Either hand grabs with grip or trigger: reach in and pick a part up to lift, tilt and carry it (or pass it to your other hand), and when you let go it drops back onto the table, upright, on the nearest grid spot and snap angle. Point at a part to slide it along the table from a distance. Let go of the trigger to point your index finger and you can press the buttons on the laser controller, the microscope pad and the wall panel by pushing them. While holding a part at a distance: twist your wrist to turn it, <kbd>A</kbd>/<kbd>X</kbd> and <kbd>B</kbd>/<kbd>Y</kbd> turn it one step, the thumbstick slides it (lenses and curved mirrors creep slowly, for fine focusing), and clicking the thumbstick changes the rotation snap (free, 1°, 5°, 15°, 45°; also on the wall panel; 5° to start). Put a part back in the tray to remove it. When the light is in, the monitor shows a live confocal image: grab the focus knobs on the microscope's right side and move your hand up or down to focus through the sample (big knob coarse, small knob fine), switch between confocal and widefield, set the pinhole and change the sample with the buttons under the monitor, and use the joystick to move the stage. The box beside the laser tunes it from 350 to 1064 nm; UV and IR beams are invisible, so pick up a detector card from the rack next to it and hold it in the beam to see where it goes, or pick up the IR viewer next to the controller and hold it to your eye: UV and near-IR beams show up green through it. Walking: the left stick moves you the way you're looking and the right stick turns (smooth by default). On the wall panel's title screen you can switch to snap turning (45° or 30°), swap the sticks, and set your eye height (1.75 m to start; 1.6, 1.9, or your real height).</p>
@@ -86,7 +86,7 @@ function cycleRotSnap() {
 }
 const snapLabel = () => (rotSnap ? `${rotSnap}°` : 'free');
 // LaserEmitter defaults
-const LASER = { maxDistance: 20, maxBounces: 14, beamEndPadding: 0.01 };
+const LASER = { maxDistance: 30, maxBounces: 64, beamEndPadding: 0.01 };   // each optic, filter or iris the beam passes uses one step
 // Colours from the scripts / materials
 const COLORS = {
   mirrorInactive: new THREE.Color(0.75, 0.75, 0.8), mirrorActive: new THREE.Color(0.8, 1, 1),
@@ -1059,19 +1059,28 @@ const BEAM_LOW = laser.position.y - TABLE_PLANE.y;      // 0.04 m above the tabl
 const BEAM_HIGH = 0.20;                                 // height a periscope lifts the beam to
 const PART_NAMES = { mirror: 'mirrors', tallMirror: 'tall mirrors', periscope: 'periscopes', powerMeter: 'power meter', beamDump: 'beam dump', spanner: 'spanner',
   lens50: '+50 mm convex lens', lens100: '+100 mm convex lens', lens200: '+200 mm convex lens', lens400: '+400 mm convex lens',
-  lensN50: '−50 mm concave lens', lensN100: '−100 mm concave lens',
+  lensN50: '−50 mm concave lens', lensN100: '−100 mm concave lens', cyl100: '+100 mm cylindrical lens',
   cmirror100: 'f 100 concave mirror', cmirror200: 'f 200 concave mirror', xmirror100: 'f −100 convex mirror',
   nd03: 'ND 0.3', nd05: 'ND 0.5', nd1: 'ND 1', nd2: 'ND 2', nd3: 'ND 3', graphCard: 'graph paper target' };
 // Lenses and curved mirrors (2" optics). f in metres; negative f diverges.
 const OPTICS = {
   lens50: { type: 'lens', f: 0.05 }, lens100: { type: 'lens', f: 0.1 }, lens200: { type: 'lens', f: 0.2 }, lens400: { type: 'lens', f: 0.4 },
   lensN50: { type: 'lens', f: -0.05 }, lensN100: { type: 'lens', f: -0.1 },
+  cyl100: { type: 'lens', f: 0.1, cyl: true },        // focuses in one plane only (its power axis); click its knob to turn it 90°
   cmirror100: { type: 'cmirror', f: 0.1 }, cmirror200: { type: 'cmirror', f: 0.2 }, xmirror100: { type: 'cmirror', f: -0.1 },
   // neutral density filters: transmission 10^-OD, no focusing. Optical densities add when stacked.
   nd03: { type: 'nd', od: 0.3, f: Infinity }, nd05: { type: 'nd', od: 0.5, f: Infinity }, nd1: { type: 'nd', od: 1, f: Infinity },
   nd2: { type: 'nd', od: 2, f: Infinity }, nd3: { type: 'nd', od: 3, f: Infinity },
 };
 const OPTIC_R = 0.0254;
+// cylindrical lens: curved across its power axis (local X), flat along the cylinder axis (local Y); 40 mm square
+const CYL_R = 0.02;
+function cylLensGeometry(f) {
+  const tc = 0.012, te = 0.002, sh = new THREE.Shape();
+  for (let i = 0; i <= 16; i++) { const x = -CYL_R + 2 * CYL_R * i / 16; const t = te + (tc - te) * (1 - (x / CYL_R) ** 2); i ? sh.lineTo(x, -t / 2) : sh.moveTo(x, -t / 2); }
+  for (let i = 16; i >= 0; i--) { const x = -CYL_R + 2 * CYL_R * i / 16; const t = te + (tc - te) * (1 - (x / CYL_R) ** 2); sh.lineTo(x, t / 2); }
+  return new THREE.ExtrudeGeometry(sh, { depth: 2 * CYL_R, bevelEnabled: false, curveSegments: 1 }).rotateX(Math.PI / 2).translate(0, CYL_R, 0);
+}
 const FACE_BEAM = new Set([...Object.keys(OPTICS), 'powerMeter', 'beamDump', 'graphCard']);
 const fineStep = (kind) => (OPTICS[kind] ? 0.001 : kind === 'graphCard' ? 0.005 : SNAP.gridSize);
 function opticLabel(text, sub = null, tint = '#e9edf2') {
@@ -1117,6 +1126,19 @@ function buildComponent(kind) {
       for (const [w, h, x, y] of [[0.04, 0.005, 0, 0.0175], [0.04, 0.005, 0, -0.0175], [0.005, 0.03, 0.0175, 0], [0.005, 0.03, -0.0175, 0]]) {
         const bar = nc(box(w, h, 0.006, MAT.dark)); bar.position.set(x, yLow + y, 0); root.add(bar);
       }
+    } else if (optic.cyl) {
+      glass = new THREE.Mesh(cylLensGeometry(optic.f),
+        new THREE.MeshStandardMaterial({ color: 0xbfe3ff, metalness: 0, roughness: 0.05, transparent: true, opacity: 0.5, envMapIntensity: 1.6, side: THREE.DoubleSide }));
+      ring.visible = false;                     // square cell instead of the round ring
+      const e = CYL_R + 0.003;
+      for (const [w, h, x, y] of [[2 * e + 0.006, 0.006, 0, e], [2 * e + 0.006, 0.006, 0, -e], [0.006, 2 * e, e, 0], [0.006, 2 * e, -e, 0]]) {
+        const bar = nc(box(w, h, 0.014, MAT.dark)); bar.position.set(x, yLow + y, 0); root.add(bar);
+      }
+      // orientation knob on top: click (or poke) it to turn the lens 90° about the beam
+      const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.012, 20), std(0xffb32b, 0.3, 0.4));
+      knob.position.set(0, yLow + e + 0.01, 0); knob.userData.noCollide = true; root.add(knob);
+      knob.userData.onClick = () => { setCylAxis(root, root.userData.cylAxis === 'h' ? 'v' : 'h'); tone(700, 0.05); };
+      root.userData.cylKnob = knob;
     } else if (optic.type === 'lens') {
       glass = new THREE.Mesh(lensGeometry(optic.f),
         new THREE.MeshStandardMaterial({ color: 0xbfe3ff, metalness: 0, roughness: 0.05, transparent: true, opacity: 0.45, envMapIntensity: 1.6, side: THREE.DoubleSide }));
@@ -1130,12 +1152,19 @@ function buildComponent(kind) {
     // label on the base: focal length and type (convex = converging, concave = diverging)
     const fmm = Math.round(optic.f * 1000), conv = optic.f > 0;
     const lab = optic.type === 'nd' ? opticLabel(`ND ${optic.od}`, `T ${+(100 * 10 ** -optic.od).toPrecision(2)}%`, '#c9ced6')
+      : optic.cyl ? opticLabel(`+${fmm} CYL`, 'FOCUS ↔', '#c8f0d0')
       : optic.type === 'lens'
       ? opticLabel(`${conv ? '+' : '−'}${Math.abs(fmm)} mm`, conv ? 'CONVEX' : 'CONCAVE', conv ? '#e9edf2' : '#ffe2b8')
       : opticLabel(`f ${fmm} mm`, conv ? 'CC MIRROR' : 'CX MIRROR', conv ? '#e9edf2' : '#ffe2b8');
     // text runs along the optical axis so it reads straight on when the optic faces along the beam
     lab.scale.setScalar(1.15); lab.rotation.set(-Math.PI / 2, 0, Math.PI / 2); lab.position.set(0.029, -0.0075, 0); root.add(lab);
     const lab2 = lab.clone(); lab2.rotation.set(-Math.PI / 2, 0, -Math.PI / 2); lab2.position.x = -0.029; root.add(lab2);
+    if (optic.cyl) {                            // second pair of labels for the vertical orientation
+      const lv = opticLabel(`+${fmm} CYL`, 'FOCUS ↕', '#c8f0d0'); lv.scale.setScalar(1.15); lv.rotation.copy(lab.rotation); lv.position.copy(lab.position); root.add(lv);
+      const lv2 = lv.clone(); lv2.rotation.copy(lab2.rotation); lv2.position.copy(lab2.position); root.add(lv2);
+      root.userData.cylLabels = { h: [lab, lab2], v: [lv, lv2] }; root.userData.cylGlass = glass;
+      setCylAxis(root, 'h');
+    }
   } else if (kind === 'powerMeter') {
     // thermal power-meter head on a post (axis = local Z) with its readout box behind it
     const post = nc(new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, yLow + 0.008 - 0.02, 16), postMat)); post.position.y = (yLow - 0.012) / 2 - 0.004; root.add(post);
@@ -1211,6 +1240,14 @@ function removeComponent(c) {
   for (let k = beamColliders.length - 1; k >= 0; k--) if (beamColliders[k].userData.grabRoot === c) beamColliders.splice(k, 1);
 }
 const isSpare = (c) => [...spares.values()].includes(c);
+// cylindrical lens orientation: 'h' focuses in the table plane (makes a vertical line focus), 'v' focuses vertically
+function setCylAxis(root, axis) {
+  root.userData.cylAxis = axis;
+  root.userData.cylGlass.rotation.z = axis === 'h' ? 0 : Math.PI / 2;
+  root.userData.cylLabels.h.forEach((m) => (m.visible = axis === 'h'));
+  root.userData.cylLabels.v.forEach((m) => (m.visible = axis === 'v'));
+  if (typeof panelSig !== 'undefined') panelSig = '';
+}
 const componentsUsed = () => components.filter((c) => !isSpare(c)).length;
 
 // Parts tray at the front-left of the table
@@ -1235,7 +1272,8 @@ function setTrayParts(kinds) {
   for (const c of spares.values()) removeComponent(c);
   spares.clear();
   kinds.forEach((k, i) => {
-    TRAY_SLOTS[k] = V(1.15 - (i % 4) * 0.1, SNAP.tableHeightOffset, kinds.length > 4 ? (i < 4 ? -0.64 : -0.555) : -0.6);
+    const cols = Math.max(4, Math.ceil(kinds.length / 2)), dx = cols > 4 ? 0.084 : 0.1, x0 = cols > 4 ? 1.17 : 1.15;
+    TRAY_SLOTS[k] = V(x0 - (i % cols) * dx, SNAP.tableHeightOffset, kinds.length > 4 ? (i < cols ? -0.64 : -0.555) : -0.6);
     spares.set(k, spawn(k, TRAY_SLOTS[k], FACE_BEAM.has(k) ? Math.PI / 2 : 0));   // lenses etc. come facing along the beam
   });
 }
@@ -1496,7 +1534,7 @@ const ALIGN_LEVELS = [
 ];
 // Free build: every optic in the tray and a live readout of the beam at the port. No par: experiment.
 const SANDBOX_LEVELS = [
-  { name: 'Free Build', parts: ['mirror', 'lens50', 'lens100', 'lens200', 'lens400', 'lensN50', 'lensN100', 'cmirror200'], par: null,
+  { name: 'Free Build', parts: ['mirror', 'lens50', 'lens100', 'lens200', 'lens400', 'lensN50', 'lensN100', 'cmirror200', 'cyl100'], par: null,
     riser: false, obstacles: [], beamD: 1, need: NEED, sandbox: true,
     say: "The bench is yours. Try a relay: +100 then +400, 500 mm apart, gives you a collimated beam four times bigger. Prove it.",
     lavaSay: "The bench is yours. The floor is not. Try +100 then +400, 500 mm apart: four times the beam." },
@@ -1926,9 +1964,9 @@ let panelSig = '';
 function drawPanel() {
   const L = LEVELS[game.level], n = componentsUsed(), lit = microscope.userData.lit;
   const t = game.state === 'playing' ? performance.now() - game.start : game.time;
-  const P = game.port, portStr = P ? `${P.D.toFixed(1)}|${P.div.toFixed(1)}|${P.ok}` : '-';
+  const P = game.port, portStr = P ? `${P.Dh.toFixed(1)}|${P.Dv.toFixed(1)}|${P.div.toFixed(1)}|${P.ok}` : '-';
   const irisSig = (game.irisHits || []).map((x) => `${x.iris.index}${x.pass}${x.off.toFixed(1)}`).join(',');
-  const spSig = spacingInfo.map((x) => x.d.toFixed(0)).join(',');
+  const spSig = spacingInfo.map((x) => `${x.d.toFixed(0)}/${x.best.toFixed(0)}`).join(',');
   const sfSig = game.safety ? JSON.stringify([shield.on ? Math.round((shield.fraction || 0) * 100) : 0, laserState.shutter, game.safety.done, game.safety.strikes, game.safety.quiz, wornGoggles?.name, game.meterHit ? (game.meterPower * 1e4 | 0) : -1, game.ndOD]) : '';
   const sig = [frameError, vrPrefs.turn, vrPrefs.moveHand, vrPrefs.eye, sfSig, spSig, irisSig, game.mode, game.tier, game.level, game.state, n, lit, game.hover, Math.floor(t / 1000), game.burns, rotSnap, L.need ? portStr : ''].join('|');
   if (sig === panelSig) return; panelSig = sig;
@@ -2018,13 +2056,14 @@ function drawPanel() {
     g.fillText(`${L.par ? `Par ${L.par}` : 'Free build'}   ·   Laser beam Ø ${L.beamD || 1} mm   ·   ${fmt(t)}`, 40, 314);
     g.fillStyle = lit ? '#39f07a' : '#8b96a3'; g.font = 'bold 36px system-ui, sans-serif';
     if (L.need && lit && P) {
-      const sizeOk = P.D >= L.need.dMin && P.D <= L.need.dMax, colOk = P.div <= L.need.divMax;
+      const sizeOk = P.D >= L.need.dMin && Math.max(P.Dh, P.Dv) <= L.need.dMax, colOk = P.div <= L.need.divMax;
       g.fillStyle = P.ok ? '#39f07a' : '#ffb32b';
       const irisOk = !L.irises || (game.irisHits || []).filter((x) => x.pass).length === L.irises.length;
       if (!irisOk) { g.fillStyle = '#ffb32b'; g.fillText('It must come through both irises, not round them', 40, 380); } else
-      g.fillText(P.ok ? 'Beam fills the back aperture… hold it' : !sizeOk ? `Beam is ${P.D < L.need.dMin ? 'too small' : 'too big'} for the back aperture` : 'Beam is not collimated', 40, 380);
+      g.fillText(P.ok ? 'Beam fills the back aperture… hold it' : !sizeOk ? `Beam is ${P.D < L.need.dMin ? 'too small' : 'too big'}${Math.abs(P.Dh - P.Dv) > 0.1 ? ' (and not round)' : ''} for the back aperture` : 'Beam is not collimated', 40, 380);
       g.font = '28px ui-monospace, monospace';
-      g.fillStyle = sizeOk ? '#9fe6a8' : '#ffb32b'; g.fillText(`Ø ${P.D.toFixed(1)} mm (${L.need.dMin}–${L.need.dMax})`, 40, 428);
+      g.fillStyle = sizeOk ? '#9fe6a8' : '#ffb32b';
+      g.fillText(Math.abs(P.Dh - P.Dv) > 0.1 ? `Ø ${P.Dh.toFixed(1)} × ${P.Dv.toFixed(1)} mm (${L.need.dMin}–${L.need.dMax})` : `Ø ${P.D.toFixed(1)} mm (${L.need.dMin}–${L.need.dMax})`, 40, 428);
       g.fillStyle = colOk ? '#9fe6a8' : '#ffb32b'; g.fillText(`divergence ${P.div.toFixed(1)} mrad (< ${L.need.divMax})`, 440, 428);
     } else if (L.irises && !lit && game.irisHits?.length) {
       const bad = game.irisHits.find((x) => !x.pass);
@@ -2036,7 +2075,7 @@ function drawPanel() {
       g.fillText('', 0, 0);
       spacingInfo.slice(0, 2).forEach((x, i) => {
         g.fillStyle = x.ok ? '#9fe6a8' : '#ffd23f';
-        g.fillText(`${fmtF(x.fa)}→${fmtF(x.fb)}: ${x.d.toFixed(0)} mm apart (f₁+f₂ = ${x.ideal.toFixed(0)})`, 40 + i * 480, 470);
+        g.fillText(`${fmtF(x.fa, x.ca)}→${fmtF(x.fb, x.cb)}: ${x.d.toFixed(0)} mm (best ${x.best.toFixed(0)})`, 40 + i * 480, 470);
       });
     }
     if (lava) { g.fillStyle = '#ff9a3c'; g.font = 'bold 28px system-ui, sans-serif'; g.fillText(`Burns: ${game.burns}`, 40, spacingInfo.length ? 498 : 476); }
@@ -2697,20 +2736,20 @@ function drawBeam(segs) {
   const pc = beamCore.geometry.attributes.position.array, pg = beamGlow.geometry.attributes.position.array;
   const n = Math.min(segs.length, MAX_SEGS);
   for (let s = 0; s < n; s++) {
-    const { a, b, q, p = laserState.watts } = segs[s];
+    const { a, b, q, qv = q, p = laserState.watts } = segs[s];
     const pf = THREE.MathUtils.clamp(0.3 + 0.7 * Math.log10(Math.max(p, 1e-6) / 1e-4) / 4.3, 0.3, 1);   // dimmer beam after ND filters
     _d.subVectors(b, a); const len = _d.length(); _d.divideScalar(len || 1);
     _u.crossVectors(_d, Math.abs(_d.y) > 0.9 ? V(1, 0, 0) : UP).normalize(); _v.crossVectors(_d, _u);
     for (let k = 0; k <= TUBE_K; k++) {
-      const t = len * k / TUBE_K, w = gaussW({ re: q.re + t, im: q.im }, laserState.nm);
-      const rc = Math.max(w, 0.0006), rg = Math.max(w * 2.2, 0.0035) * pf;
+      const t = len * k / TUBE_K, w = gaussW({ re: q.re + t, im: q.im }, laserState.nm), wv = gaussW({ re: qv.re + t, im: qv.im }, laserState.nm);
+      const rc = Math.max(w, 0.0006), rg = Math.max(w * 2.2, 0.0035) * pf, rcv = Math.max(wv, 0.0006), rgv = Math.max(wv * 2.2, 0.0035) * pf;
       const cx = a.x + _d.x * t, cy = a.y + _d.y * t, cz = a.z + _d.z * t;
       for (let j = 0; j < TUBE_SIDES; j++) {
         const ang = j / TUBE_SIDES * Math.PI * 2, cs = Math.cos(ang), sn = Math.sin(ang);
         const o = ((s * (TUBE_K + 1) + k) * TUBE_SIDES + j) * 3;
-        const ox = _u.x * cs + _v.x * sn, oy = _u.y * cs + _v.y * sn, oz = _u.z * cs + _v.z * sn;
-        pc[o] = cx + ox * rc; pc[o + 1] = cy + oy * rc; pc[o + 2] = cz + oz * rc;
-        pg[o] = cx + ox * rg; pg[o + 1] = cy + oy * rg; pg[o + 2] = cz + oz * rg;
+        const ux = _u.x * cs, uy = _u.y * cs, uz = _u.z * cs, vx = _v.x * sn, vy = _v.y * sn, vz = _v.z * sn;
+        pc[o] = cx + ux * rc + vx * rcv; pc[o + 1] = cy + uy * rc + vy * rcv; pc[o + 2] = cz + uz * rc + vz * rcv;
+        pg[o] = cx + ux * rg + vx * rgv; pg[o + 1] = cy + uy * rg + vy * rgv; pg[o + 2] = cz + uz * rg + vz * rgv;
       }
     }
   }
@@ -2929,9 +2968,9 @@ function drawSpots(segs) {
   let n = 0;
   if (on) for (const sg of segs) {
     if (sg.miss || n >= spotPool.length) continue;
-    const sp = spotPool[n++], w = Math.max(gaussW(sg.q, laserState.nm) * 1.5, 0.0018);
+    const sp = spotPool[n++], w = Math.max(gaussW(sg.q, laserState.nm) * 1.5, 0.0018), wv = Math.max(gaussW(sg.qv || sg.q, laserState.nm) * 1.5, 0.0018);
     _d.subVectors(sg.b, sg.a).normalize();
-    sp.position.copy(sg.b).addScaledVector(_d, -0.0012); sp.lookAt(sg.a); sp.scale.setScalar(w);
+    sp.position.copy(sg.b).addScaledVector(_d, -0.0012); sp.lookAt(sg.a); sp.scale.set(w, wv, 1);
     const k = Math.min(1, 0.35 + 0.65 * Math.log10(Math.max(sg.p ?? laserState.watts, 1e-5) / 1e-5) / 5);
     sp.material.color.copy(beamMat.color); sp.material.opacity = k * (wornGoggles && gogglesBlock(laserState.nm) ? 0.35 : 1);
     sp.children[0].material.color.copy(beamMat.color); sp.visible = true;
@@ -2980,34 +3019,45 @@ function raycast(origin, dir, maxDist, skip = null) {
 // beam next to f₁ + f₂, the spacing that makes a telescope (beam expander or relay) afocal.
 const spacingTags = [];
 let spacingInfo = [];
-for (let i = 0; i < 4; i++) {
-  const c = document.createElement('canvas'); c.width = 512; c.height = 128;
+for (let i = 0; i < 8; i++) {
+  const c = document.createElement('canvas'); c.width = 512; c.height = 160;
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, depthTest: false, transparent: true, toneMapped: false }));
-  sp.scale.set(0.16, 0.04, 1); sp.renderOrder = 997; sp.visible = false; sp.userData = { c, t, text: '' }; scene.add(sp); spacingTags.push(sp);
+  sp.scale.set(0.16, 0.05, 1); sp.renderOrder = 997; sp.visible = false; sp.userData = { c, t, text: '' }; scene.add(sp); spacingTags.push(sp);
 }
-const fmtF = (f) => `${f > 0 ? '+' : '−'}${Math.abs(Math.round(f * 1000))}`;
+const fmtF = (f, cyl) => `${f > 0 ? '+' : '−'}${Math.abs(Math.round(f * 1000))}${cyl ? 'c' : ''}`;
+// The best spacing is where the first optic puts the beam's waist, plus f₂: lens 2 one focal length from that
+// waist gives the largest, least divergent output (exactly true for a Gaussian beam). When the first lens sees a
+// near-collimated beam far outside its Rayleigh range that is f₁ + f₂; when the lens sits within the input beam's
+// Rayleigh range or the input is still diverging, the waist moves off f₁ and the best spacing differs. For a cylindrical lens it uses the
+// plane that lens focuses in.
 function updateSpacingTags(path) {
   spacingInfo = [];
   for (let i = 0; i + 1 < path.length && i < spacingTags.length; i++) {
     const a = path[i], b = path[i + 1], d = (b.s - a.s) * 1000, ideal = (a.f + b.f) * 1000;
-    spacingInfo.push({ fa: a.f, fb: b.f, d, ideal, ok: Math.abs(d - ideal) <= 2 });
-    const sp = spacingTags[i], text = `${d.toFixed(0)}|${ideal.toFixed(0)}`;
+    const ax = b.cyl || a.cyl || 'h', qa = ax === 'v' ? a.qv : a.qh;
+    let best = (-qa.re + b.f) * 1000;
+    if (!(best > 0) || !isFinite(best)) best = ideal;
+    const ok = Math.abs(d - best) <= 2;
+    spacingInfo.push({ fa: a.f, fb: b.f, ca: a.cyl, cb: b.cyl, d, ideal, best, ok });
+    const sp = spacingTags[i], text = `${d.toFixed(0)}|${best.toFixed(0)}|${ideal.toFixed(0)}|${a.cyl}${b.cyl}`;
     sp.visible = true; sp.position.copy(a.p).add(b.p).multiplyScalar(0.5); sp.position.y += 0.06;
     if (text !== sp.userData.text) {
       sp.userData.text = text;
-      const g = sp.userData.c.getContext('2d'), ok = Math.abs(d - ideal) <= 2;
-      g.clearRect(0, 0, 512, 128);
-      g.fillStyle = 'rgba(10,12,15,0.82)'; g.beginPath(); g.roundRect(4, 4, 504, 120, 22); g.fill();
-      g.fillStyle = ok ? '#39f07a' : '#ffd23f'; g.font = 'bold 52px ui-monospace, monospace'; g.textAlign = 'center';
-      g.fillText(`${d.toFixed(0)} mm`, 256, 62);
-      g.fillStyle = '#c9d2dc'; g.font = '30px system-ui, sans-serif';
-      g.fillText(`${fmtF(a.f)} → ${fmtF(b.f)}:  f₁+f₂ = ${ideal.toFixed(0)} mm`, 256, 106);
+      const g = sp.userData.c.getContext('2d');
+      g.clearRect(0, 0, 512, 160);
+      g.fillStyle = 'rgba(10,12,15,0.82)'; g.beginPath(); g.roundRect(4, 4, 504, 152, 22); g.fill();
+      g.textAlign = 'center';
+      g.fillStyle = ok ? '#39f07a' : '#ffd23f'; g.font = 'bold 50px ui-monospace, monospace';
+      g.fillText(`${d.toFixed(0)} mm`, 256, 56);
+      g.fillStyle = ok ? '#9fe6a8' : '#ffe9a0'; g.font = 'bold 32px system-ui, sans-serif';
+      g.fillText(ok ? `collimated · best ${best.toFixed(0)} mm` : `best ${best.toFixed(0)} mm (${d < best ? 'move apart ' : 'move closer '}${Math.abs(best - d).toFixed(0)})`, 256, 100);
+      g.fillStyle = '#c9d2dc'; g.font = '26px system-ui, sans-serif';
+      g.fillText(`${fmtF(a.f, a.cyl)} → ${fmtF(b.f, b.cyl)}   ·   f₁+f₂ = ${ideal.toFixed(0)} mm`, 256, 140);
       sp.userData.t.needsUpdate = true;
     }
   }
-  for (let i = path.length - 1; i < spacingTags.length; i++) if (i >= 0) spacingTags[i].visible = false;
-  if (path.length < 2) spacingTags.forEach((t) => (t.visible = false));
+  for (let i = Math.max(0, path.length - 1); i < spacingTags.length; i++) spacingTags[i].visible = false;
 }
 
 let activeTargets = new Set();
@@ -3019,7 +3069,8 @@ function traceBeam() {
   const origin = laser.getWorldPosition(V());
   const dir = V(0, 0, 1).transformDirection(laser.matrixWorld);
   const nm = laserState.nm;
-  const q = { re: 0, im: Math.PI * laserState.w0 * laserState.w0 / (nm * 1e-9) };   // waist at the laser
+  const q = { re: 0, im: Math.PI * laserState.w0 * laserState.w0 / (nm * 1e-9) };   // waist at the laser; q: horizontal plane
+  const qv = { ...q };                                                                 // and the vertical plane (differs after a cylindrical lens)
   let remaining = laserState.shutter ? LASER.maxDistance : 0, skip = null, port = null;
   let graphHit = false, graphStray = false, strayBounce = false, meterHit = null, dumpHit = false, spannerHit = false, power = laserState.watts, meterPower = 0, ndOD = 0;
   let nSpots = 0;
@@ -3027,7 +3078,9 @@ function traceBeam() {
   const opticPath = [];                   // lenses / curved mirrors in beam order, with path length to each
   let pathLen = 0;
   const irisHits = [];
-  const step = (to, d) => { segs.push({ a: origin.clone(), b: to.clone(), q: { ...q }, p: power }); q.re += d; pathLen += d; };
+  const adv = (d) => { q.re += d; qv.re += d; pathLen += d; };
+  const step = (to, d) => { segs.push({ a: origin.clone(), b: to.clone(), q: { ...q }, qv: { ...qv }, p: power }); adv(d); };
+  const _hx = V(), _vx = V();
   for (let bounce = 0; bounce <= LASER.maxBounces && remaining > 0; bounce++) {
     const hit = raycast(origin, dir, remaining, skip);
     skip = null;
@@ -3050,7 +3103,8 @@ function traceBeam() {
         sp.visible = true; sp.position.copy(hit.point).addScaledVector(dir, -0.002);
         sp.material.color.set(sensitive ? card.glow : beamMat.color.getHex());
         sp.material.opacity = sensitive ? 0.85 + 0.15 * Math.sin(performance.now() / 70) : laserState.vis;
-        sp.scale.setScalar(THREE.MathUtils.clamp(gaussW(q, nm) * 5, sensitive ? 0.012 : 0.008, 0.06));
+        const lo = sensitive ? 0.012 : 0.008;
+        sp.scale.set(THREE.MathUtils.clamp(gaussW(q, nm) * 5, lo, 0.06), THREE.MathUtils.clamp(gaussW(qv, nm) * 5, lo, 0.06), 1);
       }
       break;
     }
@@ -3069,28 +3123,38 @@ function traceBeam() {
       opticHits.set(hit.object.userData.grabRoot, _h.clone());
       if (optic.type === 'nd') {                 // attenuate, and carry straight on
         power *= 10 ** -optic.od; ndOD += optic.od;
-        skip = hit.object; origin.copy(hit.point).addScaledVector(dir, 0.0005); q.re += 0.0005; pathLen += 0.0005;
+        skip = hit.object; origin.copy(hit.point).addScaledVector(dir, 0.0005); adv(0.0005);
         continue;
       }
-      opticPath.push({ f: optic.f, s: pathLen, p: hit.point.clone() });
+      const s0 = pathLen, cylAx = optic.cyl ? hit.object.userData.grabRoot.userData.cylAxis : null;
       if (optic.type === 'cmirror') {
         if (cosI > 0) break;                                              // the back of the mirror
         dir.reflect(_ax);
       }
-      dir.addScaledVector(_h, -1 / optic.f).normalize();
-      gaussFocus(q, optic.f);
+      if (cylAx) {
+        // only the offset along the power axis is steered, and only that plane of the beam is focused
+        _hx.crossVectors(dir, Math.abs(dir.y) > 0.9 ? V(1, 0, 0) : UP).normalize();      // horizontal, across the beam
+        _vx.crossVectors(dir, _hx).normalize();
+        const a = cylAx === 'h' ? _hx : _vx;
+        dir.addScaledVector(a, -_h.dot(a) / optic.f).normalize();
+        gaussFocus(cylAx === 'h' ? q : qv, optic.f);
+      } else {
+        dir.addScaledVector(_h, -1 / optic.f).normalize();
+        gaussFocus(q, optic.f); gaussFocus(qv, optic.f);
+      }
+      opticPath.push({ f: optic.f, s: s0, p: hit.point.clone(), cyl: cylAx, qh: { ...q }, qv: { ...qv } });
       skip = hit.object;
-      origin.copy(hit.point).addScaledVector(dir, 0.0005); q.re += 0.0005; pathLen += 0.0005;
+      origin.copy(hit.point).addScaledVector(dir, 0.0005); adv(0.0005);
       continue;
     }
     const iris = hit.object.userData.iris;
     if (iris) {
       hit.object.getWorldPosition(_c); _ax.set(0, 0, 1).transformDirection(hit.object.matrixWorld);
       _h.subVectors(hit.point, _c); _h.addScaledVector(_ax, -_h.dot(_ax));
-      const D = gaussW(q, nm) * 2, pass = _h.length() <= iris.r - 0.35 * D;
+      const D = Math.max(gaussW(q, nm), gaussW(qv, nm)) * 2, pass = _h.length() <= iris.r - 0.35 * D;
       irisHits.push({ iris, pass, off: _h.length() * 1000 });
       if (!pass) break;                                                   // the blades clip it
-      skip = hit.object; origin.copy(hit.point).addScaledVector(dir, 0.0005); q.re += 0.0005; pathLen += 0.0005;
+      skip = hit.object; origin.copy(hit.point).addScaledVector(dir, 0.0005); adv(0.0005);
       continue;
     }
     if (hit.object.userData.accept && !hit.object.userData.accept(dir)) break;   // light at the wrong angle
@@ -3098,11 +3162,14 @@ function traceBeam() {
     if (reactive) {
       nextTargets.add(reactive);
       if (!activeTargets.has(reactive)) reactive.onBeamEnter(hit.point, dir);
-      if (hit.object.userData.accept) port = { D: gaussW(q, nm) * 2000, div: gaussDiv(q, nm) };
+      if (hit.object.userData.accept) {          // astigmatic beam: the narrower axis sets the fill, the worse axis the divergence
+        const Dh = gaussW(q, nm) * 2000, Dv = gaussW(qv, nm) * 2000, dh = gaussDiv(q, nm), dv = gaussDiv(qv, nm);
+        port = { D: Math.min(Dh, Dv), Dh, Dv, div: Math.max(dh, dv) };
+      }
     }
     if (!hit.object.userData.mirror) break;
     dir.reflect(hit.normal).normalize();
-    origin.copy(hit.point).addScaledVector(dir, LASER.beamEndPadding); q.re += LASER.beamEndPadding; pathLen += LASER.beamEndPadding;
+    origin.copy(hit.point).addScaledVector(dir, LASER.beamEndPadding); adv(LASER.beamEndPadding);
   }
   for (const r of activeTargets) if (!nextTargets.has(r)) r.onBeamExit();
   activeTargets = nextTargets;
@@ -3110,7 +3177,7 @@ function traceBeam() {
   for (let i = 0; i < nSpots; i++) if (cardSpots[i] && cardSpots[i].material.opacity <= 0) cardSpots[i].visible = false;
   // beam quality at the rear port, judged against the current level's needs
   const L = LEVELS[game.level];
-  if (port && L?.need) port.ok = port.D >= L.need.dMin && port.D <= L.need.dMax && port.div <= L.need.divMax;
+  if (port && L?.need) port.ok = port.D >= L.need.dMin && Math.max(port.Dh, port.Dv) <= L.need.dMax && port.div <= L.need.divMax;
   game.port = port;
   game.irisHits = irisHits;
   Object.assign(game, { meterHit, dumpHit, spannerHit, segs, meterPower, ndOD, graphHit, graphStray });
@@ -3262,15 +3329,22 @@ function aimRay(st) {
     pickRay.ray.origin.setFromMatrixPosition(st.ctrl.matrixWorld);
     pickRay.ray.direction.set(0, 0, -1).applyMatrix4(tmpM);
   }
-  pickRay.near = 0; pickRay.far = 10;
+  pickRay.near = 0; pickRay.far = 20;
   return pickRay;
 }
 let lastPick = null;
+function shownInWorld(o) {
+  for (let p = o; p; p = p.parent) if (!p.visible) return false;
+  const m = o.material; return !(m && !Array.isArray(m) && m.visible === false && !o.userData.onClick);
+}
 function pickGrabbable(st, rc = aimRay(st)) {
   const meshes = []; [...components, ...cards].forEach((g) => g.traverse((o) => { if (o.isMesh) meshes.push(o); }));
   joystick.traverse((o) => { if (o.isMesh) meshes.push(o); });
   const pad = microscope.userData.pad;
-  const h = rc.intersectObjects([...meshes, ...clickables, ...microscope.userData.knobMeshes, pad, laserPanel, tableTop, panel, ...obstacleGroup.children, ...room.children], false)[0];
+  // hidden things (the laser-enclosure ghosts, lid and cable port when that task isn't on) still intersect a ray,
+  // and used to swallow it whenever you pointed across the table: skip anything that isn't actually showing
+  const h = rc.intersectObjects([...meshes, ...clickables, ...microscope.userData.knobMeshes, pad, laserPanel, tableTop, panel, ...obstacleGroup.children, ...room.children], false)
+    .find((x) => x.object.userData.grabRoot || shownInWorld(x.object));
   lastPick = h || null;
   if (!h) return null;
   if (h.object.userData.onClick && h.object.visible && h.object.parent?.visible !== false) return { dist: h.distance, click: h.object.userData.onClick };
