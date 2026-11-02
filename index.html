@@ -1614,22 +1614,22 @@ SAFETY_LEVELS.push({ name: 'Safety 4: Shielding', safety: true, shielding: true,
 // 4 · Experiments: adaptive optics, guided, then an open bench
 const AO_PARTS = ['mirror', 'lens50', 'lens100', 'lens200', 'lens400', 'bs', 'dm', 'wfs', 'plate'];
 const EXPERIMENT_LEVELS = [
-  { name: 'Adaptive Optics', ao: true, parts: AO_PARTS, par: null, riser: false, obstacles: [], beamD: 1, need: NEED,
+  { name: 'Adaptive Optics', ao: true, kind: 'GUIDED', blurb: 'Build a deformable mirror + wavefront sensor loop, correct a phase plate, then image 50 µm deep', parts: AO_PARTS, par: null, riser: false, obstacles: [], beamD: 1, need: NEED,
     intro: 'Build a closed-loop adaptive optics system, then use it to image deep. Expand the 1 mm laser onto a 37-actuator deformable mirror and relay the DM onto the microscope pupil. Light from the focus comes back out of the port: a beamsplitter before the DM sends it to a Shack–Hartmann sensor, which must be conjugate to the DM too. Calibrate, add the phase plate, close the loop. The checklist on this board updates as you go; the AO controller is the screen at the back left of the table.',
     say: "Adaptive optics. A deformable mirror, a wavefront sensor and a control loop. Every plane that matters must be imaged onto every other: the DM, the sensor and the objective pupil. Start by getting a 4 mm beam onto the DM.",
     lavaSay: "Adaptive optics, over lava. DM, sensor, loop, and keep every plane conjugate. Start with a 4 mm beam on the DM." },
-  { name: 'AO Bench', ao: true, sandbox: true, parts: [...AO_PARTS, 'cyl100'], par: null, riser: false, obstacles: [], beamD: 1, need: NEED,
+  { name: 'AO Bench', ao: true, kind: 'OPEN BENCH', blurb: 'DM, sensor, phase plate and every lens: break the conjugation on purpose', sandbox: true, parts: [...AO_PARTS, 'cyl100'], par: null, riser: false, obstacles: [], beamD: 1, need: NEED,
     intro: 'An open adaptive optics bench: deformable mirror, beamsplitter, Shack–Hartmann sensor, phase plate and every lens. The AO controller at the back left shows the spots, the measured wavefront and the DM. Try the sensor straight in the beam, after the DM, or on the guide-star return; tilt a lens to make astigmatism; move the DM off the pupil and watch the image edges.',
     say: "The AO bench is yours. Everything's in the tray and the controller is at the back left. Break things on purpose: that's how you learn which planes matter.",
     lavaSay: "AO bench, lava floor. Everything's in the tray. Break things on purpose, not your ankles." },
 ];
 const SLM_PARTS = ['mirror', 'lens50', 'lens100', 'lens200', 'lens400', 'bs', 'slm', 'beamDump'];
 EXPERIMENT_LEVELS.push(
-  { name: 'Holographic Beamlets', ao: true, slm: true, parts: SLM_PARTS, par: null, riser: false, obstacles: [], beamD: 1, need: null,
+  { name: 'Holographic Beamlets', ao: true, kind: 'GUIDED', blurb: 'Phase-only SLM and Gerchberg–Saxton: beamlet arrays on a white screen', slm: true, parts: SLM_PARTS, par: null, riser: false, obstacles: [], beamD: 1, need: null,
     intro: 'Split one laser into an array of beamlets with a phase-only spatial light modulator. Expand the beam onto the SLM, light it near-normal (the splitter trick), put a Fourier lens after it and the white screen at its focal plane. The SLM controller (back left) runs Gerchberg–Saxton: watch the phase pattern form on the SLM and the beamlets appear on the screen. Then deal with the zero order, even out the spots, and project the pattern large.',
     say: "Holography with a spatial light modulator. It's a phase-only mirror with two million pixels. Gerchberg–Saxton finds the phase that turns one beam into a pattern of beamlets. The white screen's already out; start by expanding the beam onto the SLM.",
     lavaSay: "SLM beamlets, lava edition. Expand onto the SLM, near-normal, Fourier lens, screen. Mind the floor." },
-  { name: 'SLM Bench', ao: true, slm: true, sandbox: true, parts: [...SLM_PARTS, 'cyl100', 'lensN50'], par: null, riser: false, obstacles: [], beamD: 1, need: null,
+  { name: 'SLM Bench', ao: true, kind: 'OPEN BENCH', blurb: 'Every pattern, plain vs weighted GS, the zero order, the Fourier plane', slm: true, sandbox: true, parts: [...SLM_PARTS, 'cyl100', 'lensN50'], par: null, riser: false, obstacles: [], beamD: 1, need: null,
     intro: 'An open SLM bench: phase-only SLM, splitter, lenses, a beam dump and the white screen. Try the screen out of the Fourier plane, a tilted SLM, a small beam, the grating, and every pattern with plain and weighted Gerchberg–Saxton.',
     say: "The SLM bench is yours. Break things on purpose: move the screen off the Fourier plane, underfill the SLM, tilt it.",
     lavaSay: "SLM bench over lava. Break the optics, not your ankles." },
@@ -2102,6 +2102,9 @@ function buttonsFor(state) {
     { id: 'normal', label: 'Normal lab', x: 40, y: PH - 118, w: 440, h: 90 },
     { id: 'lava', label: '🌋  The Floor is Lava', x: 544, y: PH - 118, w: 440, h: 90 }];
   const snapBtn = { id: 'snap', label: `Rotation snap: ${snapLabel()}`, x: 40, y: BTN_Y, w: 380, h: 70 };
+  if (state === 'expmenu') return [
+    ...EXPERIMENT_LEVELS.map((L, i) => ({ id: `exp:${i}`, exp: L, x: 40 + (i % 2) * 480, y: 150 + Math.floor(i / 2) * 196, w: 464, h: 180 })),
+    { id: 'home', label: '◀  Main menu', x: 40, y: BTN_Y, w: 320, h: 70 }];
   if (state === 'intro') return [snapBtn, { id: 'menu', label: 'Menu', x: 440, y: BTN_Y, w: 200, h: 70 }, { id: 'start', label: 'Start  ▶', x: 664, y: BTN_Y, w: 320, h: 70, hot: true }];
   const LL = LEVELS[game.level];
   if (state === 'playing' && LL?.safety && game.safety?.quiz && !game.safety.done.class)
@@ -2129,6 +2132,22 @@ function drawPanel() {
   const g = pctx, lava = game.mode === 'lava';
   g.fillStyle = '#101317'; g.fillRect(0, 0, PW, PH);
   g.fillStyle = lava ? '#ff7a00' : '#ff3b2f'; g.fillRect(0, 0, PW, 8);
+  if (game.state === 'expmenu') {
+    g.fillStyle = '#8b96a3'; g.font = '600 26px system-ui, sans-serif'; g.fillText(`${lava ? 'THE FLOOR IS LAVA' : 'OPTICAL LAB VR'}  ·  4 · EXPERIMENTS`, 40, 56);
+    g.fillStyle = '#eef2f6'; g.font = 'bold 50px system-ui, sans-serif'; g.fillText('Choose an experiment', 40, 118);
+    for (const b of buttonsFor('expmenu')) {
+      g.fillStyle = game.hover === b.id ? '#ff3b2f' : b.exp ? (b.exp.sandbox ? '#2b4f7e' : '#1f6e3d') : '#222830';
+      g.beginPath(); g.roundRect(b.x, b.y, b.w, b.h, 16); g.fill();
+      if (b.exp) {
+        const rec = records[game.mode][`experiments:${EXPERIMENT_LEVELS.indexOf(b.exp)}`];
+        g.fillStyle = 'rgba(255,255,255,0.7)'; g.font = '600 18px system-ui, sans-serif'; g.fillText(b.exp.kind + (rec ? '   ·   ✓ done' : ''), b.x + 22, b.y + 36);
+        g.fillStyle = '#eef2f6'; g.font = 'bold 36px system-ui, sans-serif'; g.fillText(b.exp.name, b.x + 22, b.y + 80);
+        g.font = '22px system-ui, sans-serif'; g.fillStyle = '#dfe6ee'; wrapText(g, b.exp.blurb, b.x + 22, b.y + 116, b.w - 44, 28);
+      } else { g.fillStyle = '#eef2f6'; g.font = 'bold 32px system-ui, sans-serif'; g.textAlign = 'center'; g.fillText(b.label, b.x + b.w / 2, b.y + 46); g.textAlign = 'left'; }
+    }
+    if (frameError) { g.fillStyle = '#ff6b5e'; g.font = '16px ui-monospace, monospace'; g.fillText('error: ' + String(frameError).slice(0, 110), 16, PH - 10); }
+    panelTex.needsUpdate = true; return;
+  }
   if (game.state === 'title') {
     g.fillStyle = '#eef2f6'; g.font = 'bold 60px system-ui, sans-serif'; g.fillText('OPTICAL LAB VR', 40, 96);
     g.fillStyle = '#8b96a3'; g.font = '600 18px system-ui, sans-serif'; g.fillText('VR CONTROLS', 590, 22);
@@ -2315,11 +2334,13 @@ function pressButton(id) {
     else { game.safety.strikes++; game.safety.log.push('class'); tone(160, 0.3); panelSig = ''; }
     return;
   }
-  if (id === 'menu') showTitle();
+  if (id === 'menu') { if (game.tier === 'experiments' && game.state !== 'expmenu') showExperiments(); else showTitle(); }
+  if (id === 'home') showTitle();
+  if (id.startsWith('exp:')) { loadLevel(+id.slice(4)); return; }
   if (id === 'normal' || id === 'lava') { setMode(id); panelSig = ''; return; }
   const T = TIERS.find((t) => t.id === id);
   if (T?.locked) { say("Polarisation and aberrations are next. Waveplates are on order. Master the lenses first."); return; }
-  if (T) { setTier(T.tier); loadLevel(0); }
+  if (T) { setTier(T.tier); if (T.tier === 'experiments') showExperiments(); else loadLevel(0); }
 }
 function setTier(tier) { game.tier = tier; LEVELS = LEVEL_SETS[tier]; }
 function setMode(mode) {
@@ -2329,6 +2350,11 @@ function setMode(mode) {
   lavaFloor.visible = lavaLight.visible = embers.visible = stones.visible = lavaNote.visible = lava;
   supervisorHeatSuit.visible = lava; supervisorLabCoat.visible = !lava;
   game.health = 100; game.offLava = 0;
+}
+function showExperiments() {
+  clearTable(); resetEnclosure(false);
+  game.state = 'expmenu'; panelSig = ''; aoGroup.visible = false; game.ao = null; beamlets.visible = false; game.result = null;
+  say('Experiments. Adaptive optics or holographic beam shaping: the guided ones walk you through it, the benches are yours to break.');
 }
 function showTitle() {
   clearTable(); resetEnclosure(false);
@@ -3710,7 +3736,7 @@ function updateAO(dt, L) {
     }
     if (tasks.every((t) => game.aoDone[t.id])) {
       const t = performance.now() - game.start;
-      game.state = 'solved'; game.time = t; game.result = { ao: true, t, S: out.S0 };
+      game.state = 'solved'; game.time = t; game.result = { ao: true, t, S: out.S0 }; const rk = recKey(), pr = records[game.mode][rk]; if (!pr || t < pr.t) { records[game.mode][rk] = { n: componentsUsed(), t }; try { localStorage.setItem('opticalLabRecords3', JSON.stringify(records)); } catch {} }
       [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.35, i * 0.11));
       say('That is adaptive optics. Sensor, mirror, loop: the same three things on every AO microscope, telescope and eye scanner. Now go and image something deep.');
     }
@@ -4206,7 +4232,7 @@ function updateSLM(dt, L) {
     for (const t of tasks) if (t.ok && !game.aoDone[t.id]) { game.aoDone[t.id] = true; panelSig = ''; tone(880, 0.12); tone(1320, 0.12, 0.1); if (SLM_SAY[t.id]) say(SLM_SAY[t.id]); }
     if (tasks.every((t) => game.aoDone[t.id])) {
       const t = performance.now() - game.start;
-      game.state = 'solved'; game.time = t; game.result = { slm: true, t, uni: SLM.frame?.uni, eff: SLM.frame?.eff };
+      game.state = 'solved'; game.time = t; game.result = { slm: true, t, uni: SLM.frame?.uni, eff: SLM.frame?.eff }; const rk = recKey(), pr = records[game.mode][rk]; if (!pr || t < pr.t) { records[game.mode][rk] = { n: componentsUsed(), t }; try { localStorage.setItem('opticalLabRecords3', JSON.stringify(records)); } catch {} }
       [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.35, i * 0.11));
       say('Holographic beam shaping. The same trick splits one laser into a hundred foci for multiphoton imaging, optogenetics and optical tweezers.');
     }
