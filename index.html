@@ -1717,7 +1717,8 @@ function renderConfocal() {
   if (!(scopeState.dirty && now - scopeState.last > 66) && now - scopeState.last < 500) return;
   const S = SAMPLES[scopeState.sample], u = confocalMat.uniforms;
   u.uCenter.value.set(scopeState.x, scopeState.y); u.uFov.value = S.fov; u.uZ.value = scopeState.z;
-  u.uPinhole.value = PINHOLES[scopeState.ph]; u.uResScale.value = scopeState.resScale; u.uBright.value = scopeState.bright; u.uMode.value = scopeState.mode; u.uSample.value = scopeState.sample; u.uRange.value = S.range;
+  u.uPinhole.value = PINHOLES[scopeState.ph]; const wfMode = scopeState.mode === 1;             // widefield is lit by the LED, so the laser's fill and collimation don't matter
+  u.uResScale.value = wfMode ? 1 : scopeState.resScale; u.uBright.value = wfMode ? 1 : scopeState.bright; u.uMode.value = scopeState.mode; u.uSample.value = scopeState.sample; u.uRange.value = S.range;
   u.uSeed.value = (scopeState.seed = (scopeState.seed + 17.3) % 997);
   const xr = renderer.xr.enabled, prev = renderer.getRenderTarget();
   renderer.xr.enabled = false;
@@ -1763,7 +1764,7 @@ function drawScopeUI() {
     g.fillStyle = 'rgba(0,0,0,0.45)'; g.fillRect(0, 0, 512, 46);
     g.fillStyle = '#e8eef5'; g.font = 'bold 17px system-ui, sans-serif'; g.fillText(`${S.name}`, 10, 19);
     g.font = '15px ui-monospace, monospace'; g.fillStyle = '#9fe6ff';
-    g.fillText(`60× / 1.2 W   Z ${scopeState.z.toFixed(1).padStart(5)} µm   ${wf ? 'WIDEFIELD · camera' : 'CONFOCAL · pinhole ' + phText}`, 10, 39);
+    g.fillText(`60× / 1.2 W   Z ${scopeState.z.toFixed(1).padStart(5)} µm   ${wf ? 'WIDEFIELD · LED · camera' : 'CONFOCAL · pinhole ' + phText}`, 10, 39);
     g.fillStyle = '#ff4b3e'; g.beginPath(); g.arc(470, 15, 5, 0, 7); g.fill(); g.font = 'bold 13px system-ui'; g.fillText('LIVE', 478, 20);
     const barPx = S.bar / S.fov * 512;
     g.fillStyle = '#fff'; g.fillRect(500 - barPx, 285, barPx, 5); g.font = 'bold 14px system-ui'; g.textAlign = 'right'; g.fillText(`${S.bar} µm`, 500, 278); g.textAlign = 'left';
@@ -1811,7 +1812,8 @@ const noSignalTex = (() => {
   const c = document.createElement('canvas'); c.width = 512; c.height = 308; const g = c.getContext('2d');
   g.fillStyle = '#05070a'; g.fillRect(0, 0, 512, 308);
   g.fillStyle = '#3a4350'; g.font = 'bold 34px system-ui, sans-serif'; g.textAlign = 'center';
-  g.fillText('NO SIGNAL', 256, 150); g.font = '20px system-ui, sans-serif'; g.fillText('waiting for excitation light', 256, 186);
+  g.fillText('NO SIGNAL', 256, 150); g.font = '20px system-ui, sans-serif'; g.fillText('confocal: waiting for laser light', 256, 186);
+  g.fillText('(widefield works without it)', 256, 214);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
 })();
 const screen = microscope.userData.screen;
@@ -2656,11 +2658,12 @@ renderer.xr.addEventListener('sessionstart', unlockAudio);
 function updateGame(dt) {
   const lit = microscope.userData.lit, L = LEVELS[game.level];
   microscope.userData.lamp.material.color.copy(lit ? COLORS.goalSolved : COLORS.goalIdle);
-  // monitor: live confocal image whenever excitation light reaches the port
-  const want = lit ? confocalRT.texture : noSignalTex;
+  // monitor: confocal needs the laser in the port; widefield has the scope's own LED and camera, so it always shows
+  const imaging = lit || scopeState.mode === 1;
+  const want = imaging ? confocalRT.texture : noSignalTex;
   if (screen.material.map !== want) { screen.material.map = want; screen.material.needsUpdate = true; scopeState.dirty = true; }
-  microscope.userData.overlay.visible = lit;
-  if (lit) renderConfocal();
+  microscope.userData.overlay.visible = imaging;
+  if (imaging) renderConfocal();
   drawScopeUI();
   // stage 2: the beam must also fill the back aperture and be collimated. Fill sets the confocal resolution.
   const P = game.port;
