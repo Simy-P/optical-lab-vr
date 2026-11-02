@@ -3517,6 +3517,7 @@ function traceBranch(b, segs, ao, nm) {
     if (ao && ud.dm) ao.events.push({ kind: 'dm', M: M.slice(), w: gaussW(q, nm), path: tag });
     if (ao && ud.slm && !ao.slm) ao.slm = { M: M.slice(), w: gaussW(q, nm), aoi: Math.acos(Math.min(1, Math.abs(dir.dot(hit.normal)))) };
     dir.reflect(hit.normal).normalize();
+    if (ao?.slm && ud.slm && !ao.slm.dirOut) Object.assign(ao.slm, { point: hit.point.clone(), dirOut: dir.clone(), q: { ...q }, qv: { ...qv }, face: hit.object });
     origin.copy(hit.point).addScaledVector(dir, LASER.beamEndPadding); adv(LASER.beamEndPadding);
   }
 }
@@ -3992,9 +3993,10 @@ function display() {
     lo = Math.min(lo, v); hi = Math.max(hi, v);
   }
   const eff = spots.length ? inSpots / F.tot : 0, uni = spots.length && hi > 0 ? 1 - (hi - lo) / (hi + lo) : 0, zero = I0[(N / 2) * N + N / 2] / F.tot;
+  const sp = spots.map(([kx, ky]) => { const cx = kx + cfg.gx + N / 2, cy = ky + cfg.gy + N / 2; let v = 0; for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) v += I0[(cy + dy) * N + cx + dx] || 0; return v / F.tot; });
   const S = cfg.chirp ? slmField(null, cfg.chirp) : F, I = S.I;
   for (let k = 0; k < I.length; k++) I[k] /= S.mx || 1;
-  postMessage({ iter, ph8, I, eff, uni, zero, hist, running: !!timer, chirp: cfg.chirp || 0 }, [ph8.buffer, I.buffer]);
+  postMessage({ iter, ph8, I, eff, uni, zero, sp, hist, running: !!timer, chirp: cfg.chirp || 0 }, [ph8.buffer, I.buffer]);
   return { eff, uni };
 }
 function loop() {
@@ -4068,7 +4070,7 @@ function slmSync(force) {
     const c = Math.PI * geo.A * SLM_P * SLM_P / (laserState.nm * 1e-9 * geo.B);
     if (Math.abs(c) * SLM_N < 2.5) { chirp = Math.abs(c) < 1e-7 ? 0 : +c.toPrecision(3); SLM.chirpOk = true; }   // sampled well enough on the grid
   }
-  const cfg = { gx: SLM.grating ? SLM_GX : 0, gy: 0, zero: +zero.toFixed(3), chirp };
+  const cfg = { gx: SLM.grating ? SLM_GX : 0, gy: 0, zero: +zero.toFixed(3), chirp: 0 };
   const spots = slmSpots(), sk = JSON.stringify(spots);
   const msg = {};
   const wb = w || SLM.sent.w || 2e-3;                // before any light reaches the SLM, assume a 4 mm beam
@@ -4082,7 +4084,7 @@ const scrImg = document.createElement('canvas'); scrImg.width = scrImg.height = 
 const scrCanvas = document.createElement('canvas'); scrCanvas.width = 2048; scrCanvas.height = 1536;   // ~8.5 px per mm: a few-mm pattern stays crisp
 const scrTex = new THREE.CanvasTexture(scrCanvas); scrTex.colorSpace = THREE.SRGBColorSpace;
 const SCR_W = 0.24, SCR_H = 0.18;
-const beamletGeo = new THREE.BufferGeometry(); beamletGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(60 * 2 * 3), 3));
+const beamletGeo = new THREE.BufferGeometry(); beamletGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(1200 * 2 * 3), 3));
 const beamlets = new THREE.LineSegments(beamletGeo, new THREE.LineBasicMaterial({ color: 0xff2010, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
 beamlets.frustumCulled = false; beamlets.visible = false; scene.add(beamlets);
 function slmScreenGeometry() {
@@ -4097,54 +4099,101 @@ function slmScreenGeometry() {
   out.blur = Math.abs(T[0]) * w;
   return out;
 }
+// ── Beamlets as real beams ──
+// The hologram sends each target spot off the SLM as its own collimated Gaussian beam, tilted by
+// θ = (spot index + grating offset) · λ / (SLM width covered by the grid). Each one is traced through the actual
+// optics with its own beam parameter: with a lens one focal length after the SLM they leave the lens parallel to
+// the axis and focus on its back focal plane at x = f·θ, each w = λf/πw₀ in radius. Without the lens, or with the
+// screen somewhere else, they land wherever, and as big as, the optics really make them.
+const SLM_SX = 1, SLM_SY = 1;                     // orientation of the pattern on the SLM relative to the beam
+const BL = { hits: [], segs: [] };
+function traceBeamlet(origin, dir0, q0, qv0, skip0, P, depth, nm, out, segs) {
+  const origin1 = origin.clone(), dir = dir0.clone(), q = { ...q0 }, qv = { ...qv0 }, c = V(), ax = V(), hh = V(), hx = V(), vx = V(), tmp = V();
+  let skip = skip0, remaining = 6;
+  const adv = (d) => { q.re += d; qv.re += d; };
+  const o = origin1;
+  for (let i = 0; i < 16 && remaining > 0; i++) {
+    const hit = raycast(o, dir, remaining, skip); skip = null;
+    if (!hit) { segs.push(o.clone(), o.clone().addScaledVector(dir, Math.min(remaining, 1.5)), P); return; }
+    const ud = hit.object.userData, optic = ud.optic;
+    if (optic?.type === 'lens' || ud.bs) {
+      hit.object.getWorldPosition(c); ax.set(0, 0, 1).transformDirection(hit.object.matrixWorld);
+      if (ud.bs) ax.copy(ud.bs.n).transformDirection(hit.object.matrixWorld);
+      const den = dir.dot(ax);
+      if (Math.abs(den) > 0.2) { const t = tmp.subVectors(c, o).dot(ax) / den; if (t > 0) { hit.point.copy(o).addScaledVector(dir, t); hit.distance = t; } }
+    }
+    segs.push(o.clone(), hit.point.clone(), P);
+    adv(hit.distance); remaining -= hit.distance;
+    const pass = () => { skip = hit.object; o.copy(hit.point).addScaledVector(dir, 0.0005); adv(0.0005); };
+    if (ud.whiteScreen) { out.push({ point: hit.point.clone(), face: hit.object, w: gaussW(q, nm), wv: gaussW(qv, nm), P }); return; }
+    if (ud.bs) {                                    // a splitter sends half each way: follow both (once)
+      if (depth < 2) { const n = ax.clone(), rd = dir.clone().reflect(n).normalize(); traceBeamlet(hit.point, rd, q, qv, hit.object, P * 0.5, depth + 1, nm, out, segs); }
+      P *= 0.5; pass(); continue;
+    }
+    if (ud.plate || ud.iris) { pass(); continue; }
+    if (optic) {
+      if (optic.type === 'nd') { P *= 10 ** -optic.od; pass(); continue; }
+      hit.object.getWorldPosition(c); ax.set(0, 0, 1).transformDirection(hit.object.matrixWorld);
+      hh.subVectors(hit.point, c); hh.addScaledVector(ax, -hh.dot(ax));
+      const cosI = dir.dot(ax);
+      if (hh.length() > OPTIC_R || Math.abs(cosI) < 0.25) return;           // misses the optic: blocked by the mount
+      const cylAx = optic.cyl ? ud.grabRoot.userData.cylAxis : null;
+      if (optic.type === 'cmirror') { if (cosI > 0) return; dir.reflect(ax); }
+      if (cylAx) {
+        hx.crossVectors(dir, Math.abs(dir.y) > 0.9 ? V(1, 0, 0) : UP).normalize(); vx.crossVectors(dir, hx).normalize();
+        const a = cylAx === 'h' ? hx : vx;
+        dir.addScaledVector(a, -hh.dot(a) / optic.f).normalize(); gaussFocus(cylAx === 'h' ? q : qv, optic.f);
+      } else { dir.addScaledVector(hh, -1 / optic.f).normalize(); gaussFocus(q, optic.f); gaussFocus(qv, optic.f); }
+      pass(); continue;
+    }
+    if (!ud.mirror) return;                         // anything else stops it
+    dir.reflect(hit.normal).normalize();
+    o.copy(hit.point).addScaledVector(dir, LASER.beamEndPadding); adv(LASER.beamEndPadding);
+  }
+}
+function slmTraceBeamlets() {
+  BL.hits = []; BL.segs = [];
+  const s = game.ao?.slm, F = SLM.frame;
+  if (!s || !s.dirOut || !F || !F.sp || !laserState.shutter) return;
+  const nm = laserState.nm, dth = nm * 1e-9 / (SLM_N * SLM_P), gx = SLM.grating ? SLM_GX : 0, d0 = s.dirOut;
+  const u = V().crossVectors(d0, Math.abs(d0.y) > 0.9 ? V(1, 0, 0) : UP).normalize(), v = V().crossVectors(u, d0).normalize();
+  slmSpots().forEach(([kx, ky], n) => {
+    const P = F.sp[n] || 0;
+    if (P < 1e-4) return;
+    const dir = d0.clone().addScaledVector(u, SLM_SX * (kx + gx) * dth).addScaledVector(v, SLM_SY * ky * dth).normalize();
+    traceBeamlet(s.point.clone().addScaledVector(dir, 0.0005), dir, s.q, s.qv, s.face, P, 0, nm, BL.hits, BL.segs);
+  });
+}
 function drawWhiteScreen(geo) {
   const g = scrCanvas.getContext('2d'), W = 2048, H = 1536, k = W / SCR_W;
   g.globalCompositeOperation = 'source-over'; g.fillStyle = '#f3f3ee'; g.fillRect(0, 0, W, H);
   g.strokeStyle = '#d8d8d0'; g.lineWidth = 24; g.strokeRect(12, 12, W - 24, H - 24);
   g.fillStyle = '#b9b9b0'; g.font = '600 56px system-ui'; g.fillText('SCREEN', 48, H - 48);
-  const s = geo.screen, pts = [];
+  const s = geo.screen, col = beamMat.color, rgb = `${(col.r * 255) | 0},${(col.g * 255) | 0},${(col.b * 255) | 0}`;
+  // every spot that lands on this screen: the zero order (the main beam) and each traced beamlet
+  const spots = [];
   if (s && laserState.shutter) {
-    const p = s.face.worldToLocal(s.point.clone()), cx = (p.x / SCR_W + 0.5) * W, cy = (0.5 - p.y / SCR_H) * H;
-    const col = beamMat.color, rgb = `${(col.r * 255) | 0},${(col.g * 255) | 0},${(col.b * 255) | 0}`;
-    const dot = (x, y, r, a) => {
-      const rr = Math.max(2.5, r);
-      const gr = g.createRadialGradient(x, y, 0, x, y, rr * 2.2);
-      gr.addColorStop(0, `rgba(${rgb},${Math.min(1, a)})`); gr.addColorStop(0.45, `rgba(${rgb},${Math.min(1, a) * 0.55})`); gr.addColorStop(1, `rgba(${rgb},0)`);
-      g.fillStyle = gr; g.beginPath(); g.arc(x, y, rr * 2.2, 0, 7); g.fill();
-    };
-    g.globalCompositeOperation = 'source-over';
-    const F = SLM.frame;
-    if (geo.ok && F) {
-      const N = SLM_N, I = F.I, spread = geo.pxM * k, exact = SLM.chirpOk;
-      if (exact) {                                   // the propagated field itself, in the laser's colour
-        const id = scrImg.getContext('2d').createImageData(N, N);
-        for (let n = 0; n < I.length; n++) { const a = Math.min(1, Math.sqrt(I[n]) * 1.3); id.data[n * 4] = col.r * 255; id.data[n * 4 + 1] = col.g * 255; id.data[n * 4 + 2] = col.b * 255; id.data[n * 4 + 3] = a * 255; }
-        scrImg.getContext('2d').putImageData(id, 0, 0);
-        g.save(); g.imageSmoothingEnabled = true; g.translate(cx, cy); g.scale(-spread, spread); g.translate(-N / 2, -N / 2); g.drawImage(scrImg, 0, 0); g.restore();
-      }
-      const list = [];
-      for (let n = 0; n < I.length; n++) if (I[n] > (exact ? 0.05 : 0.004)) list.push(n);
-      list.sort((a, b) => I[b] - I[a]); list.length = Math.min(list.length, exact ? 400 : 1200);
-      const rpx = exact ? Math.max(0.7 * Math.abs(spread), 2.5) : geo.r * k;
-      for (const n of list) {
-        const i = n % N, j = (n / N) | 0, x = cx - (i - N / 2) * spread, y = cy + (j - N / 2) * spread;   // the default fold reads the right way round
-        if (x < -40 || y < -40 || x > W + 40 || y > H + 40) continue;
-        if (!exact || Math.abs(spread) < 2.5) dot(x, y, rpx, Math.sqrt(I[n]) * Math.min(1, 4 / Math.max(2.5, rpx)));
-        if (pts.length < 60 && I[n] > 0.02) pts.push([(x / W - 0.5) * SCR_W, (0.5 - y / H) * SCR_H]);
-      }
-    } else { const r = (s.w || 0.002) * k; dot(cx, cy, r, 1); pts.push([p.x, p.y]); }
+    const zeroP = SLM.frame && geo.ok ? Math.max(SLM.frame.zero, 0.002) : 1;
+    spots.push({ point: s.point, face: s.face, w: s.w || 0.002, wv: s.w || 0.002, P: zeroP });
+    for (const h of BL.hits) if (h.face === s.face) spots.push(h);
+  }
+  let peak = 0;
+  for (const sp of spots) { sp.pk = sp.P / Math.max(sp.w * sp.wv, 1e-12); peak = Math.max(peak, sp.pk); }
+  for (const sp of spots) {
+    const p = sp.face.worldToLocal(sp.point.clone()), x = (p.x / SCR_W + 0.5) * W, y = (0.5 - p.y / SCR_H) * H;
+    const rx = Math.max(2.5, sp.w * k), ry = Math.max(2.5, sp.wv * k), a = Math.min(1, Math.sqrt(sp.pk / peak) * 1.15);
+    if (x < -4 * rx || y < -4 * ry || x > W + 4 * rx || y > H + 4 * ry || a < 0.02) continue;
+    g.save(); g.translate(x, y); g.scale(rx, ry);                      // a Gaussian spot: 1/e² radius w
+    const gr = g.createRadialGradient(0, 0, 0, 0, 0, 1.6);
+    gr.addColorStop(0, `rgba(${rgb},${a})`); gr.addColorStop(0.35, `rgba(${rgb},${a * 0.75})`); gr.addColorStop(0.62, `rgba(${rgb},${a * 0.3})`); gr.addColorStop(1, `rgba(${rgb},0)`);
+    g.fillStyle = gr; g.beginPath(); g.arc(0, 0, 1.6, 0, 7); g.fill(); g.restore();
   }
   scrTex.needsUpdate = true;
-  // beamlets in the air: from the last optic before the screen to each spot
-  const pos = beamletGeo.attributes.position.array; let n = 0;
-  if (s && pts.length > 1 && laserState.shutter && laserState.vis > 0.01) {
-    for (const [x, y] of pts) {
-      const wp = s.face.localToWorld(V(x, y, 0.0025));
-      pos.set([s.from.x, s.from.y, s.from.z, wp.x, wp.y, wp.z], n * 6); n++;
-    }
-  }
+  // the beamlets in the air, along their traced paths
+  const pos = beamletGeo.attributes.position.array, cap = pos.length / 6; let n = 0;
+  if (laserState.vis > 0.01) for (let i = 0; i + 2 < BL.segs.length && n < cap; i += 3) { const a = BL.segs[i], b = BL.segs[i + 1]; pos.set([a.x, a.y, a.z, b.x, b.y, b.z], n * 6); n++; }
   beamletGeo.setDrawRange(0, n * 2); beamletGeo.attributes.position.needsUpdate = true;
-  beamlets.material.color.copy(beamMat.color); beamlets.visible = n > 1;
+  beamlets.material.color.copy(beamMat.color); beamlets.visible = n > 0;
 }
 // ── SLM controller screen ──
 const slmCanvas = document.createElement('canvas'); slmCanvas.width = 1024; slmCanvas.height = 600;
@@ -4185,7 +4234,7 @@ function slmTaskList() {
 }
 function drawSLM() {
   const F = SLM.frame, tr = game.ao, o = SLM.out;
-  const sig = [aoHover, SLM.pattern, SLM.spacing, SLM.weighted, SLM.grating, SLM.msg, F?.iter, F?.uni?.toFixed(3), F?.eff?.toFixed(3), tr?.slm?.w?.toFixed(5), (tr?.slm?.aoi ?? 0).toFixed(3), o.ok, (o.blur ?? 0).toFixed(5), (o.width ?? 0).toFixed(4), SLM.texDirty].join('|');
+  const sig = [BL.hits.length, BL.hits.length ? BL.hits[0].w.toFixed(5) : '', aoHover, SLM.pattern, SLM.spacing, SLM.weighted, SLM.grating, SLM.msg, F?.iter, F?.uni?.toFixed(3), F?.eff?.toFixed(3), tr?.slm?.w?.toFixed(5), (tr?.slm?.aoi ?? 0).toFixed(3), o.ok, (o.blur ?? 0).toFixed(5), (o.width ?? 0).toFixed(4), SLM.texDirty].join('|');
   if (sig === SLM.sig) return; SLM.sig = sig;
   const g = slmCanvas.getContext('2d');
   g.fillStyle = '#0d0f12'; g.fillRect(0, 0, 1024, 600); g.fillStyle = '#ff3b2f'; g.fillRect(0, 0, 1024, 6);
@@ -4194,7 +4243,7 @@ function drawSLM() {
   const pane = (x, t) => { g.fillStyle = '#161a20'; g.fillRect(x, 56, 316, 290); g.fillStyle = '#8b96a3'; g.font = '600 16px system-ui, sans-serif'; g.fillText(t, x + 10, 76); };
   pane(20, 'SLM PHASE (0–2π, 8-bit)');
   if (F) { slmPhaseImage(F.ph8); g.imageSmoothingEnabled = false; g.drawImage(slmImg, 48, 84, 256, 256); g.imageSmoothingEnabled = true; }
-  pane(352, 'ON THE SCREEN (SIMULATED)');
+  pane(352, 'FOCAL PLANE (SIMULATED)');
   if (F) {
     const id = g.createImageData(SLM_N, SLM_N), I = F.I;
     for (let k = 0; k < I.length; k++) { const v = Math.sqrt(I[k]); id.data[k * 4] = Math.min(255, v * 400); id.data[k * 4 + 1] = Math.min(255, v * 260); id.data[k * 4 + 2] = Math.min(255, v * 120); id.data[k * 4 + 3] = 255; }
@@ -4225,7 +4274,10 @@ function drawSLM() {
     line(372, d >= 3 && d <= 8.6, `SLM: beam Ø ${d.toFixed(1)} mm${d > 8.6 ? ' (clipped by the panel)' : d < 3 ? ' (few pixels used: big, soft beamlets)' : ''} · incidence ${a.toFixed(1)}°${a > 10 ? ' (too oblique: more zero order)' : ''}`);
   } else line(372, null, 'SLM: the beam isn\'t on the SLM');
   if (o.ok) {
-    line(398, o.blur <= 0.3e-3, o.blur <= 0.3e-3 ? `Screen: at a Fourier plane (beamlets ${(o.r * 2000).toFixed(2)} mm across)` : `Screen: not at a Fourier plane: each beamlet smeared to ${(o.blur * 2000).toFixed(1)} mm`);
+    const onScr = BL.hits.filter((h) => h.face === o.screen?.face), dmean = onScr.length ? onScr.reduce((a, h) => a + 2 * h.w, 0) / onScr.length : 0;
+    const dIdeal = 2 * laserState.nm * 1e-9 * Math.abs(o.B) / (Math.PI * (tr.slm?.w || 1));
+    line(398, o.blur <= 0.3e-3, o.blur <= 0.3e-3 ? `Screen: at the back focal plane · beamlets ${(dmean * 1000).toFixed(2)} mm across (2λf/πw = ${(dIdeal * 1000).toFixed(2)} mm) · ${onScr.length} on the screen`
+      : `Screen: not at the focal plane · beamlets ${(dmean * 1000).toFixed(2)} mm across · ${onScr.length} on the screen`);
     line(424, null, `Pattern on the screen: ${((o.width || 0) * 1000).toFixed(1)} mm across · spot spacing ${(Math.abs(o.pxM) * SLM.spacing * 1000).toFixed(2)} mm · f = ${(Math.abs(o.B) * 1000).toFixed(0)} mm`);
     line(450, Math.abs(o.D ?? 1) <= 0.05, Math.abs(o.D ?? 1) <= 0.05 ? 'SLM in the lens\'s front focal plane: a 2f Fourier system' : 'SLM not in the lens\'s front focal plane (fine for the pattern; the beamlets aren\'t parallel)');
   } else line(398, null, tr?.screen ? 'Screen: lit, but not by light from the SLM' : 'Screen: no light on it');
@@ -4259,7 +4311,10 @@ function updateSLM(dt, L) {
     geo.width = Math.abs(geo.pxM) * Math.max(hi - lo, hi2 - lo2);
   }
   SLM.out = geo;
-  const s = geo.screen, ssig = [SLM.frame?.iter, SLM.frame?.uni, s ? s.point.toArray().map((v) => v.toFixed(4)).join() : '', (geo.A ?? 0).toFixed(4), (geo.B ?? 0).toFixed(4), laserState.shutter, laserState.nm, SLM.grating, SLM.frame?.chirp].join('|');
+  slmTraceBeamlets();
+  const s = geo.screen, r4 = (v) => (v * 1e4).toFixed(0);
+  const ssig = [SLM.frame?.iter, laserState.shutter, laserState.nm, laserState.vis > 0.01, s ? s.point.toArray().map(r4).join() : '', s ? r4(s.w) : '',
+    BL.hits.map((h) => h.point.toArray().map(r4).join() + r4(h.w) + r4(h.wv)).join(';'), BL.segs.length].join('|');
   if (ssig !== SLM.scrSig) { SLM.scrSig = ssig; drawWhiteScreen(geo); }
   if (SLM.texDirty) { updateSlmFace(); SLM.texDirty = false; }
   if (SLM.frame && !SLM.frame.running && SLM.msg.startsWith('Running')) SLM.msg = `Done: ${SLM.frame.iter} iterations, uniformity ${(SLM.frame.uni * 100).toFixed(0)} %, efficiency ${(SLM.frame.eff * 100).toFixed(0)} %.`;
@@ -4294,6 +4349,7 @@ function slmAutoSetup() {
   P('mirror', xb, zb + 0.5, 45);
   const lens = P('lens1000', xb - 0.4, zb + 0.5, -90), scr = P('screen', xb - 1.4, zb + 0.5, 90);
   const geo = () => { traceBeam(); return slmScreenGeometry(); };
+  traceBeam(); const off = opticHits.get(lens); if (off) { lens.position.x += off.x; lens.position.z += off.z; }   // centre the lens on the beam
   // slide the lens until D = 0 (SLM in its front focal plane), then the screen until A = 0 (its back focal plane)
   const solve = (obj, get, lo, hi) => {
     let xa = obj.position.x, xc = xa + 0.02, fa = get();
@@ -4521,6 +4577,7 @@ function traceBeam() {
       ao.events.push({ kind: 'dm', M: M.slice(), w: gaussW(q, nm), path: ao.dm.path });
     }
     dir.reflect(hit.normal).normalize();
+    if (ao?.slm && hit.object.userData.slm && !ao.slm.dirOut) Object.assign(ao.slm, { point: hit.point.clone(), dirOut: dir.clone(), q: { ...q }, qv: { ...qv }, face: hit.object });
     origin.copy(hit.point).addScaledVector(dir, LASER.beamEndPadding); adv(LASER.beamEndPadding);
   }
   // beamsplitter branches: the reflected half of the laser, and (with light in the port) the guide-star light
