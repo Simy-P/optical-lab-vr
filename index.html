@@ -35,7 +35,7 @@
     <p>You come in to find every optic gone from your setup. Your supervisor wants light in the microscope's rear port, fast, and with as few optical components on the table as possible. Each level they add something new to the table.</p>
     <p>Lenses are labelled on their bases (+ = convex, converging; − = concave, diverging), and the wall panel and laser controller show the starting beam size. <b>★ Free build</b> puts every optic in the tray with a live readout at the port: try +100 then +400 mm, 500 mm apart, for a 4× bigger collimated beam. A floating tag between each pair of lenses shows their spacing along the beam, the best spacing for a collimated output (worked out from the real Gaussian beam: the second lens goes one focal length from the waist the first lens makes. That is f₁+f₂ when the waist lands at f₁, as in a 4× expander, but when contracting with a long first lens inside the laser's Rayleigh range the waist forms short of f₁, so +400 → +100 wants about 485 mm, not 500) and f₁+f₂; it turns green within 2 mm of best. The +100 mm <b>cylindrical lens</b> focuses in one plane only, so the beam becomes an ellipse and then a line at its focus; click the orange knob on top to turn it between horizontal and vertical focusing.</p>
     <p><b>0 · Safety</b> is a laser safety induction: close the door, switch on the warning lamp, pick the right goggles from the rack, find the stray reflection, measure the power, classify the laser, dump the beam and close the shutter. Do anything unsafe (shutter open too early, no or wrong goggles, a hand or your eye in the beam) and everything stops: you're back at the start and the supervisor tells you exactly what you did wrong. Finish to get a certificate.</p>
-    <p>Three stages: <b>1 · Mirrors</b> (steer the beam), <b>2 · Lenses</b> (expand and collimate the beam to fill the new objective's back aperture; lenses and curved mirrors centre themselves on the beam when you let go, and the beam's real width is drawn as it focuses and expands), <b>3 · Alignment</b> (two irises fixed on the microscope axis: the expanded beam must pass through the middle of both, so it arrives on axis and square), and <b>4 · Experiments</b>: adaptive optics. Build a closed-loop AO system from a 37-actuator deformable mirror, a 50:50 beamsplitter and a 15×15 Shack–Hartmann wavefront sensor: expand the beam onto the DM, relay the DM onto the microscope pupil, and send the light returning from the sample (the guide star) back through the DM to the sensor, which must also be conjugate to the DM. The AO controller (back left of the table) shows the spots, the measured wavefront and the actuators, with Flat, Calibrate, Loop and gain buttons, and sets the phase plate's aberration (astigmatism, coma, trefoil, spherical or random) and size. Aberrations also come from tilted lenses and from the sample itself, which gets worse the deeper you focus into the spheroid. What's left uncorrected dims and blurs the confocal image, point by point across the field, so a DM that isn't conjugate to the pupil corrects the centre but not the edges. <b>AO Bench</b> is the same kit with no checklist. Two labs: the normal lab, and <b>The Floor is Lava</b>, where the volcanology lab next door has sprung a leak. Stay on the stepping stones; the optical table is lava proof.</p>
+    <p>Three stages: <b>1 · Mirrors</b> (steer the beam), <b>2 · Lenses</b> (expand and collimate the beam to fill the new objective's back aperture; lenses and curved mirrors centre themselves on the beam when you let go, and the beam's real width is drawn as it focuses and expands), <b>3 · Alignment</b> (two irises fixed on the microscope axis: the expanded beam must pass through the middle of both, so it arrives on axis and square), and <b>4 · Experiments</b>: adaptive optics. Build a closed-loop AO system from a 37-actuator deformable mirror, a 50:50 beamsplitter and a 15×15 Shack–Hartmann wavefront sensor: expand the beam onto the DM, relay the DM onto the microscope pupil, and send the light returning from the sample (the guide star) back through the DM to the sensor, which must also be conjugate to the DM. The AO controller (back left of the table) shows the spots, the measured wavefront and the actuators, with Flat, Calibrate, Loop and gain buttons, and sets the phase plate's aberration (astigmatism, coma, trefoil, spherical or random) and size. Aberrations also come from tilted lenses and from the sample itself, which gets worse the deeper you focus into the spheroid. What's left uncorrected shapes the image through the real point spread function, worked out from the residual wavefront by Fourier transform (confocal: excitation PSF × pinhole-filtered detection PSF) at 3×3 points across the field, so a DM that isn't conjugate to the pupil corrects the centre but not the edges. The beads sample (zoomed to a 20 µm field) draws every bead with the PSF at its own defocus: focus through astigmatic beads and watch the lines flip, or look for comet tails (coma), three-lobed spots (trefoil) and haloes (spherical). The AO controller shows the PSF too. <b>AO Bench</b> is the same kit with no checklist. Two labs: the normal lab, and <b>The Floor is Lava</b>, where the volcanology lab next door has sprung a leak. Stay on the stepping stones; the optical table is lava proof.</p>
     <p><b>Quest:</b> <kbd>ENTER VR</kbd>. Point at the wall panel and pull the trigger to choose a game. Either hand grabs with grip or trigger: reach in and pick a part up to lift, tilt and carry it (or pass it to your other hand), and when you let go it drops back onto the table, upright, on the nearest grid spot and snap angle. Point at a part to slide it along the table from a distance. Let go of the trigger to point your index finger and you can press the buttons on the laser controller, the microscope pad and the wall panel by pushing them. While holding a part at a distance: twist your wrist to turn it, <kbd>A</kbd>/<kbd>X</kbd> and <kbd>B</kbd>/<kbd>Y</kbd> turn it one step, the thumbstick slides it (lenses and curved mirrors creep slowly, for fine focusing), and clicking the thumbstick changes the rotation snap (free, 1°, 5°, 15°, 45°; also on the wall panel; 5° to start). Put a part back in the tray to remove it. When the light is in, the monitor shows a live confocal image: grab the focus knobs on the microscope's right side and move your hand up or down to focus through the sample (big knob coarse, small knob fine), switch between confocal and widefield, set the pinhole and change the sample with the buttons under the monitor, and use the joystick to move the stage. The box beside the laser tunes it from 350 to 1064 nm; UV and IR beams are invisible, so pick up a detector card from the rack next to it and hold it in the beam to see where it goes, or pick up the IR viewer next to the controller and hold it to your eye: UV and near-IR beams show up green through it. Walking: the left stick moves you the way you're looking and the right stick turns (smooth by default). On the wall panel's title screen you can switch to snap turning (45° or 30°), swap the sticks, and set your eye height (1.75 m to start; 1.6, 1.9, or your real height).</p>
     <p><b>Desktop:</b> click the panel buttons; drag parts; mouse wheel over a part turns it one snap step, 5° to start (<kbd>Shift</kbd> for 1°; change the snap on the wall panel); drag the joystick; drag a focus knob up/down or use the mouse wheel over it to focus; click the buttons under the monitor; the box beside the laser changes its wavelength (350–1064 nm; UV and IR beams are invisible: drag a detector card from the rack into the beam to find them, or press <kbd>V</kbd> to look through the IR viewer); <kbd>[</kbd>/<kbd>]</kbd> nudge the lens or curved mirror under the mouse 1 mm along its axis (<kbd>Shift</kbd> for 5 mm); drag empty space to orbit; <kbd>M</kbd> returns to the main menu.</p>
   </div>
@@ -1622,7 +1622,7 @@ const SAMPLES = [
   { short: 'HeLa cells', name: 'HeLa cells: DAPI, phalloidin, MitoTracker', fov: 110, z0: 0, z1: 8, z: 1.5, range: 14, bar: 20 },
   { short: 'Spheroid', name: 'Tumour spheroid, 80 µm thick', fov: 150, z0: 0, z1: 80, z: 20, range: 90, bar: 20 },
   { short: 'Pollen', name: 'Mixed pollen grains (autofluorescence)', fov: 160, z0: 0, z1: 50, z: 22, range: 55, bar: 20 },
-  { short: 'Beads', name: '200 nm fluorescent beads', fov: 40, z0: 0, z1: 30, z: 12.8, range: 1, bar: 5 },
+  { short: 'Beads', name: '200 nm fluorescent beads', fov: 20, z0: 0, z1: 30, z: 12.8, range: 1, bar: 5 },
 ];
 const PINHOLES = [0.2, 0.5, 1, 1.5, 2, 4, 8, 20];          // Airy units; 20 ≈ fully open
 const scopeState = { resScale: 1, bright: 1, mode: 0, sample: 0, z: SAMPLES[0].z, ph: 2, x: 0, y: 0, dirty: true, last: 0, seed: 0 };
@@ -1631,12 +1631,25 @@ const confocalRT = new THREE.WebGLRenderTarget(RT_W, RT_H, { depthBuffer: false 
 confocalRT.texture.colorSpace = THREE.SRGBColorSpace;
 const confocalMat = new THREE.ShaderMaterial({
   uniforms: { uCenter: { value: new THREE.Vector2() }, uFov: { value: 110 }, uAspect: { value: RT_H / RT_W }, uZ: { value: 2 },
-    uPinhole: { value: 1 }, uSample: { value: 0 }, uRange: { value: 14 }, uSeed: { value: 0 }, uMode: { value: 0 }, uResScale: { value: 1 }, uBright: { value: 1 }, uS: { value: new Array(9).fill(1) }, uRes: { value: new THREE.Vector2(RT_W, RT_H) } },
+    uPinhole: { value: 1 }, uSample: { value: 0 }, uRange: { value: 14 }, uSeed: { value: 0 }, uMode: { value: 0 }, uResScale: { value: 1 }, uBright: { value: 1 }, uS: { value: new Array(9).fill(1) }, uAx: { value: new Array(17).fill(1) }, uLinear: { value: 0 }, uAccScale: { value: 1 }, uStack: { value: null }, uStackOn: { value: 0 }, uStackPx: { value: 0.13 }, uRes: { value: new THREE.Vector2(RT_W, RT_H) } },
   vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
   fragmentShader: /* glsl */`
     precision highp float;
     uniform vec2 uCenter, uRes; uniform float uFov, uAspect, uZ, uPinhole, uSample, uRange, uSeed, uMode, uResScale, uBright;
     uniform float uS[9];             // Strehl ratio at 3×3 points of the field (adaptive optics experiments; 1 elsewhere)
+    uniform float uAx[17];           // through-focus signal relative to a perfect system, dz = −6…6 µm in 0.75 µm steps
+    uniform float uLinear, uAccScale, uStackOn, uStackPx;
+    uniform sampler2D uStack;        // through-focus PSF stack: 17 planes × 32×32, dz = −6…6 µm
+    float stk(int n, vec2 q) {
+      ivec2 i = ivec2(floor(q)); vec2 f = fract(q);
+      if (i.x < 0 || i.y < 0 || i.x > 30 || i.y > 30) return 0.0;
+      int o = n * 32;
+      float a = texelFetch(uStack, ivec2(o + i.x, i.y), 0).r, b = texelFetch(uStack, ivec2(o + i.x + 1, i.y), 0).r;
+      float c = texelFetch(uStack, ivec2(o + i.x, i.y + 1), 0).r, d = texelFetch(uStack, ivec2(o + i.x + 1, i.y + 1), 0).r;
+      return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+    }
+    float stackAt(vec2 dd, float dz) { float t = clamp(dz / 0.75 + 8.0, 0.0, 15.999); int n = int(floor(t)); vec2 q = dd / uStackPx + 16.0; return mix(stk(n, q), stk(n + 1, q), t - float(n)); }
+    float axf(float dz) { float t = dz / 0.75 + 8.0; if (t <= 0.0 || t >= 16.0) return 1.0; int i = int(floor(t)); return mix(uAx[i], uAx[i + 1], t - float(i)); }
     varying vec2 vUv;
     #define NZ 16
     #define WF_GAIN 0.9
@@ -1740,7 +1753,9 @@ const confocalMat = new THREE.ShaderMaterial({
           vec3 c = k == 0 ? vec3((id + 0.1 + 0.8 * h.xy) * 6.0, 12.6 + h.z * 0.4) : vec3((id + 0.15 + 0.7 * h.xy) * 6.0, float(k) * 6.5 - 4.0 + h.z * 4.0);
           float rb = max(rmin, abs(c.z - uZ) * 2.0), sig = 0.12 + 0.5 * rb;
           vec2 dd = xy - c.xy;
-          acc.g += 2.0 * exp(-dot(dd, dd) / (2.0 * sig * sig)) * (0.06 / (sig * sig)) * (wf ? 1.0 : min(1.0, rp * rp / (rb * rb)));
+          float dzb = c.z - uZ;
+          if (uStackOn > 0.5 && abs(dzb) < 5.9) acc.g += 2.0 * stackAt(dd, dzb);   // each bead is drawn with the real PSF at its defocus
+          else acc.g += 2.0 * exp(-dot(dd, dd) / (2.0 * sig * sig)) * (0.06 / (sig * sig)) * (wf ? 1.0 : min(1.0, rp * rp / (rb * rb)) * axf(dzb));
         }
       } else {
         for (int k = 0; k < NZ; k++) {
@@ -1750,7 +1765,7 @@ const confocalMat = new THREE.ShaderMaterial({
           float rb = max(rmin, abs(dz) * 2.0);                  // blur radius at this depth
           // widefield: every depth reaches the camera. Blurring a structure ~4 µm across by rb spreads the
           // same light over a bigger area, so its brightness falls as 4²/(4 + rb)²
-          float w = (wf ? 16.0 / ((4.0 + rb) * (4.0 + rb)) : min(1.0, rp * rp / (rb * rb))) * dzw;
+          float w = (wf ? 16.0 / ((4.0 + rb) * (4.0 + rb)) : min(1.0, rp * rp / (rb * rb)) * axf(dz)) * dzw;
           if (w < 2e-4) continue;
           vec3 p = vec3(xy, uZ + dz);
           acc += (uSample < 0.5 ? hela(p, rb) : uSample < 1.5 ? spheroid(p, rb) : pollen(p, rb)) * w;
@@ -1758,6 +1773,7 @@ const confocalMat = new THREE.ShaderMaterial({
         acc *= wf ? WF_GAIN : 1.6;
       }
       acc *= (wf ? 1.0 : eff) * uBright * (0.3 + 0.7 * strehl);
+      if (uLinear > 0.5) { gl_FragColor = vec4(acc * uAccScale, 1.0); return; }   // PSF mode: the second pass blurs, then adds noise
       vec2 px = floor(vUv * uRes);                               // photon shot noise
       float n = h21(px + uSeed) + h21(px * 1.7 + uSeed * 3.1) - 1.0;
       vec3 ph = acc * 60.0;
@@ -1767,7 +1783,46 @@ const confocalMat = new THREE.ShaderMaterial({
       gl_FragColor = vec4(min(rgb, 1.0), 1.0);
     }`,
 });
-const AO_ONES = new Array(9).fill(1);
+const AO_ONES = new Array(9).fill(1), AX_ONES = new Array(17).fill(1);
+const accHalf = renderer.capabilities.isWebGL2 && (renderer.extensions.has('EXT_color_buffer_float') || renderer.extensions.has('EXT_color_buffer_half_float'));
+const accRT = new THREE.WebGLRenderTarget(RT_W, RT_H, { depthBuffer: false, type: accHalf ? THREE.HalfFloatType : THREE.UnsignedByteType });
+const ACC_SCALE = accHalf ? 1 : 0.25;
+const psfMat = new THREE.ShaderMaterial({
+  uniforms: { tAcc: { value: accRT.texture }, tK: { value: null }, uTexel: { value: new THREE.Vector2(1 / RT_W, 1 / RT_H) }, uRes: { value: new THREE.Vector2(RT_W, RT_H) },
+    uSeed: { value: 0 }, uAccInv: { value: 1 / ACC_SCALE }, uDelta: { value: 0 }, uFB: { value: new Array(9).fill(1) } },
+  vertexShader: `varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }`,
+  fragmentShader: /* glsl */`
+    precision highp float;
+    uniform sampler2D tAcc, tK; uniform vec2 uTexel, uRes; uniform float uSeed, uAccInv, uDelta; uniform float uFB[9];
+    varying vec2 vUv;
+    float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+    void main() {
+      vec2 fg = clamp((vUv - 0.1) / 0.4, 0.0, 1.999); ivec2 fi = ivec2(fg); vec2 ff = fract(fg);
+      ivec2 t00 = fi * 15, t10 = t00 + ivec2(15, 0), t01 = t00 + ivec2(0, 15), t11 = t00 + ivec2(15, 15);
+      float w00 = (1.0 - ff.x) * (1.0 - ff.y), w10 = ff.x * (1.0 - ff.y), w01 = (1.0 - ff.x) * ff.y, w11 = ff.x * ff.y;
+      vec3 acc = vec3(0.0);
+      if (uDelta > 0.5) {
+        float fb = w00 * uFB[fi.y * 3 + fi.x] + w10 * uFB[fi.y * 3 + fi.x + 1] + w01 * uFB[(fi.y + 1) * 3 + fi.x] + w11 * uFB[(fi.y + 1) * 3 + fi.x + 1];
+        acc = texture2D(tAcc, vUv).rgb * fb / max(uFB[4], 1e-4);
+      } else
+      for (int j = 0; j < 15; j++) for (int i = 0; i < 15; i++) {
+        ivec2 kp = ivec2(i, j);
+        float k = w00 * texelFetch(tK, t00 + kp, 0).r + w10 * texelFetch(tK, t10 + kp, 0).r + w01 * texelFetch(tK, t01 + kp, 0).r + w11 * texelFetch(tK, t11 + kp, 0).r;
+        if (k < 1e-6) continue;
+        acc += k * texture2D(tAcc, vUv - vec2(float(i - 7), float(j - 7)) * uTexel).rgb;
+      }
+      acc *= uAccInv;
+      vec2 px = floor(vUv * uRes);                               // photon shot noise, after the blur
+      float n = h21(px + uSeed) + h21(px * 1.7 + uSeed * 3.1) - 1.0;
+      vec3 ph = acc * 60.0;
+      vec3 sig = max(vec3(0.0), ph + n * 1.7 * sqrt(ph + 0.3)) / 60.0;
+      vec3 c = 1.0 - exp(-sig * 1.4);
+      vec3 rgb = c.r * vec3(1.0, 0.2, 0.12) + c.g * vec3(0.3, 1.0, 0.35) + c.b * vec3(0.3, 0.5, 1.0);
+      gl_FragColor = vec4(min(rgb, 1.0), 1.0);
+    }`,
+});
+const psfScene = new THREE.Scene();
+psfScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), psfMat));
 const confocalScene = new THREE.Scene();
 confocalScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), confocalMat));
 const confocalCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
@@ -1779,11 +1834,21 @@ function renderConfocal() {
   u.uCenter.value.set(scopeState.x, scopeState.y); u.uFov.value = S.fov; u.uZ.value = scopeState.z;
   u.uPinhole.value = PINHOLES[scopeState.ph]; const wfMode = scopeState.mode === 1;             // widefield is lit by the LED, so the laser's fill and collimation don't matter
   u.uResScale.value = wfMode ? 1 : scopeState.resScale; u.uBright.value = wfMode ? 1 : scopeState.bright;
-  u.uS.value = aoActive() ? AO.fieldS : AO_ONES; u.uMode.value = scopeState.mode; u.uSample.value = scopeState.sample; u.uRange.value = S.range;
+  const psfOn = aoActive() && PSF.ready;          // experiments: the image is blurred by the real point spread function
+  u.uS.value = psfOn ? AO_ONES : aoActive() ? AO.fieldS : AO_ONES;
+  u.uAx.value = psfOn && !wfMode ? PSF.ax : AX_ONES;
+  u.uLinear.value = psfOn ? 1 : 0; u.uAccScale.value = ACC_SCALE;
+  const beadsPsf = psfOn && scopeState.sample === 3;
+  u.uStackOn.value = beadsPsf ? 1 : 0; u.uStack.value = PSF.stack; u.uStackPx.value = PSF.stackDx;
+  psfMat.uniforms.uDelta.value = beadsPsf ? 1 : 0; psfMat.uniforms.uFB.value = PSF.fb; u.uMode.value = scopeState.mode; u.uSample.value = scopeState.sample; u.uRange.value = S.range;
   u.uSeed.value = (scopeState.seed = (scopeState.seed + 17.3) % 997);
   const xr = renderer.xr.enabled, prev = renderer.getRenderTarget();
   renderer.xr.enabled = false;
-  renderer.setRenderTarget(confocalRT); renderer.render(confocalScene, confocalCam);
+  if (psfOn) {
+    renderer.setRenderTarget(accRT); renderer.render(confocalScene, confocalCam);
+    psfMat.uniforms.tK.value = PSF.tex; psfMat.uniforms.uSeed.value = u.uSeed.value;
+    renderer.setRenderTarget(confocalRT); renderer.render(psfScene, confocalCam);
+  } else { renderer.setRenderTarget(confocalRT); renderer.render(confocalScene, confocalCam); }
   renderer.setRenderTarget(prev); renderer.xr.enabled = xr;
   scopeState.dirty = false; scopeState.last = now;
 }
@@ -3290,7 +3355,8 @@ function aoCalibrate() {
 function aoCompute() {
   const tr = game.ao, lam = laserState.nm * 1e-9, out = { tr };
   const samp = aoSampleMap();
-  out.wfS = aoStrehl(aoResidual(samp).rms);                      // widefield: lit by the LED, so the DM doesn't help it
+  const sr = aoResidual(samp); out.sampR = sr.R;
+  out.wfS = aoStrehl(sr.rms);                                    // widefield: lit by the LED, so the DM doesn't help it
   if (tr?.port) {
     const Mp = tr.port.M, wp = tr.port.w, parts = [];
     for (const e of tr.events) {
@@ -3301,13 +3367,13 @@ function aoCompute() {
       if (e.kind === 'plate') out.plateDelta = dl;
     }
     const thMax = SAMPLES[scopeState.sample].fov * 1e-6 / 2 / AO_FOBJ * 0.8;
-    out.fieldS = [];
+    out.fieldS = []; out.fieldW = [];
     for (let fy = -1; fy <= 1; fy++) for (let fx = -1; fx <= 1; fx++) {
       const W = samp.slice();
       for (const pt of parts) aoAdd(W, aoShift(pt.map, pt.k * fx * thMax, pt.k * fy * thMax));
       const r = aoResidual(W);
       if (fx === 0 && fy === 0) { out.exc = r; out.S0 = aoStrehl(r.rms); }
-      out.fieldS.push(aoStrehl(r.rms));
+      out.fieldS.push(aoStrehl(r.rms)); out.fieldW.push(r.R);
     }
   }
   const H = tr?.wfsHits[0];
@@ -3558,6 +3624,17 @@ function drawAO(force) {
     else line(450, false, 'DM → sensor: the sensor can\'t see the DM');
   } else line(424, null, 'Sensor: no light on it');
   if (o.S0 !== undefined) { g.fillStyle = o.S0 > 0.8 ? '#39f07a' : '#ffd23f'; g.font = 'bold 22px system-ui, sans-serif'; g.fillText(`Strehl at the sample: ${o.S0.toFixed(2)}`, 600, 372); }
+  if (PSF.img && o.S0 !== undefined) {           // the excitation PSF at the centre of the field, on a square-root scale
+    const x0 = 900, y0 = 384, sc = 3;
+    g.fillStyle = '#000'; g.fillRect(x0, y0, 96, 96);
+    for (let j = 0; j < 32; j++) for (let i = 0; i < 32; i++) {
+      const v = Math.sqrt(Math.max(0, Math.min(1, PSF.img[j * 32 + i]))), c = (255 * v) | 0;
+      if (c > 3) { g.fillStyle = `rgb(${c},${Math.min(255, c * 1.1) | 0},${(c * 0.6) | 0})`; g.fillRect(x0 + i * sc, y0 + (31 - j) * sc, sc, sc); }
+    }
+    g.strokeStyle = '#3a4350'; g.strokeRect(x0, y0, 96, 96);
+    g.fillStyle = '#8b96a3'; g.font = '600 13px system-ui'; g.fillText('PSF', x0 - 34, y0 + 14); g.font = '12px system-ui';
+    g.fillText(`${(32 * PSF.imgDx).toFixed(1)} µm`, x0 - 46, y0 + 92);
+  }
   g.fillStyle = '#c9d2dc'; g.font = 'italic 18px system-ui, sans-serif'; g.fillText(AO.msg || '', 20, 500);
   g.fillStyle = '#8b96a3'; g.font = '15px system-ui'; g.fillText('GAIN', 538, 515); g.fillText('PHASE PLATE', 700, 515); g.fillText('RMS', 910, 515);
   for (const b of AO_BTNS) {
@@ -3581,6 +3658,7 @@ function updateAO(dt, L) {
   AO.acc = 0;
   const out = aoCompute();
   aoLoopStep();
+  psfSchedule(out);
   const S = scopeState.mode === 1 ? new Array(9).fill(out.wfS) : (out.fieldS || new Array(9).fill(1));
   if (S.some((v, i) => Math.abs(v - AO.fieldS[i]) > 0.01)) { AO.fieldS = S; scopeState.dirty = true; }
   const poke = AO.calibAnim ? Math.min(AO_NA - 1, (AO.calibAnim.t / 1.6 * AO_NA) | 0) : -1;
@@ -3610,6 +3688,168 @@ const AO_SAY = {
   loop: 'Loop closed, spots back on their grid, Strehl up. Look at the monitor.',
   deep: 'Fifty microns into a spheroid and still sharp. That\'s why we do AO.',
 };
+
+// ── Point spread functions from the residual wavefront (adaptive optics experiments) ──
+// The pupil (uniform, NA 1.2 water) carries the residual wavefront W and, for through-focus, a high-NA defocus
+// phase 2π·dz·√(n² − NA²ρ²)/λ. |FFT|² gives the PSF. Confocal: excitation PSF × (detection PSF ⊗ pinhole), with
+// the light going both ways through the same aberrations. Widefield: the detection PSF alone (sample only).
+// Lateral: a 15×15-pixel kernel at each of the 3×3 field points, scaled so its sum is the signal relative to a
+// perfect system. Axial: the signal from a thin fluorescent sheet at each defocus, relative to perfect, which
+// reweights the depth slices of the render (spherical aberration smears the section and shifts best focus).
+const PSF_F = 64, PSF_RP = 16, PSF_K = 15, PSF_KR = 7, PSF_NA = 1.2, PSF_N = 1.33;
+const PSF_DZ = Array.from({ length: 17 }, (_, i) => (i - 8) * 0.75);       // µm
+const psfBitrev = new Uint16Array(PSF_F), psfCos = new Float64Array(PSF_F / 2), psfSin = new Float64Array(PSF_F / 2);
+for (let i = 0; i < PSF_F; i++) { let r = 0; for (let b = 1, x = i; b < PSF_F; b <<= 1, x >>= 1) r = (r << 1) | (x & 1); psfBitrev[i] = r; }
+for (let i = 0; i < PSF_F / 2; i++) { psfCos[i] = Math.cos(2 * Math.PI * i / PSF_F); psfSin[i] = Math.sin(2 * Math.PI * i / PSF_F); }
+function psfFft1(re, im, off, stride, inv) {
+  const n = PSF_F;
+  for (let i = 0; i < n; i++) { const j = psfBitrev[i]; if (j > i) { const a = off + i * stride, b = off + j * stride; let t = re[a]; re[a] = re[b]; re[b] = t; t = im[a]; im[a] = im[b]; im[b] = t; } }
+  for (let size = 2; size <= n; size <<= 1) {
+    const half = size >> 1, step = n / size;
+    for (let s = 0; s < n; s += size) for (let k = 0; k < half; k++) {
+      const c = psfCos[k * step], sn = inv ? psfSin[k * step] : -psfSin[k * step];
+      const a = off + (s + k) * stride, b = off + (s + k + half) * stride;
+      const tr = re[b] * c - im[b] * sn, ti = re[b] * sn + im[b] * c;
+      re[b] = re[a] - tr; im[b] = im[a] - ti; re[a] += tr; im[a] += ti;
+    }
+  }
+}
+function psfFft2(re, im, inv) { for (let r = 0; r < PSF_F; r++) psfFft1(re, im, r * PSF_F, 1, inv); for (let c = 0; c < PSF_F; c++) psfFft1(re, im, c, PSF_F, inv); }
+const psfIdx = (i, j) => (((j % PSF_F) + PSF_F) % PSF_F) * PSF_F + (((i % PSF_F) + PSF_F) % PSF_F);   // wrapped: (0,0) is the centre
+// intensity PSF for wavefront W (waves, pupil grid) at defocus dz (µm)
+function psfIntensity(W, dz, lam) {
+  const re = new Float64Array(PSF_F * PSF_F), im = new Float64Array(PSF_F * PSF_F);
+  for (let j = -PSF_RP; j <= PSF_RP; j++) for (let i = -PSF_RP; i <= PSF_RP; i++) {
+    const u = i / PSF_RP, v = j / PSF_RP, r2 = u * u + v * v;
+    if (r2 > 1) continue;
+    const ph = 2 * Math.PI * ((W ? aoAt(W, u, v) : 0) + dz * Math.sqrt(PSF_N * PSF_N - PSF_NA * PSF_NA * r2) / lam);
+    const k = psfIdx(i, j); re[k] = Math.cos(ph); im[k] = Math.sin(ph);
+  }
+  psfFft2(re, im, false);
+  const I = new Float64Array(PSF_F * PSF_F);
+  for (let k = 0; k < I.length; k++) I[k] = re[k] * re[k] + im[k] * im[k];
+  return I;
+}
+const psfDx = (lam) => PSF_RP * lam / (PSF_F * PSF_NA);                  // PSF pixel in the sample, µm
+const psfPinholeCache = new Map();
+function psfPinholeFT(rPix) {                     // FFT of the pinhole disc (radius in PSF pixels)
+  const key = Math.round(rPix * 100);
+  if (psfPinholeCache.has(key)) return psfPinholeCache.get(key);
+  const re = new Float64Array(PSF_F * PSF_F), im = new Float64Array(PSF_F * PSF_F);
+  const R = Math.min(rPix, PSF_F / 2 - 1);
+  for (let j = -PSF_F / 2; j < PSF_F / 2; j++) for (let i = -PSF_F / 2; i < PSF_F / 2; i++) {
+    const d = Math.hypot(i, j); re[psfIdx(i, j)] = Math.max(0, Math.min(1, R + 0.5 - d));   // anti-aliased edge
+  }
+  psfFft2(re, im, false);
+  const out = { re, im };
+  if (psfPinholeCache.size > 20) psfPinholeCache.clear();
+  psfPinholeCache.set(key, out); return out;
+}
+// confocal PSF: h_exc · (h_det ⊗ pinhole); widefield: h_det
+function psfSystem(W, dz, lam, pinholeAU, widefield) {
+  const h = psfIntensity(W, dz, lam);
+  if (widefield) return h;
+  const P = psfPinholeFT(pinholeAU * 0.61 * lam / PSF_NA / psfDx(lam));
+  const re = Float64Array.from(h), im = new Float64Array(h.length);
+  psfFft2(re, im, false);
+  for (let k = 0; k < re.length; k++) { const a = re[k], b = im[k]; re[k] = a * P.re[k] - b * P.im[k]; im[k] = a * P.im[k] + b * P.re[k]; }
+  psfFft2(re, im, true);
+  const out = new Float64Array(h.length), norm = 1 / (PSF_F * PSF_F);
+  for (let k = 0; k < out.length; k++) out[k] = h[k] * Math.max(0, re[k] * norm);
+  return out;
+}
+const psfSum = (h) => { let s = 0; for (const v of h) s += v; return s; };
+function psfKernel(h, scale, pixUm, lam) {        // bin onto image pixels around the centre
+  const K = new Float32Array(PSF_K * PSF_K), dx = psfDx(lam) / pixUm;
+  for (let j = -PSF_F / 2; j < PSF_F / 2; j++) for (let i = -PSF_F / 2; i < PSF_F / 2; i++) {
+    const a = Math.round(i * dx) + PSF_KR, b = Math.round(j * dx) + PSF_KR;
+    if (a >= 0 && a < PSF_K && b >= 0 && b < PSF_K) K[b * PSF_K + a] += h[psfIdx(i, j)] * scale;
+  }
+  return K;
+}
+// All the PSFs for one wavefront state: 3×3 field kernels, the in-focus centre PSF for the AO screen, and 17
+// defocus planes (through-focus response + the PSF stack used to draw beads). Pure function of its inputs, so it
+// runs in a Web Worker and never costs the headset a frame.
+const psfIdealCache = new Map();
+function psfComputeAll(fieldW, lam, ph, wf, pix) {
+  const key = `${lam}|${ph}|${wf}`;
+  let ideal = psfIdealCache.get(key);
+  if (!ideal) {
+    const h0 = psfSystem(null, 0, lam, ph, wf);
+    ideal = { centre: psfSum(h0), peak: h0[0], sheet: PSF_DZ.map((dz) => psfSum(psfSystem(null, dz, lam, ph, wf))), ipk: psfIntensity(null, 0, lam)[0] };
+    if (psfIdealCache.size > 12) psfIdealCache.clear();
+    psfIdealCache.set(key, ideal);
+  }
+  const kernels = [], fb = [];
+  for (let f = 0; f < 9; f++) {
+    const K = psfKernel(psfSystem(fieldW[f], 0, lam, ph, wf), 1 / ideal.centre, pix, lam);
+    kernels.push(K); fb.push(psfSum(K));
+  }
+  const he = psfIntensity(fieldW[4], 0, lam), img = new Float32Array(32 * 32);
+  for (let j = 0; j < 32; j++) for (let i = 0; i < 32; i++) img[j * 32 + i] = he[psfIdx(i - 16, j - 16)] / ideal.ipk;
+  const ax = [], stack = [];
+  PSF_DZ.forEach((dz, n) => {
+    const h = psfSystem(fieldW[4], dz, lam, ph, wf);
+    ax.push(wf ? 1 : psfSum(h) / Math.max(1e-12, ideal.sheet[n]));
+    const crop = new Float32Array(PSF_SC * PSF_SC);
+    for (let j = 0; j < PSF_SC; j++) for (let i = 0; i < PSF_SC; i++) crop[j * PSF_SC + i] = h[psfIdx(i - PSF_SC / 2, j - PSF_SC / 2)] / ideal.peak;
+    stack.push(crop);
+  });
+  return { kernels, fb, img, ax, stack, dx: psfDx(lam) };
+}
+const PSF_SC = 32;                                  // stack crop: 32×32 PSF pixels per defocus plane
+const PSF = { ax: new Array(17).fill(1), fb: new Array(9).fill(1), sig: '', ready: false, img: null, imgDx: 0.13, stackDx: 0.13, busy: false, worker: null, lastSync: 0 };
+PSF.tex = new THREE.DataTexture(new Float32Array(PSF_K * 3 * PSF_K * 3 * 4), PSF_K * 3, PSF_K * 3, THREE.RGBAFormat, THREE.FloatType);
+PSF.tex.minFilter = PSF.tex.magFilter = THREE.NearestFilter; PSF.tex.needsUpdate = true;
+PSF.stack = new THREE.DataTexture(new Float32Array(PSF_SC * 17 * PSF_SC * 4), PSF_SC * 17, PSF_SC, THREE.RGBAFormat, THREE.FloatType);
+PSF.stack.minFilter = PSF.stack.magFilter = THREE.NearestFilter; PSF.stack.needsUpdate = true;
+function psfApply(r) {
+  const t = PSF.tex.image.data, W = PSF_K * 3;
+  for (let f = 0; f < 9; f++) {
+    const fx = f % 3, fy = (f / 3) | 0, K = r.kernels[f];
+    for (let b = 0; b < PSF_K; b++) for (let a = 0; a < PSF_K; a++) t[((fy * PSF_K + b) * W + fx * PSF_K + a) * 4] = K[b * PSF_K + a];
+  }
+  PSF.fb = r.fb; PSF.tex.needsUpdate = true;
+  const st = PSF.stack.image.data, SW = PSF_SC * 17;
+  r.stack.forEach((crop, n) => { for (let j = 0; j < PSF_SC; j++) for (let i = 0; i < PSF_SC; i++) st[(j * SW + n * PSF_SC + i) * 4] = crop[j * PSF_SC + i]; });
+  PSF.stack.needsUpdate = true;
+  // axial: relative to the in-focus value (the kernels carry that), fading to 1 far from focus
+  const r0 = Math.max(1e-6, r.ax[8]);
+  PSF.ax = r.ax.map((v, n) => THREE.MathUtils.lerp(Math.min(6, v / r0), 1, THREE.MathUtils.smoothstep(Math.abs(PSF_DZ[n]), 4.5, 6)));
+  PSF.img = r.img; PSF.imgDx = PSF.stackDx = r.dx; PSF.ready = true; scopeState.dirty = true; aoSig = '';
+}
+try {
+  const src = [
+    `const AO_N = ${AO_N}, AO_L = ${AO_L}, AO_H = ${AO_H}, PSF_F = ${PSF_F}, PSF_RP = ${PSF_RP}, PSF_K = ${PSF_K}, PSF_KR = ${PSF_KR}, PSF_NA = ${PSF_NA}, PSF_N = ${PSF_N}, PSF_SC = ${PSF_SC};`,
+    `const PSF_DZ = ${JSON.stringify(PSF_DZ)};`,
+    `const psfBitrev = new Uint16Array(PSF_F), psfCos = new Float64Array(PSF_F / 2), psfSin = new Float64Array(PSF_F / 2);`,
+    `for (let i = 0; i < PSF_F; i++) { let r = 0; for (let b = 1, x = i; b < PSF_F; b <<= 1, x >>= 1) r = (r << 1) | (x & 1); psfBitrev[i] = r; }`,
+    `for (let i = 0; i < PSF_F / 2; i++) { psfCos[i] = Math.cos(2 * Math.PI * i / PSF_F); psfSin[i] = Math.sin(2 * Math.PI * i / PSF_F); }`,
+    `const psfPinholeCache = new Map(), psfIdealCache = new Map();`,
+    `const psfIdx = ${psfIdx}; const psfDx = ${psfDx}; const psfSum = ${psfSum};`,
+    aoAt, psfFft1, psfFft2, psfIntensity, psfPinholeFT, psfSystem, psfKernel, psfComputeAll,
+    `onmessage = (e) => { const d = e.data; const r = psfComputeAll(d.fieldW, d.lam, d.ph, d.wf, d.pix); postMessage({ id: d.id, ...r }); };`,
+  ].map(String).join('\n');
+  PSF.worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })));
+  PSF.worker.onmessage = (e) => { PSF.busy = false; if (e.data.id === PSF.reqId) psfApply(e.data); };
+  PSF.worker.onerror = () => { PSF.worker = null; PSF.busy = false; };
+} catch { PSF.worker = null; }
+function psfSchedule(out) {
+  const wf = scopeState.mode === 1, ph = PINHOLES[scopeState.ph], lam = laserState.nm / 1000, S = SAMPLES[scopeState.sample];
+  const pix = S.fov / RT_W;
+  const fieldW = wf ? new Array(9).fill(out.sampR) : out.fieldW;
+  if (!fieldW) { PSF.ready = false; return; }
+  if (PSF.busy) return;
+  // only recompute when the wavefronts or imaging settings have changed
+  const sig = [wf, ph, lam, pix.toFixed(4), ...fieldW.map((W) => { let s = 0, t = 0; for (const k of aoPupil) { s += W[k] * aoGx[k]; t += W[k] * W[k]; } return s.toFixed(3) + t.toFixed(3); })].join('|');
+  if (sig === PSF.sig) return;
+  if (PSF.worker) {
+    PSF.sig = sig; PSF.busy = true; PSF.reqId = (PSF.reqId || 0) + 1;
+    PSF.worker.postMessage({ id: PSF.reqId, fieldW, lam, ph, wf, pix });
+  } else if (performance.now() - PSF.lastSync > 1000) {        // no workers: compute here, at most once a second
+    PSF.sig = sig; PSF.lastSync = performance.now(); psfApply(psfComputeAll(fieldW, lam, ph, wf, pix));
+  }
+}
 
 // Spacing tags: between consecutive lenses / curved mirrors on the beam, show their separation along the
 // beam next to f₁ + f₂, the spacing that makes a telescope (beam expander or relay) afocal.
