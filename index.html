@@ -5243,10 +5243,12 @@ function introCanvasPlane(w, h, px, draw, opts = {}) {
     g.filter = 'blur(70px)'; g.fillStyle = 'rgba(160,40,255,0.5)'; g.fillText('OPTICAL LAB VR', W / 2, H / 2);
   }, { blending: THREE.AdditiveBlending });
   glow.position.z = -0.35; introTitle.add(glow); introTitle.userData.glow = glow;
-  const sub = introCanvasPlane(4.6, 0.46, 1280, (g, W, H) => {
+  const sub = introCanvasPlane(6.4, 0.46, 1600, (g, W, H) => {
     g.font = `600 ${H * 0.58}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.letterSpacing = `${H * 0.05}px`;
-    g.shadowColor = 'rgba(255,90,230,0.9)'; g.shadowBlur = 18; g.fillStyle = '#fff3ff'; g.fillText('THE WORLD NEEDS YOU', W / 2, H / 2);
+    const tag = 'ONLY YOU CAN SAVE THE WORLD!', fit = W * 0.94 / g.measureText(tag).width;
+    if (fit < 1) { g.font = `600 ${H * 0.58 * fit}px system-ui, sans-serif`; g.letterSpacing = `${H * 0.05 * fit}px`; }
+    g.shadowColor = 'rgba(255,90,230,0.9)'; g.shadowBlur = 18; g.fillStyle = '#fff3ff'; g.fillText(tag, W / 2, H / 2);
   });
   sub.position.set(0, -h / 2 - 0.5, 0.25); introTitle.add(sub);
 }
@@ -5276,7 +5278,6 @@ const labFade = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 8), fadeMat());
 // ── title music: an original 80s TV-action synth theme, played live with WebAudio so it loops for ever
 // (D minor, 118 bpm: galloping sequencer bass, gated drums, a square-wave arpeggio, a pad and a big saw lead)
 const music = { on: false, muted: false, bar: 0, s: 0, next: 0, out: null, rev: null, dly: null, noise: null, beatAt: -9 };
-try { music.muted = localStorage.getItem('olvr-music') === 'off'; } catch (e) {}
 const M_S16 = 60 / 118 / 4, mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
 // chord progressions, two bars per chord — [root (MIDI), third]
 const M_PROG = {
@@ -5404,7 +5405,7 @@ function mStep(bar, s, t) {
     const shapes = [[0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 4, 5, 6, 7], [7, 6, 5, 4, 5, 4, 3, 2, 3, 2, 1, 0, 1, 2, 3, 4],
       [0, 2, 1, 3, 2, 4, 3, 5, 4, 6, 5, 7, 6, 7, 6, 7], [7, 5, 6, 4, 5, 3, 4, 2, 3, 1, 2, 0, 2, 4, 6, 7]];
     const m = root + 36 + tones[shapes[k][s]] - 12;
-    const g = mVoice(t, M_S16 * 0.95, 0.075, { pan: 0.1, dly: 0.35, rev: 0.3 }), lp = A.createBiquadFilter(); lp.frequency.value = 3800; lp.connect(g);
+    const g = mVoice(t, M_S16 * 0.95, 0.11, { pan: 0.1, dly: 0.35, rev: 0.3 }), lp = A.createBiquadFilter(); lp.frequency.value = 3800; lp.connect(g);
     mOsc('sawtooth', mtof(m), t, M_S16, lp, -6); mOsc('sawtooth', mtof(m), t, M_S16, lp, 6);
   }
   // breakdown bells
@@ -5461,7 +5462,6 @@ function musicLabel() { musicBtn.textContent = !music.muted && actx?.state === '
 function toggleMusic() {
   const playing = !music.muted && actx?.state === 'running';
   if (playing) music.muted = true; else { music.muted = false; unlockAudio(); }
-  try { localStorage.setItem('olvr-music', music.muted ? 'off' : 'on'); } catch (e2) {}
   setTimeout(musicLabel, 50); musicTick();
 }
 musicBtn.onpointerdown = (e) => { e.stopPropagation(); toggleMusic(); };   // stop the window's unlock seeing it first
@@ -5522,12 +5522,18 @@ introCam.fov = introCam.aspect < 1.2 ? 80 : 62; introCam.updateProjectionMatrix(
 addEventListener('pointermove', (e) => { intro.mx = e.clientX / innerWidth * 2 - 1; intro.my = -(e.clientY / innerHeight * 2 - 1); });
 addEventListener('pointerdown', (e) => {
   if (!intro.active || e.target !== renderer.domElement) return;
-  e.stopImmediatePropagation(); startLab();
+  e.stopImmediatePropagation();
+  if (actx?.state !== 'running' && !music.muted) { unlockAudio(); setTimeout(musicLabel, 80); return; }   // first press: sound on
+  startLab();
 }, true);
 addEventListener('keydown', (e) => {
   if (!intro.active) return;
   e.stopImmediatePropagation();
-  if (e.key === 'Enter' || e.key === ' ' || e.key === 'a' || e.key === 'A') { e.preventDefault(); startLab(); }
+  if (e.key === 'Enter' || e.key === ' ' || e.key === 'a' || e.key === 'A') {
+    e.preventDefault();
+    if (actx?.state !== 'running' && !music.muted) { unlockAudio(); setTimeout(musicLabel, 80); return; }
+    startLab();
+  }
   else if (e.key === 'm' || e.key === 'M') toggleMusic();
 }, true);
 renderer.xr.addEventListener('sessionstart', () => { intro.baseY = null; intro.prev = true; intro.armAt = intro.t + 0.5; });
