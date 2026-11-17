@@ -5278,11 +5278,39 @@ const labFade = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 8), fadeMat());
 const music = { on: false, muted: false, bar: 0, s: 0, next: 0, out: null, rev: null, dly: null, noise: null, beatAt: -9 };
 try { music.muted = localStorage.getItem('olvr-music') === 'off'; } catch (e) {}
 const M_S16 = 60 / 118 / 4, mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
-const M_CHORDS = [[38, 3], [34, 4], [36, 4], [33, 4]];           // Dm | Bb | C | A — root (MIDI) and third
+// chord progressions, two bars per chord — [root (MIDI), third]
+const M_PROG = {
+  A: [[38, 3], [34, 4], [36, 4], [33, 4]],    // Dm | Bb | C | A   (verse)
+  B: [[34, 4], [41, 4], [36, 4], [38, 3]],    // Bb | F | C | Dm   (chorus)
+  C: [[34, 4], [31, 3], [38, 3], [33, 4]],    // Bb | Gm | Dm | A  (breakdown)
+};
+// melodies: [MIDI note, beats], 32 beats (8 bars) each
 const M_LEAD = [
   [[69, 2], [74, 1], [76, 1], [77, 3], [76, 1], [74, 2], [77, 1], [74, 1], [70, 4], [72, 2], [76, 1], [79, 1], [77, 2], [76, 2], [76, 3], [73, 1], [69, 4]],
   [[74, 2], [81, 2], [79, 1], [77, 1], [76, 1], [77, 1], [77, 2], [82, 2], [81, 3], [77, 1], [79, 2], [84, 2], [82, 1], [81, 1], [79, 1], [76, 1], [81, 4], [73, 2], [76, 2]],
+  [[74, 3], [72, 1], [70, 4], [70, 2], [74, 2], [79, 4], [77, 3], [76, 1], [74, 4], [73, 4], [76, 2], [73, 2]],                       // breakdown bells
+  [[74, 1], [77, 1], [82, 4], [81, 1], [79, 1], [77, 4], [72, 2], [77, 2], [79, 2], [76, 2], [79, 1], [81, 1], [84, 2], [81, 6], [77, 2]],   // chorus
+  [[82, 2], [81, 1], [79, 1], [77, 4], [77, 2], [81, 2], [84, 4], [84, 2], [82, 1], [81, 1], [79, 2], [76, 2], [74, 8]],               // chorus answer
 ].map((ph) => { let b = 0; return ph.map(([m, d]) => { const n = { at: b, m, d }; b += d; return n; }); });
+// the arrangement: 88 bars, about three minutes, then round again
+const M_SONG = (() => {
+  const F = { drums: 'full', arp: 1, pad: 1, hats16: 1 }, list = [
+    { n: 4, prog: 'A', drums: 'intro' },                              // drums + bass, filter opening
+    { n: 4, prog: 'A', drums: 'full', arp: 1 },                        // + arpeggio
+    { n: 8, prog: 'A', ...F, lead: 0 },                                // verse
+    { n: 8, prog: 'A', ...F, lead: 1 },                                // verse, higher
+    { n: 8, prog: 'C', drums: 'break', arp: 1, pad: 1, bell: 2 },      // breakdown: no kick, bells, snare roll build
+    { n: 8, prog: 'B', ...F, lead: 3, stabs: 1 },                      // chorus with brass stabs
+    { n: 8, prog: 'B', ...F, lead: 4, stabs: 1 },                      // chorus answer
+    { n: 8, prog: 'A', ...F, arp: 0, solo: 1 },                        // synth solo runs
+    { n: 8, prog: 'A', ...F, lead: 0, tr: 2 },                         // key change up a tone
+    { n: 8, prog: 'A', ...F, lead: 1, tr: 2 },
+    { n: 8, prog: 'B', ...F, lead: 4, stabs: 1, tr: 2 },               // last chorus
+    { n: 8, prog: 'A', drums: 'full', arp: 1, outro: 1 },             // outro: everything closes down
+  ];
+  let b0 = 0; return list.map((x) => { const r = { tr: 0, ...x, b0 }; b0 += x.n; return r; });
+})();
+const M_BARS = M_SONG.reduce((a, x) => a + x.n, 0);
 function musicInit() {
   if (music.out) return;
   const A = actx, comp = A.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 4; comp.connect(A.destination);
@@ -5310,26 +5338,37 @@ function mNoise(t, dur, dest, type, f, q = 1) {
   s.connect(bf).connect(dest); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.05);
 }
 function mStep(bar, s, t) {
-  // form: bars 0-3 drums + bass, 4-7 + arpeggio, 8-15 + pad and lead (phrase 1), 16-23 lead (phrase 2), then back to bar 4
-  const A = actx, [root, third] = M_CHORDS[Math.floor(bar / 2) % 4];
-  const sec = bar < 4 ? 0 : bar < 8 ? 1 : bar < 16 ? 2 : 3, fill = bar % 8 === 7 && s >= 12;
-  const build = bar < 2 ? Math.min(1, (bar * 16 + s) / 24) : 1;  // the bass filter opens over the first bar and a half
-  // drums: a steady four-on-the-floor kick from the very first beat, snare on 2 and 4
-  if (s % 4 === 0 && !(fill && s > 12)) {
+  const A = actx, sec = M_SONG.findLast((x) => bar >= x.b0), rb = bar - sec.b0, tr = sec.tr;
+  const [r0, third] = M_PROG[sec.prog][Math.floor(rb / 2) % 4], root = r0 + tr;
+  const nextSec = M_SONG.find((x) => x.b0 === sec.b0 + sec.n);
+  const last = rb === sec.n - 1, fill = last && s >= 12 && sec.drums === 'full' && !sec.outro && nextSec?.drums !== 'break';
+  const pos = (rb * 16 + s) / (sec.n * 16);                          // 0 → 1 through the section
+  let build = 1;
+  if (sec.drums === 'intro') build = Math.min(1, (rb * 16 + s) / 24);
+  if (sec.drums === 'break') build = 0.35 + 0.65 * pos * pos;
+  if (sec.outro) build = Math.max(0.08, 1 - pos);
+  const D = sec.drums, kickOn = D === 'intro' || D === 'full' && !(sec.outro && rb >= 6) || D === 'break' && rb >= 6 && rb < 7;
+  // crash at the top of each full section
+  if (s === 0 && rb === 0 && D === 'full' && sec.b0 > 4) { const g = mVoice(t, 1.6, 0.2, { rev: 0.5 }); mNoise(t, 1.6, g, 'highpass', 5000); }
+  // drums
+  if (s % 4 === 0 && kickOn && !(fill && s > 12)) {
     const g = mVoice(t, 0.32, 0.9), o = mOsc('sine', 150, t, 0.32, g); o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
     music.beatAt = t;
   }
-  if ((s === 4 || s === 12) && bar >= 2 && !fill) {
+  if ((s === 4 || s === 12) && !fill && (D === 'intro' ? rb >= 2 : D === 'full' && !(sec.outro && rb >= 6))) {
     const g = mVoice(t, 0.22, 0.5, { rev: 1.1 }); mNoise(t, 0.22, g, 'bandpass', 1800, 0.7);
     const b = mVoice(t, 0.12, 0.35, { rev: 0.6 }); mOsc('triangle', 190, t, 0.12, b);
+  }
+  if (D === 'break' && rb === 7) {                                  // snare roll into the chorus
+    const g = mVoice(t, 0.12, 0.12 + 0.38 * s / 15, { rev: 0.8 }); mNoise(t, 0.12, g, 'bandpass', 1800, 0.7);
   }
   if (fill) {                                                      // four tom hits into the next section
     const f = [210, 170, 140, 110][s - 12];
     const g = mVoice(t, 0.3, 0.55, { rev: 0.7, pan: 0.4 - (s - 12) * 0.27 }); const o = mOsc('sine', f * 1.4, t, 0.3, g); o.frequency.exponentialRampToValueAtTime(f, t + 0.08);
   }
-  if (s % 2 === 0 || sec >= 2) {                                  // 8th hats (offbeats accented), 16ths once the lead is in
-    const open = sec >= 1 && s % 4 === 2 && s === 14, g = mVoice(t, open ? 0.22 : 0.04, s % 4 === 2 ? 0.15 : s % 2 === 0 ? 0.08 : 0.05, { pan: 0.25 });
-    mNoise(t, open ? 0.22 : 0.04, g, 'highpass', 8000);
+  if ((s % 2 === 0 || sec.hats16) && !(D === 'break' && rb === 7) && !(sec.outro && rb >= 6)) {
+    const open = D === 'full' && s === 14, v = (s % 4 === 2 ? 0.15 : s % 2 === 0 ? 0.08 : 0.05) * (D === 'break' ? 0.6 : 1);
+    const g = mVoice(t, open ? 0.22 : 0.04, v, { pan: 0.25 }); mNoise(t, open ? 0.22 : 0.04, g, 'highpass', 8000);
   }
   // galloping sequencer bass: the same da-da-DUM on every beat, octave jump on the last 16th
   {
@@ -5339,21 +5378,47 @@ function mStep(bar, s, t) {
     const f = mtof(root + 12 + (s % 4 === 3 ? 12 : 0)); mOsc('sawtooth', f, t, M_S16, lp); mOsc('square', f / 2, t, M_S16, lp);
   }
   // arpeggio up and down the chord, bouncing through the delay
-  if (sec >= 1) {
+  if (sec.arp) {
     const tones = [0, third, 7, 12, 12 + third, 19, 24], seq = [0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 2, 3, 4, 3];
-    const g = mVoice(t, M_S16 * 0.8, 0.07, { pan: s % 2 ? 0.45 : -0.45, dly: 0.5 }), lp = A.createBiquadFilter(); lp.frequency.value = 3200; lp.connect(g);
+    const g = mVoice(t, M_S16 * 0.8, 0.07 * (sec.outro ? build : 1), { pan: s % 2 ? 0.45 : -0.45, dly: 0.5 }), lp = A.createBiquadFilter();
+    lp.frequency.value = 600 + 2600 * build; lp.connect(g);
     mOsc('square', mtof(root + 24 + tones[seq[s]]), t, M_S16, lp);
   }
   // a wide pad, two bars per chord
-  if (sec >= 2 && s === 0 && bar % 2 === 0) {
-    const dur = M_S16 * 32, g = A.createGain(), lp = A.createBiquadFilter(); lp.frequency.value = 1500; lp.connect(g); g.connect(music.out);
+  if (sec.pad && s === 0 && rb % 2 === 0) {
+    const dur = M_S16 * 32, g = A.createGain(), lp = A.createBiquadFilter(); lp.frequency.value = D === 'break' ? 2400 : 1500; lp.connect(g); g.connect(music.out);
     const rs = A.createGain(); rs.gain.value = 0.5; g.connect(rs).connect(music.rev);
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.05, t + 0.6); g.gain.setValueAtTime(0.05, t + dur - 0.5); g.gain.linearRampToValueAtTime(0, t + dur);
+    const v = D === 'break' ? 0.07 : 0.05;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + 0.6); g.gain.setValueAtTime(v, t + dur - 0.5); g.gain.linearRampToValueAtTime(0, t + dur);
     for (const iv of [12, 12 + third, 19, 24]) for (const dt of [-9, 9]) mOsc('sawtooth', mtof(root + iv), t, dur, lp, dt);
   }
+  // brass stabs on each chord change, with a push on the "and" of beat 2
+  if (sec.stabs && rb % 2 === 0 && (s === 0 || s === 6)) {
+    const g = mVoice(t, 0.28, 0.07, { rev: 0.4 }), lp = A.createBiquadFilter(); lp.Q.value = 3; lp.connect(g);
+    lp.frequency.setValueAtTime(4200, t); lp.frequency.exponentialRampToValueAtTime(500, t + 0.25);
+    for (const iv of [12, 12 + third, 19, 24]) for (const dt of [-12, 12]) mOsc('sawtooth', mtof(root + 12 + iv), t, 0.3, lp, dt);
+  }
+  // the solo: fast 16th runs over the chord, a different shape each bar
+  if (sec.solo) {
+    const tones = [0, third, 7, 12, 12 + third, 19, 24, 24 + third], k = rb % 4;
+    const shapes = [[0, 1, 2, 3, 4, 5, 6, 7, 6, 5, 4, 3, 4, 5, 6, 7], [7, 6, 5, 4, 5, 4, 3, 2, 3, 2, 1, 0, 1, 2, 3, 4],
+      [0, 2, 1, 3, 2, 4, 3, 5, 4, 6, 5, 7, 6, 7, 6, 7], [7, 5, 6, 4, 5, 3, 4, 2, 3, 1, 2, 0, 2, 4, 6, 7]];
+    const m = root + 36 + tones[shapes[k][s]] - 12;
+    const g = mVoice(t, M_S16 * 0.95, 0.075, { pan: 0.1, dly: 0.35, rev: 0.3 }), lp = A.createBiquadFilter(); lp.frequency.value = 3800; lp.connect(g);
+    mOsc('sawtooth', mtof(m), t, M_S16, lp, -6); mOsc('sawtooth', mtof(m), t, M_S16, lp, 6);
+  }
+  // breakdown bells
+  if (sec.bell !== undefined && s % 4 === 0) {
+    const n = M_LEAD[sec.bell].find((x) => x.at === (rb * 16 + s) / 4);
+    if (n) {
+      const dur = Math.min(2.5, n.d * M_S16 * 4 + 0.8), f = mtof(n.m + tr);
+      const g = mVoice(t, dur, 0.12, { rev: 0.9, dly: 0.55, pan: -0.15 }); mOsc('sine', f, t, dur, g); mOsc('triangle', f * 2, t, dur * 0.5, g);
+      const g2 = mVoice(t, 0.5, 0.04, { rev: 0.6 }); mOsc('sine', f * 3.01, t, 0.5, g2);
+    }
+  }
   // the lead
-  if (sec >= 2 && s % 4 === 0) {
-    const beat = ((bar - (sec === 2 ? 8 : 16)) * 16 + s) / 4, n = M_LEAD[sec - 2].find((x) => x.at === beat);
+  if (sec.lead !== undefined && s % 4 === 0) {
+    const n = M_LEAD[sec.lead].find((x) => x.at === (rb * 16 + s) / 4);
     if (n) {
       const dur = n.d * M_S16 * 4, g = A.createGain(), lp = A.createBiquadFilter(); lp.frequency.value = 2800; lp.Q.value = 2; lp.connect(g); g.connect(music.out);
       const sr = A.createGain(); sr.gain.value = 0.45; g.connect(sr).connect(music.rev);
@@ -5364,7 +5429,7 @@ function mStep(bar, s, t) {
       const vib = A.createOscillator(), vg = A.createGain(); vib.frequency.value = 5.6; vg.gain.setValueAtTime(0, t); vg.gain.linearRampToValueAtTime(14, t + Math.min(dur, 0.6));
       vib.connect(vg); vib.start(t); vib.stop(t + dur + 0.2);
       for (const [type, dt, oct] of [['sawtooth', -8, 1], ['sawtooth', 8, 1], ['square', 0, 0.5]]) {
-        const o = mOsc(type, mtof(n.m) * oct, t, dur + 0.15, lp, dt); vg.connect(o.detune);
+        const o = mOsc(type, mtof(n.m + tr) * oct, t, dur + 0.15, lp, dt); vg.connect(o.detune);
       }
     }
   }
@@ -5384,7 +5449,7 @@ function musicTick() {
   if (music.next < now) music.next = now + 0.05;                    // after a stall, carry on rather than catch up
   while (music.next < now + 0.4) {
     mStep(music.bar, music.s, music.next); music.next += M_S16;
-    if (++music.s === 16) { music.s = 0; if (++music.bar === 24) music.bar = 4; }
+    if (++music.s === 16) { music.s = 0; if (++music.bar === M_BARS) music.bar = 0; }
   }
 }
 setInterval(musicTick, 30);
