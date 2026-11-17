@@ -5242,7 +5242,7 @@ function introCanvasPlane(w, h, px, draw, opts = {}) {
     g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('OPTICAL LAB VR', W / 2, H / 2);
     g.filter = 'blur(70px)'; g.fillStyle = 'rgba(160,40,255,0.5)'; g.fillText('OPTICAL LAB VR', W / 2, H / 2);
   }, { blending: THREE.AdditiveBlending });
-  glow.position.z = -0.35; introTitle.add(glow);
+  glow.position.z = -0.35; introTitle.add(glow); introTitle.userData.glow = glow;
   const sub = introCanvasPlane(4.6, 0.46, 1280, (g, W, H) => {
     g.font = `600 ${H * 0.58}px system-ui, sans-serif`; g.textAlign = 'center'; g.textBaseline = 'middle';
     g.letterSpacing = `${H * 0.05}px`;
@@ -5273,6 +5273,139 @@ const fadeMat = () => new THREE.MeshBasicMaterial({ color: 0xffffff, transparent
 const introFlash = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 8), fadeMat()); introFlash.renderOrder = 999; introScene.add(introFlash);
 const labFade = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 8), fadeMat()); labFade.renderOrder = 999; labFade.visible = false; scene.add(labFade);
 
+// ── title music: an original 80s TV-action synth theme, played live with WebAudio so it loops for ever
+// (D minor, 118 bpm: galloping sequencer bass, gated drums, a square-wave arpeggio, a pad and a big saw lead)
+const music = { on: false, muted: false, bar: 0, s: 0, next: 0, out: null, rev: null, dly: null, noise: null, beatAt: -9 };
+try { music.muted = localStorage.getItem('olvr-music') === 'off'; } catch (e) {}
+const M_S16 = 60 / 118 / 4, mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+const M_CHORDS = [[38, 3], [34, 4], [36, 4], [33, 4]];           // Dm | Bb | C | A — root (MIDI) and third
+const M_BASS = [0, 0, 12, 0, 0, 12, 0, 0, 0, 0, 12, 0, 0, 12, 0, 12];
+const M_LEAD = [
+  [[69, 2], [74, 1], [76, 1], [77, 3], [76, 1], [74, 2], [77, 1], [74, 1], [70, 4], [72, 2], [76, 1], [79, 1], [77, 2], [76, 2], [76, 3], [73, 1], [69, 4]],
+  [[74, 2], [81, 2], [79, 1], [77, 1], [76, 1], [77, 1], [77, 2], [82, 2], [81, 3], [77, 1], [79, 2], [84, 2], [82, 1], [81, 1], [79, 1], [76, 1], [81, 4], [73, 2], [76, 2]],
+].map((ph) => { let b = 0; return ph.map(([m, d]) => { const n = { at: b, m, d }; b += d; return n; }); });
+function musicInit() {
+  if (music.out) return;
+  const A = actx, comp = A.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 4; comp.connect(A.destination);
+  music.out = A.createGain(); music.out.gain.value = 0; music.out.connect(comp);
+  // a big hall for the snare and lead, made from decaying noise
+  const n = A.sampleRate * 2.4, ir = A.createBuffer(2, n, A.sampleRate);
+  for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3.2); }
+  music.rev = A.createConvolver(); music.rev.buffer = ir; const rg = A.createGain(); rg.gain.value = 0.55; music.rev.connect(rg).connect(music.out);
+  music.dly = A.createDelay(1); music.dly.delayTime.value = M_S16 * 3; const fb = A.createGain(); fb.gain.value = 0.32;
+  const dlp = A.createBiquadFilter(); dlp.frequency.value = 2600; music.dly.connect(dlp).connect(fb).connect(music.dly); dlp.connect(music.out);
+  const nb = A.createBuffer(1, A.sampleRate, A.sampleRate), nd = nb.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  music.noise = nb;
+}
+function mVoice(t, dur, vol, { pan = 0, rev = 0, dly = 0 } = {}) {   // a gain envelope routed to the mix and the sends
+  const A = actx, g = A.createGain(), p = A.createStereoPanner ? A.createStereoPanner() : A.createGain();
+  if (p.pan) p.pan.value = pan; g.connect(p); p.connect(music.out);
+  if (rev) { const s = A.createGain(); s.gain.value = rev; p.connect(s).connect(music.rev); }
+  if (dly) { const s = A.createGain(); s.gain.value = dly; p.connect(s).connect(music.dly); }
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + Math.min(0.012, dur * 0.3)); g.gain.exponentialRampToValueAtTime(0.0008, t + dur);
+  return g;
+}
+function mOsc(type, f, t, dur, dest, detune = 0) { const o = actx.createOscillator(); o.type = type; o.frequency.value = f; o.detune.value = detune; o.connect(dest); o.start(t); o.stop(t + dur + 0.05); return o; }
+function mNoise(t, dur, dest, type, f, q = 1) {
+  const s = actx.createBufferSource(); s.buffer = music.noise; const bf = actx.createBiquadFilter(); bf.type = type; bf.frequency.value = f; bf.Q.value = q;
+  s.connect(bf).connect(dest); s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.05);
+}
+function mStep(bar, s, t) {
+  const A = actx, ci = Math.floor((bar + 4) / 2) % 4, [root, third] = M_CHORDS[ci];
+  const sec = bar < 4 ? 0 : bar < 12 ? 1 : bar < 20 ? 2 : 3, fill = sec > 0 && (bar - 4) % 8 === 7 && s >= 8;
+  const build = sec === 0 ? (bar * 16 + s) / 64 : 1;                // the intro opens up over four bars
+  // drums
+  const kick = sec > 0 ? (s === 0 || s === 8 || (sec >= 2 && s === 10)) && !(fill && s > 8) : bar >= 2 && s % 4 === 0;
+  if (kick) {
+    const g = mVoice(t, 0.32, 0.9), o = mOsc('sine', 150, t, 0.32, g); o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
+    music.beatAt = t;
+  }
+  if (sec > 0 && (s === 4 || s === 12) && !fill) {
+    const g = mVoice(t, 0.22, 0.5, { rev: 1.1 }); mNoise(t, 0.22, g, 'bandpass', 1800, 0.7);
+    const b = mVoice(t, 0.12, 0.35, { rev: 0.6 }); mOsc('triangle', 190, t, 0.12, b);
+  }
+  if (fill && s % 2 === 0 || fill && s >= 12) {                    // a tom fill into the next section
+    const f = [0, 0, 0, 0, 0, 0, 0, 0, 210, 0, 175, 0, 150, 130, 112, 95][s];
+    const g = mVoice(t, 0.3, 0.55, { rev: 0.7, pan: 0.5 - (s - 8) / 8 }); const o = mOsc('sine', f * 1.4, t, 0.3, g); o.frequency.exponentialRampToValueAtTime(f, t + 0.08);
+  }
+  if (sec > 0 ? s % 2 === 0 || sec >= 2 : s % 2 === 0) {
+    const open = sec >= 2 && s === 14, g = mVoice(t, open ? 0.25 : 0.04, (s % 4 === 2 ? 0.16 : 0.09) * build, { pan: 0.25 });
+    mNoise(t, open ? 0.25 : 0.04, g, 'highpass', 8000);
+  }
+  // galloping sequencer bass
+  {
+    const g = mVoice(t, M_S16 * 0.95, 0.32), lp = A.createBiquadFilter(); lp.Q.value = 6; lp.connect(g);
+    const top = 300 + 2200 * build * (s % 4 === 0 ? 1 : 0.7);
+    lp.frequency.setValueAtTime(top, t); lp.frequency.exponentialRampToValueAtTime(140, t + M_S16 * 0.9);
+    const f = mtof(root + M_BASS[s]); mOsc('sawtooth', f, t, M_S16, lp); mOsc('square', f / 2, t, M_S16, lp);
+  }
+  // arpeggio up and down the chord, bouncing through the delay
+  if (sec >= 1) {
+    const tones = [0, third, 7, 12, 12 + third, 19, 24], seq = [0, 1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1, 2, 3, 4, 3];
+    const g = mVoice(t, M_S16 * 0.8, 0.07, { pan: s % 2 ? 0.45 : -0.45, dly: 0.5 }), lp = A.createBiquadFilter(); lp.frequency.value = 3200; lp.connect(g);
+    mOsc('square', mtof(root + 24 + tones[seq[s]]), t, M_S16, lp);
+  }
+  // a wide pad, two bars per chord
+  if (sec >= 2 && s === 0 && bar % 2 === 0) {
+    const dur = M_S16 * 32, g = A.createGain(), lp = A.createBiquadFilter(); lp.frequency.value = 1500; lp.connect(g); g.connect(music.out);
+    const rs = A.createGain(); rs.gain.value = 0.5; g.connect(rs).connect(music.rev);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.05, t + 0.6); g.gain.setValueAtTime(0.05, t + dur - 0.5); g.gain.linearRampToValueAtTime(0, t + dur);
+    for (const iv of [12, 12 + third, 19, 24]) for (const dt of [-9, 9]) mOsc('sawtooth', mtof(root + iv), t, dur, lp, dt);
+  }
+  // the lead
+  if (sec >= 2 && s % 4 === 0) {
+    const beat = ((bar - (sec === 2 ? 12 : 20)) * 16 + s) / 4, n = M_LEAD[sec - 2].find((x) => x.at === beat);
+    if (n) {
+      const dur = n.d * M_S16 * 4, g = A.createGain(), lp = A.createBiquadFilter(); lp.frequency.value = 2800; lp.Q.value = 2; lp.connect(g); g.connect(music.out);
+      const sr = A.createGain(); sr.gain.value = 0.45; g.connect(sr).connect(music.rev);
+      const sd = A.createGain(); sd.gain.value = 0.3; g.connect(sd).connect(music.dly);
+      g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.13, t + 0.03); g.gain.setTargetAtTime(0.1, t + 0.03, 0.2);
+      g.gain.setValueAtTime(0.1, t + dur - 0.06); g.gain.linearRampToValueAtTime(0, t + dur + 0.12);
+      lp.frequency.setValueAtTime(5000, t); lp.frequency.setTargetAtTime(2400, t + 0.02, 0.15);
+      const vib = A.createOscillator(), vg = A.createGain(); vib.frequency.value = 5.6; vg.gain.setValueAtTime(0, t); vg.gain.linearRampToValueAtTime(14, t + Math.min(dur, 0.6));
+      vib.connect(vg); vib.start(t); vib.stop(t + dur + 0.2);
+      for (const [type, dt, oct] of [['sawtooth', -8, 1], ['sawtooth', 8, 1], ['square', 0, 0.5]]) {
+        const o = mOsc(type, mtof(n.m) * oct, t, dur + 0.15, lp, dt); vg.connect(o.detune);
+      }
+    }
+  }
+}
+function musicTick() {
+  if (!actx || actx.state !== 'running') return;
+  const want = intro.active && intro.leaving < 0 && !music.muted, now = actx.currentTime;
+  if (want && !music.on) {
+    musicInit(); music.on = true; music.bar = 0; music.s = 0; music.next = now + 0.1;
+    music.out.gain.cancelScheduledValues(now); music.out.gain.setValueAtTime(music.out.gain.value, now); music.out.gain.linearRampToValueAtTime(0.5, now + 0.3);
+  }
+  if (!want && music.on) {
+    music.on = false; music.out.gain.cancelScheduledValues(now); music.out.gain.setValueAtTime(music.out.gain.value, now);
+    music.out.gain.linearRampToValueAtTime(0, now + (intro.leaving >= 0 ? 1.6 : 0.4));
+  }
+  if (!music.on) return;
+  if (music.next < now) music.next = now + 0.05;                    // after a stall, carry on rather than catch up
+  while (music.next < now + 0.18) {
+    mStep(music.bar, music.s, music.next); music.next += M_S16;
+    if (++music.s === 16) { music.s = 0; if (++music.bar === 28) music.bar = 4; }
+  }
+}
+setInterval(musicTick, 30);
+// a music switch for the desktop (the headset gets sound from the Enter VR press)
+const musicBtn = document.createElement('button'); musicBtn.id = 'musicBtn';
+musicBtn.style.cssText = 'position:fixed;right:16px;bottom:16px;z-index:20;font:600 13px system-ui,sans-serif;letter-spacing:.08em;color:#ffe9ff;'
+  + 'background:rgba(40,8,70,.75);border:1px solid #ff4fd8;border-radius:8px;padding:8px 12px;cursor:pointer;box-shadow:0 0 14px rgba(255,60,220,.5)';
+function musicLabel() { musicBtn.textContent = !music.muted && actx?.state === 'running' ? '♪ MUSIC ON' : '♪ PLAY MUSIC'; }
+function toggleMusic() {
+  const playing = !music.muted && actx?.state === 'running';
+  if (playing) music.muted = true; else { music.muted = false; unlockAudio(); }
+  try { localStorage.setItem('olvr-music', music.muted ? 'off' : 'on'); } catch (e2) {}
+  setTimeout(musicLabel, 50); musicTick();
+}
+musicBtn.onpointerdown = (e) => { e.stopPropagation(); toggleMusic(); };   // stop the window's unlock seeing it first
+musicBtn.onkeydown = (e) => e.stopPropagation();
+document.body.appendChild(musicBtn); musicLabel();
+if (!intro.active) musicBtn.style.display = 'none';
+// try to start straight away (works when the browser allows it); otherwise the first click or Enter VR does
+if (intro.active) { try { unlockAudio(); actx.onstatechange = musicLabel; } catch (e) {} }
 function startLab() {
   if (!intro.active || intro.leaving >= 0 || intro.t < intro.armAt) return;
   intro.leaving = intro.t; unlockAudio();
@@ -5302,11 +5435,14 @@ function updateIntro(dt) {
   const p = 0.5 + 0.5 * Math.sin(t * 4.2);
   introPrompt.material.opacity = (0.55 + 0.45 * p) * (1 - u); introPrompt.scale.setScalar(1 + 0.04 * p);
   introHint.material.opacity = 1 - u;
+  { const k = actx ? Math.max(0, actx.currentTime - music.beatAt) : 9, b = music.on ? Math.exp(-k * 7) : 0;   // glow pumps with the kick
+    introTitle.userData.glow.material.opacity = 0.72 + 0.28 * b; }
   introFlash.position.copy((xr ? camera : introCam).getWorldPosition(V()));
   introFlash.material.opacity = THREE.MathUtils.smoothstep(u, 0.45, 1);
   if (u >= 1) {
     intro.active = false; labFade.material.opacity = 1; labFade.visible = true;
     if (!xr) document.getElementById('hud').style.display = '';
+    musicBtn.style.display = 'none';
   }
 }
 function updateLabFade(dt) {
@@ -5328,6 +5464,7 @@ addEventListener('keydown', (e) => {
   if (!intro.active) return;
   e.stopImmediatePropagation();
   if (e.key === 'Enter' || e.key === ' ' || e.key === 'a' || e.key === 'A') { e.preventDefault(); startLab(); }
+  else if (e.key === 'm' || e.key === 'M') toggleMusic();
 }, true);
 renderer.xr.addEventListener('sessionstart', () => { intro.baseY = null; intro.prev = true; intro.armAt = intro.t + 0.5; });
 renderer.xr.addEventListener('sessionend', () => { intro.baseY = null; });
