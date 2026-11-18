@@ -34,7 +34,7 @@
   <div class="more">
     <p>You come in to find every optic gone from your setup. Your supervisor wants light in the microscope's rear port, fast, and with as few optical components on the table as possible. Each level they add something new to the table.</p>
     <p>Lenses are labelled on their bases (+ = convex, converging; − = concave, diverging), and the wall panel and laser controller show the starting beam size. <b>★ Free build</b> puts every optic in the tray with a live readout at the port: try +100 then +400 mm, 500 mm apart, for a 4× bigger collimated beam. A floating tag between each pair of lenses shows their spacing along the beam, the best spacing for a collimated output (worked out from the real Gaussian beam: the second lens goes one focal length from the waist the first lens makes. That is f₁+f₂ when the waist lands at f₁, as in a 4× expander, but when contracting with a long first lens inside the laser's Rayleigh range the waist forms short of f₁, so +400 → +100 wants about 485 mm, not 500) and f₁+f₂; it turns green within 2 mm of best. The +100 mm <b>cylindrical lens</b> focuses in one plane only, so the beam becomes an ellipse and then a line at its focus; click the orange knob on top to turn it between horizontal and vertical focusing.</p>
-    <p><b>0 · Safety</b> is a laser safety induction: close the door, switch on the warning lamp, pick the right goggles from the rack, find the stray reflection, measure the power, classify the laser, dump the beam and close the shutter. Do anything unsafe (shutter open too early, no or wrong goggles, a hand or your eye in the beam) and everything stops: you're back at the start and the supervisor tells you exactly what you did wrong. Finish to get a certificate.</p>
+    <p><b>0 · Safety</b> is a laser safety induction: close the door, switch on the warning lamp, pick the right goggles from the rack, find the stray reflection, measure the power, classify the laser, dump the beam and close the shutter. Do anything unsafe (shutter open too early, no or wrong goggles, a hand or your eye in the beam) and everything stops: you're back at the start and the supervisor tells you exactly what you did wrong. Finish to get a certificate. Tick <b>Extreme safety</b> on the main menu and the beam does real damage: look into it and it burns a permanent dark patch into that eye where it hit the retina; put a hand in a beam over 1 W and whatever was in it (fingertip, finger, or the whole hand) comes off and falls on the floor; and wherever a beam ends on something black (a rucksack, a box of old mounts, a mount) it catches fire. Injuries last until you go back to the menu.</p>
     <p>Three stages: <b>1 · Mirrors</b> (steer the beam), <b>2 · Lenses</b> (expand and collimate the beam to fill the new objective's back aperture; lenses and curved mirrors centre themselves on the beam when you let go, and the beam's real width is drawn as it focuses and expands), <b>3 · Alignment</b> (two irises fixed on the microscope axis: the expanded beam must pass through the middle of both, so it arrives on axis and square), and <b>4 · Experiments</b>: adaptive optics. Build a closed-loop AO system from a 37-actuator deformable mirror, a 50:50 beamsplitter and a 15×15 Shack–Hartmann wavefront sensor: expand the beam onto the DM, relay the DM onto the microscope pupil, and send the light returning from the sample (the guide star) back through the DM to the sensor, which must also be conjugate to the DM. The AO controller (back left of the table) shows the spots, the measured wavefront and the actuators, with Flat, Calibrate, Loop and gain buttons, and sets the phase plate's aberration (astigmatism, coma, trefoil, spherical or random) and size. Aberrations also come from tilted lenses and from the sample itself, which gets worse the deeper you focus into the spheroid. What's left uncorrected shapes the image through the real point spread function, worked out from the residual wavefront by Fourier transform (confocal: excitation PSF × pinhole-filtered detection PSF) at 3×3 points across the field, so a DM that isn't conjugate to the pupil corrects the centre but not the edges. The beads sample (zoomed to a 20 µm field) draws every bead with the PSF at its own defocus: focus through astigmatic beads and watch the lines flip, or look for comet tails (coma), three-lobed spots (trefoil) and haloes (spherical). The AO controller shows the PSF too. <b>AO Bench</b> is the same kit with no checklist. <b>Holographic Beamlets</b>: a phase-only SLM (1920×1080 LCOS, 8 µm pixels, 8-bit) splits the beam into an array of beamlets on a white screen. The SLM controller runs Gerchberg–Saxton or weighted GS (on the real beam on the SLM, in the background) and shows the SLM phase, the simulated focal plane and the convergence; pick a pattern (grids, a line, a ring, KCL, random), its spacing, and the blazed grating that moves the pattern off the zero order. Where the beamlets land comes from the traced optics: at a Fourier plane, or an image of it, they're sharp dots; elsewhere each one is smeared by the beam size. Light the SLM within 10° of normal (a splitter in front of it gives 0°), or the zero order grows. <b>SLM Bench</b> is the open version. Both have ⚙ Auto setup. Two labs: the normal lab, and <b>The Floor is Lava</b>, where the volcanology lab next door has sprung a leak. Stay on the stepping stones; the optical table is lava proof.</p>
     <p><b>Quest:</b> <kbd>ENTER VR</kbd>. Point at the wall panel and pull the trigger to choose a game. Either hand grabs with grip or trigger: reach in and pick a part up to lift, tilt and carry it (or pass it to your other hand), and when you let go it drops back onto the table, upright, on the nearest grid spot and snap angle. Point at a part to slide it along the table from a distance. Let go of the trigger to point your index finger and you can press the buttons on the laser controller, the microscope pad and the wall panel by pushing them. While holding a part at a distance: twist your wrist to turn it, <kbd>A</kbd>/<kbd>X</kbd> and <kbd>B</kbd>/<kbd>Y</kbd> turn it one step, the thumbstick slides it (lenses and curved mirrors creep slowly, for fine focusing), and clicking the thumbstick changes the rotation snap (free, 1°, 5°, 15°, 45°; also on the wall panel; 5° to start). Put a part back in the tray to remove it. When the light is in, the monitor shows a live confocal image: grab the focus knobs on the microscope's right side and move your hand up or down to focus through the sample (big knob coarse, small knob fine), switch between confocal and widefield, set the pinhole and change the sample with the buttons under the monitor, and use the joystick to move the stage. The box beside the laser tunes it from 350 to 1064 nm; UV and IR beams are invisible, so pick up a detector card from the rack next to it and hold it in the beam to see where it goes, or pick up the IR viewer next to the controller and hold it to your eye: UV and near-IR beams show up green through it. Walking: the left stick moves you the way you're looking and the right stick turns (smooth by default). On the wall panel's title screen you can switch to snap turning (45° or 30°), swap the sticks, and set your eye height (1.75 m to start; 1.6, 1.9, or your real height).</p>
     <p><b>Desktop:</b> click the panel buttons; drag parts; mouse wheel over a part turns it one snap step, 5° to start (<kbd>Shift</kbd> for 1°; change the snap on the wall panel); drag the joystick; drag a focus knob up/down or use the mouse wheel over it to focus; click the buttons under the monitor; the box beside the laser changes its wavelength (350–1064 nm; UV and IR beams are invisible: drag a detector card from the rack into the beam to find them, or press <kbd>V</kbd> to look through the IR viewer); <kbd>[</kbd>/<kbd>]</kbd> nudge the lens or curved mirror under the mouse 1 mm along its axis (<kbd>Shift</kbd> for 5 mm); drag empty space to orbit; <kbd>M</kbd> returns to the main menu.</p>
@@ -2102,6 +2102,8 @@ panel.position.set(0, 1.75, 2.99); panel.rotation.y = Math.PI;
 scene.add(panel);
 const game = { mode: 'normal', tier: 'mirrors', port: null, level: 0, state: 'title', start: 0, time: 0, litTime: 0, hover: null, result: null,
   health: 100, offLava: 0, burns: 0 };
+const extreme = { on: false, fires: [], parts: [], scotomas: [] };     // Extreme safety (see below)
+try { extreme.on = localStorage.getItem('olvr-extreme') === '1'; } catch {}
 let records = { normal: {}, lava: {} };
 try { records = { ...records, ...JSON.parse(localStorage.getItem('opticalLabRecords3') || '{}') }; } catch {}
 const recKey = () => `${game.tier}:${game.level}`;
@@ -2122,7 +2124,8 @@ function buttonsFor(state) {
     { id: 'vr:eye', label: 'EYE HEIGHT\n' + (vrPrefs.eye ? vrPrefs.eye.toFixed(2) + ' m' : 'real'), x: 870, y: 30, w: 132, h: 62, small: true },
     ...TIERS.map((t, i) => ({ ...t, x: 40 + (i % 3) * 320, y: 300 + Math.floor(i / 3) * 162, w: 304, h: 150 })),
     { id: 'normal', label: 'Normal lab', x: 40, y: PH - 118, w: 440, h: 90 },
-    { id: 'lava', label: '🌋  The Floor is Lava', x: 544, y: PH - 118, w: 440, h: 90 }];
+    { id: 'lava', label: '🌋  The Floor is Lava', x: 544, y: PH - 118, w: 440, h: 90 },
+    { id: 'extreme', tick: true, label: 'EXTREME SAFETY', sub: 'eyes, fingers, fire', x: 664, y: 236, w: 320, h: 56 }];
   const snapBtn = { id: 'snap', label: `Rotation snap: ${snapLabel()}`, x: 40, y: BTN_Y, w: 380, h: 70 };
   if (state === 'expmenu') return [
     ...EXPERIMENT_LEVELS.map((L, i) => ({ id: `exp:${i}`, exp: L, x: 40 + (i % 2) * 480, y: 150 + Math.floor(i / 2) * 196, w: 464, h: 180 })),
@@ -2178,6 +2181,15 @@ function drawPanel() {
     g.fillStyle = '#8b96a3'; g.font = '600 24px system-ui, sans-serif'; g.fillText('CHOOSE A STAGE TO START', 40, 284);
     g.fillText('LAB', 40, PH - 130);
     for (const b of buttonsFor('title')) {
+      if (b.tick) {
+        const on = extreme.on;
+        g.fillStyle = game.hover === b.id ? '#ff3b2f' : on ? '#8a1208' : '#2b3340'; g.beginPath(); g.roundRect(b.x, b.y, b.w, b.h, 12); g.fill();
+        g.strokeStyle = '#eef2f6'; g.lineWidth = 3; g.strokeRect(b.x + 14, b.y + 14, 28, 28);
+        if (on) { g.strokeStyle = '#ffd34d'; g.lineWidth = 5; g.beginPath(); g.moveTo(b.x + 19, b.y + 28); g.lineTo(b.x + 26, b.y + 36); g.lineTo(b.x + 39, b.y + 17); g.stroke(); }
+        g.fillStyle = '#eef2f6'; g.font = 'bold 22px system-ui, sans-serif'; g.fillText(b.label, b.x + 56, b.y + 26);
+        g.fillStyle = on ? '#ffc9c2' : '#9aa6b2'; g.font = '600 15px system-ui, sans-serif'; g.fillText((on ? 'ON: ' : 'safety course: ') + b.sub, b.x + 56, b.y + 46);
+        continue;
+      }
       if (b.small) {
         g.fillStyle = game.hover === b.id ? '#ff3b2f' : '#2b3340'; g.beginPath(); g.roundRect(b.x, b.y, b.w, b.h, 12); g.fill();
         const [hd, val] = b.label.split('\n'); g.textAlign = 'center';
@@ -2199,7 +2211,7 @@ function drawPanel() {
     panelTex.needsUpdate = true; return;
   }
   g.fillStyle = '#8b96a3'; g.font = '600 26px system-ui, sans-serif';
-  g.fillText(`${lava ? 'THE FLOOR IS LAVA' : 'OPTICAL LAB VR'}  ·  ${game.tier === 'safety' ? 'LASER SAFETY INDUCTION' : game.tier === 'sandbox' ? 'FREE BUILD' : game.tier === 'experiments' ? `EXPERIMENT ${game.level + 1} OF ${LEVELS.length}` : `STAGE ${({ mirrors: 1, lenses: 2, align: 3 })[game.tier]}  ·  LEVEL ${game.level + 1} OF ${LEVELS.length}`}`, 40, 56);
+  g.fillText(`${lava ? 'THE FLOOR IS LAVA' : 'OPTICAL LAB VR'}  ·  ${game.tier === 'safety' ? (extreme.on ? 'LASER SAFETY  ·  EXTREME' : 'LASER SAFETY INDUCTION') : game.tier === 'sandbox' ? 'FREE BUILD' : game.tier === 'experiments' ? `EXPERIMENT ${game.level + 1} OF ${LEVELS.length}` : `STAGE ${({ mirrors: 1, lenses: 2, align: 3 })[game.tier]}  ·  LEVEL ${game.level + 1} OF ${LEVELS.length}`}`, 40, 56);
   g.fillStyle = '#eef2f6'; g.font = 'bold 54px system-ui, sans-serif'; g.fillText(L.name, 40, 122);
   const rec = records[game.mode][recKey()];
   const parts = L.parts.map((k) => PART_NAMES[k]).join(', ');
@@ -2360,6 +2372,13 @@ function pressButton(id) {
   if (id === 'home') showTitle();
   if (id.startsWith('exp:')) { loadLevel(+id.slice(4)); return; }
   if (id === 'normal' || id === 'lava') { setMode(id); panelSig = ''; return; }
+  if (id === 'extreme') {
+    extreme.on = !extreme.on; try { localStorage.setItem('olvr-extreme', extreme.on ? '1' : '0'); } catch {}
+    if (!extreme.on) extremeHeal();
+    say(extreme.on ? "Extreme mode. In the safety course a 2 watt beam now does what it would really like to do: it burns a hole in your vision, takes off fingers, and sets fire to anything black. Beam dumps are your friend."
+      : "Extreme mode off. Everyone keeps their fingers.");
+    panelSig = ''; return;
+  }
   const T = TIERS.find((t) => t.id === id);
   if (T?.locked) { say("Polarisation and aberrations are next. Waveplates are on order. Master the lenses first."); return; }
   if (T) { setTier(T.tier); if (T.tier === 'experiments') showExperiments(); else loadLevel(0); }
@@ -2380,7 +2399,7 @@ function showExperiments() {
 }
 function showTitle() {
   clearTable(); resetEnclosure(false);
-  game.state = 'title'; panelSig = ''; aoGroup.visible = false; game.ao = null; beamlets.visible = false;
+  game.state = 'title'; panelSig = ''; aoGroup.visible = false; game.ao = null; beamlets.visible = false; extremeHeal();
   say('Ah, you\'re in. Pick a stage on the board behind the table: mirrors first, then lenses.');
 }
 function loadLevel(i) {
@@ -2403,7 +2422,7 @@ function loadLevel(i) {
   if (L.riser) { table.add(riser); if (!beamColliders.includes(riser)) beamColliders.push(riser); }
   else { table.remove(riser); const k = beamColliders.indexOf(riser); if (k >= 0) beamColliders.splice(k, 1); }
   microscope.position.copy(MICROSCOPE_BASE).setY(L.riser ? RISER_H : 0);
-  say(game.mode === 'lava' ? L.lavaSay : L.say);
+  say((game.mode === 'lava' ? L.lavaSay : L.say) + (extreme.on && L.safety ? " And this is EXTREME mode: over a watt, the beam takes off whatever you put in it, and anything black catches fire. Block it before it lands." : ''));
   laserState.w0 = (L.beamD || 1) / 2000;          // waist radius at the laser, metres
   game.burns = 0; game.port = null; game.ao = null;
   game.safety = null;
@@ -2658,6 +2677,9 @@ const FAIL_WHY = {
   wronggoggles: () => "STOP. Those goggles don't block 532 nm, so they're decorative. Check the wavelength printed on the goggles covers the laser's wavelength. From the top.",
   hand: () => "STOP. Your hand went into the beam. 2 watts burns skin in a fraction of a second. Keep hands out of the beam path; move things with the shutter closed. From the top.",
   eye: () => "STOP. Your eye was in the beam path. You get one pair. Never look along a beam, and never put your face near it. From the top.",
+  cut: (what) => `STOP. You just lost ${what}. That's over a watt of Class 4: keep every part of yourself out of the beam, and move things only with the shutter closed. From the top.`,
+  burnt: () => "STOP. You looked into the beam, and that dark patch in your vision is where it burned your retina. That one doesn't heal. Never look along a beam. From the top.",
+  fire: (what) => `STOP. FIRE. The beam set ${what || 'something black'} alight: black things absorb all 2 watts. Terminate every beam on a beam dump, and keep black card, cloth and cables out of the path. From the top.`,
   head: () => "STOP. You bent down to beam height. That's how people lose an eye picking up a dropped screw. Keep your eyes well above the beam. From the top.",
 };
 const failFade = new THREE.Mesh(new THREE.SphereGeometry(0.22, 16, 12), new THREE.MeshBasicMaterial({ color: 0x000000,
@@ -2691,7 +2713,7 @@ function updateFailure(dt) {
   const F = failing; F.t += dt;
   failFade.material.opacity = F.t < 0.7 ? F.t / 0.7 : F.t < 1.4 ? 1 : Math.max(0, 1 - (F.t - 1.4) / 0.8);
   if (!F.reset && F.t >= 1.0) {                        // in the dark: reset the lab and put you back at the door
-    F.reset = true;
+    F.reset = true; extremeClearFires();
     loadLevel(game.level); startLevel();
     Object.assign(game.safety, { strikes: F.strikes, zaps: F.zaps, log: F.log });
     resetToStart();
@@ -2705,6 +2727,7 @@ function segDist(p, a, b) { _sp.subVectors(b, a); const t = THREE.MathUtils.clam
 let supJump = 0;
 function updateSafety(dt) {
   const L = LEVELS[game.level], S = game.safety;
+  updateExtreme(dt);
   // power meter readouts (whenever there's a meter on the table)
   for (const c of components) if (c.userData.display) {
     const on = game.meterHit === c, w = on ? game.meterPower * (1 + 0.008 * Math.sin(performance.now() / 300)) : 0;
@@ -2794,9 +2817,11 @@ function updateSafety(dt) {
       const gp = gripPos(p);
       const lp = laser.worldToLocal(gp.clone());       // hand on the laser body or its button: behind the aperture is safe
       if (lp.z < 0.01 && gp.distanceTo(laserAt) < 0.25) continue;
+      if (extreme.on) { const lost = extremeHandCheck(p, segs); if (lost) { strike('cut', p, lost); return; } }
       if (segs.some(({ a, b, p: pw = laserState.watts }) => pw > 0.005 && segDist(gp, a, b) < 0.035)) { strike('hand', p); return; }
     }
-    if (segs.some(({ a, b }) => segDist(head, a, b) < 0.12)) strike('eye');
+    const eyeSeg = segs.find(({ a, b }) => segDist(head, a, b) < 0.12);
+    if (eyeSeg) strike(extreme.on && extremeEyeHit(eyeSeg, head) ? 'burnt' : 'eye');
     else if (segs.some((sg) => (sg.p ?? laserState.watts) > 0.005) && head.y < TABLE_PLANE.y + 0.3 && Math.abs(head.x) < 1.9 && head.z > 0 && head.z < 1.8) strike('head');
   }
   const now = Object.keys(done).length;
@@ -2822,6 +2847,259 @@ function updateSafety(dt) {
     say(S.strikes === 0 ? "Not a single strike. Here's your certificate. Frame it." : S.strikes <= 2 ? "Certified. Just. Let's not mention the incidents to Health and Safety." : "Well... you're certified. To use a torch. Under supervision.");
     panelSig = '';
   }
+}
+// ───────────────────────── Extreme safety: what a 2 W beam really wants to do ─────────────────────────
+// A tick on the main menu. In the safety course: looking into the beam burns a permanent dark patch into
+// that eye where the light landed on the retina; over 1 W, any part of a hand in the beam comes off (and
+// falls on the floor); and a beam ending on anything black sets it on fire. Injuries last until the menu.
+const softTex = (draw, n = 128) => { const c = document.createElement('canvas'); c.width = c.height = n; draw(c.getContext('2d'), n);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
+const flameTex = softTex((g, n) => { const r = g.createRadialGradient(n / 2, n * 0.6, 0, n / 2, n * 0.6, n / 2);
+  r.addColorStop(0, 'rgba(255,255,220,1)'); r.addColorStop(0.25, 'rgba(255,210,80,0.9)'); r.addColorStop(0.55, 'rgba(255,90,10,0.55)'); r.addColorStop(1, 'rgba(160,20,0,0)');
+  g.fillStyle = r; g.fillRect(0, 0, n, n); });
+const smokeTex = softTex((g, n) => { const r = g.createRadialGradient(n / 2, n / 2, 0, n / 2, n / 2, n / 2);
+  r.addColorStop(0, 'rgba(70,70,70,0.75)'); r.addColorStop(0.6, 'rgba(50,50,50,0.35)'); r.addColorStop(1, 'rgba(40,40,40,0)'); g.fillStyle = r; g.fillRect(0, 0, n, n); });
+const scotomaTex = softTex((g, n) => {                // a burn on the retina: black core, ragged edge, brownish halo
+  const c = n / 2, r = g.createRadialGradient(c, c, 0, c, c, c);
+  r.addColorStop(0, 'rgba(0,0,0,1)'); r.addColorStop(0.42, 'rgba(0,0,0,1)'); r.addColorStop(0.62, 'rgba(25,8,4,0.85)'); r.addColorStop(0.82, 'rgba(60,25,10,0.3)'); r.addColorStop(1, 'rgba(60,25,10,0)');
+  g.fillStyle = r; g.fillRect(0, 0, n, n);
+  g.fillStyle = 'rgba(0,0,0,0.9)';
+  for (let i = 0; i < 14; i++) { const a = Math.random() * 6.28, d = c * (0.35 + Math.random() * 0.2); g.beginPath(); g.arc(c + Math.cos(a) * d, c + Math.sin(a) * d, c * (0.08 + Math.random() * 0.12), 0, 6.28); g.fill(); }
+}, 256);
+const stumpMat = std(0x6e1208, 0, 0.45, { emissive: 0x2a0300 });
+// black things for the beam to land on (only in the safety course, only in Extreme)
+const extremeProps = new THREE.Group();
+{
+  const boxMat = std(0x161618, 0, 0.9), tape = std(0x5a5650, 0, 0.7);
+  const label = (() => { const c = document.createElement('canvas'); c.width = 256; c.height = 128; const g = c.getContext('2d');
+    g.fillStyle = '#f2efe6'; g.fillRect(0, 0, 256, 128); g.fillStyle = '#222'; g.font = 'bold 40px system-ui, sans-serif'; g.textAlign = 'center';
+    g.fillText('OLD', 128, 52); g.fillText('MOUNTS', 128, 100); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; })();
+  [[0.36, 0.38, 0.44, 0.03], [0.34, 0.37, 0.42, -0.05], [0.33, 0.36, 0.4, 0.06]].reduce((y, [d, h, w, rot], i) => {   // a stack of black boxes on the left wall
+    const b = box(d, h, w, boxMat); b.position.set(-3 + d / 2 + 0.01, y + h / 2, 0.8 + (i - 1) * 0.02); b.rotation.y = rot;
+    b.userData.burn = 'the box of old mounts'; extremeProps.add(b);
+    const t = box(d + 0.004, 0.004, 0.05, tape, false); t.position.y = h / 2; b.add(t);
+    if (i === 1) { const l = new THREE.Mesh(new THREE.PlaneGeometry(0.2, 0.1), new THREE.MeshBasicMaterial({ map: label })); l.position.set(d / 2 + 0.002, 0, 0); l.rotation.y = Math.PI / 2; b.add(l); }
+    return y + h;
+  }, 0);
+  // someone's black rucksack on a hook beside the goggle rack, right where the spanner sends the beam
+  const nylon = std(0x121214, 0, 0.85), strap = std(0x26272b, 0, 0.7);
+  const body = box(0.15, 0.4, 0.3, nylon); body.position.set(2.92, 0.9, 0.66); body.userData.burn = "someone's rucksack"; extremeProps.add(body);
+  const flap = box(0.16, 0.12, 0.31, nylon, false); flap.position.set(0.005, 0.16, 0); flap.rotation.z = 0.06; body.add(flap);
+  const pocket = box(0.05, 0.16, 0.22, nylon, false); pocket.position.set(-0.095, -0.08, 0); body.add(pocket);
+  for (const sz of [-1, 1]) { const st = box(0.012, 0.42, 0.04, strap, false); st.position.set(0.078, 0.02, sz * 0.09); body.add(st); }
+  const loop = box(0.02, 0.06, 0.02, strap, false); loop.position.set(0.06, 0.23, 0); body.add(loop);
+  const hook = box(0.07, 0.015, 0.015, std(0x9aa0a8, 0.8, 0.3), false); hook.position.set(0.045, 0.26, 0); body.add(hook);
+}
+function isDarkSurface(o) {
+  const ud = o.userData;
+  if (ud.dump || ud.sensor || ud.card || ud.screen || ud.whiteScreen || ud.wfs) return false;      // made for it (or paper)
+  if (ud.burn || ud.optic || ud.iris) return true;                     // black things, or a beam ending on a black anodised mount / iris
+  const m = Array.isArray(o.material) ? o.material[0] : o.material;
+  if (!m?.color || m.map || m.visible === false) return false;
+  const c = m.color; return 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b < 0.06;   // (linear) roughly darker than #444
+}
+const extremeOn = () => extreme.on && game.tier === 'safety' && LEVELS[game.level]?.safety;
+// ── fire
+let fireNoise = null;
+function fireSound(level) {
+  if (!actx) return;
+  if (!fireNoise) {
+    const n = actx.sampleRate * 2, buf = actx.createBuffer(1, n, actx.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (Math.random() < 0.002 ? 4 : 0.4);    // a hiss with crackles
+    const src = actx.createBufferSource(); src.buffer = buf; src.loop = true;
+    const bp = actx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = 0.6;
+    const g = actx.createGain(); g.gain.value = 0; src.connect(bp).connect(g).connect(actx.destination); src.start();
+    fireNoise = g;
+  }
+  fireNoise.gain.setTargetAtTime(Math.min(0.35, level * 0.12), actx.currentTime, 0.15);
+}
+function makeFire(obj, point, n) {
+  const f = { obj, pos: point.clone().addScaledVector(n, 0.01), heat: 0, lit: false, fed: 0, name: obj.userData.burn || (obj.userData.optic || obj.userData.iris ? 'an optic mount' : 'something black'), g: new THREE.Group(), flames: [], smoke: [] };
+  f.g.position.copy(f.pos); scene.add(f.g);
+  for (let i = 0; i < 14; i++) {
+    const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: flameTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, toneMapped: false }));
+    m.userData = { ph: Math.random(), dx: (Math.random() - 0.5) * 0.8, sp: 1.3 + Math.random() * 0.8 }; f.g.add(m); f.flames.push(m);
+  }
+  for (let i = 0; i < 6; i++) {
+    const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, depthWrite: false, transparent: true }));
+    m.userData = { ph: Math.random(), dx: (Math.random() - 0.5) * 0.6 }; f.g.add(m); f.smoke.push(m);
+  }
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: flameTex, color: 0xff7a20, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+  glow.quaternion.setFromUnitVectors(V(0, 0, 1), n); glow.position.addScaledVector(n, -0.006); f.g.add(glow); f.glow = glow;
+  extreme.fires.push(f); return f;
+}
+function extremeClearFires() { for (const f of extreme.fires) scene.remove(f.g); extreme.fires.length = 0; fireSound(0); }
+function updateFires(dt, segs) {
+  const on = extremeOn() && game.state === 'playing' && !failing;
+  for (const f of extreme.fires) f.fed = 0;
+  if (on) for (let i = 0; i < segs.length; i++) {           // where does each beam end? on something black, it burns
+    const s = segs[i];
+    if (!s.hit || s.miss || (s.p ?? 0) < 0.2) continue;
+    if (segs.some((t, j) => j !== i && t.a.distanceTo(s.b) < 0.012)) continue;         // it carries on from here
+    if (!isDarkSurface(s.hit)) continue;
+    const f = extreme.fires.find((x) => x.obj === s.hit && x.pos.distanceTo(s.b) < 0.15) || makeFire(s.hit, s.b, s.n || V(0, 1, 0));
+    f.fed = Math.max(f.fed, s.p);
+  }
+  const t = performance.now() / 1000; let total = 0;
+  for (const f of extreme.fires) {
+    f.heat = f.fed ? f.heat + dt * f.fed : f.heat - dt * (f.lit ? 0.45 : 2);
+    if (!f.lit && f.heat > 0.5) {
+      f.lit = true; tone(180, 0.25, 0, 0.12);
+      say([`FIRE! You've set ${f.name} on fire! Black absorbs everything. Block that beam!`, `It's ${f.name}! It's burning! Get a beam dump in the way!`,
+        `Something's smoking... ${f.name}! Black things burn. That's why we terminate beams on a dump.`][Math.min(extreme.fires.filter((x) => x.lit).length - 1, 2)]);
+    }
+    const size = f.lit ? THREE.MathUtils.clamp(0.05 + f.heat * 0.045, 0.05, 0.5) : f.fed ? 0.02 : 0;
+    total += f.lit ? size * 4 : 0;
+    f.flames.forEach((m) => {
+      const u = m.userData, life = (t * u.sp + u.ph) % 1;
+      m.visible = size > 0.03;
+      m.position.set(u.dx * size * 0.6 * (1 - life), life * size * 2.0, 0);
+      m.scale.setScalar(size * (1.3 - life * 0.8) * (0.8 + 0.4 * Math.sin(t * 17 + u.ph * 9)));
+      m.material.opacity = Math.sin(Math.PI * life) * 0.9; m.material.color.setHSL(0.1 - life * 0.08, 1, 0.6);
+    });
+    f.smoke.forEach((m) => {
+      const u = m.userData, life = (t * 0.35 + u.ph) % 1;
+      m.visible = size > 0;
+      m.position.set(u.dx * size + Math.sin(t + u.ph * 6) * 0.05 * life, size * 1.2 + life * (0.3 + size * 2.5), 0);
+      m.scale.setScalar((0.06 + size * 0.8) * (0.5 + life * 1.5)); m.material.opacity = (1 - life) * Math.min(1, size * 6) * 0.6;
+    });
+    f.glow.scale.setScalar(Math.max(0.001, 0.04 + size * 0.35)); f.glow.material.opacity = f.fed ? 0.7 : f.lit ? 0.25 : 0;
+    if (f.lit && f.heat > 9 && game.safety && !failing) strike('fire', null, f.name);
+  }
+  for (let i = extreme.fires.length - 1; i >= 0; i--) if (extreme.fires[i].heat <= 0 && !extreme.fires[i].fed) { scene.remove(extreme.fires[i].g); extreme.fires.splice(i, 1); }
+  fireSound(total);
+}
+// ── severed parts drop to the floor (or the table) and stay there
+const _ssA = V(), _ssB = V(), _ssC = V();
+function segSegDist(p1, q1, p2, q2) {                    // closest distance between two line segments
+  const d1 = _ssA.subVectors(q1, p1), d2 = _ssB.subVectors(q2, p2), r = _ssC.subVectors(p1, p2);
+  const a = d1.dot(d1), e = d2.dot(d2), f = d2.dot(r), c = d1.dot(r), b = d1.dot(d2), den = a * e - b * b;
+  let s = den > 1e-12 ? THREE.MathUtils.clamp((b * f - c * e) / den, 0, 1) : 0;
+  let t = e > 1e-12 ? (b * s + f) / e : 0;
+  if (t < 0) { t = 0; s = THREE.MathUtils.clamp(-c / a, 0, 1); } else if (t > 1) { t = 1; s = THREE.MathUtils.clamp((b - c) / a, 0, 1); }
+  return V().copy(p1).addScaledVector(d1, s).distanceTo(V().copy(p2).addScaledVector(d2, t));
+}
+function dropPart(src, skip) {                           // a copy of the part, in the world, falling
+  src.updateWorldMatrix(true, true);
+  const c = src.clone(true); if (skip != null && skip >= 0) c.remove(c.children[skip]);
+  src.matrixWorld.decompose(c.position, c.quaternion, c.scale);
+  scene.add(c);
+  extreme.parts.push({ o: c, v: V((Math.random() - 0.5) * 0.4, 0.4, (Math.random() - 0.5) * 0.4), w: V(Math.random() * 6, Math.random() * 6, Math.random() * 6), rest: false });
+  puff(c.position, 4);
+}
+function updateParts(dt) {
+  for (const P of extreme.parts) {
+    if (P.rest) continue;
+    P.v.y -= 9.8 * dt; P.o.position.addScaledVector(P.v, dt);
+    P.o.rotation.x += P.w.x * dt; P.o.rotation.y += P.w.y * dt; P.o.rotation.z += P.w.z * dt;
+    const onTable = Math.abs(P.o.position.x - TABLE_PLANE.x) < 1.55 && Math.abs(P.o.position.z - TABLE_PLANE.z) < 0.8 && P.o.position.y > TABLE_PLANE.y - 0.05;
+    const floorY = (onTable ? TABLE_PLANE.y : 0) + 0.012;
+    if (P.o.position.y < floorY) { P.o.position.y = floorY; if (Math.abs(P.v.y) < 0.6) { P.rest = true; P.o.rotation.x = Math.PI / 2 * Math.round(P.o.rotation.x / (Math.PI / 2)); } else { P.v.y *= -0.3; P.v.x *= 0.5; P.v.z *= 0.5; P.w.multiplyScalar(0.5); } }
+  }
+}
+const puffs = [];
+function puff(pos, n = 5) {
+  for (let i = 0; i < n; i++) {
+    const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: smokeTex, depthWrite: false, transparent: true }));
+    m.position.copy(pos); m.scale.setScalar(0.03); scene.add(m);
+    puffs.push({ m, v: V((Math.random() - 0.5) * 0.08, 0.12 + Math.random() * 0.1, (Math.random() - 0.5) * 0.08), life: 0 });
+  }
+}
+function updatePuffs(dt) {
+  for (let i = puffs.length - 1; i >= 0; i--) {
+    const P = puffs[i]; P.life += dt / 1.6; P.m.position.addScaledVector(P.v, dt);
+    P.m.scale.setScalar(0.03 + P.life * 0.18); P.m.material.opacity = (1 - P.life) * 0.7;
+    if (P.life >= 1) { scene.remove(P.m); puffs.splice(i, 1); }
+  }
+}
+// ── hands: which bits of a glove (or a tracked hand) are in a beam over 1 W?
+const HAND_CHAINS = ['thumb', 'index-finger', 'middle-finger', 'ring-finger', 'pinky-finger'].map((f) =>
+  (f === 'thumb' ? ['metacarpal', 'phalanx-proximal', 'phalanx-distal', 'tip'] : ['metacarpal', 'phalanx-proximal', 'phalanx-intermediate', 'phalanx-distal', 'tip']).map((j) => `${f}-${j}`));
+const HAND_NAMES = ['thumb', 'index finger', 'middle finger', 'ring finger', 'little finger'];
+function extremeHandCheck(st, segs) {
+  if (st.handLost) return null;
+  const hot = segs.filter((sg) => (sg.p ?? laserState.watts) > 1);
+  if (!hot.length) return null;
+  const inBeam = (p1, p2, r) => hot.some(({ a, b }) => segSegDist(p1, p2, a, b) < r);
+  const lost = [];
+  const G = st.glove?.userData;
+  if (st.glove && G?.chains) {
+    const pts = []; for (const y of [-0.03, 0, 0.03]) pts.push(G.palm.localToWorld(V(0, y, -0.035)), G.palm.localToWorld(V(0, y, 0.035)));
+    if ([0, 2, 4].some((i) => inBeam(pts[i], pts[i + 1], 0.02))) {          // straight across the palm: the whole hand
+      dropPart(st.glove, st.glove.children.indexOf(G.cuff));
+      for (const c of st.glove.children) if (c !== G.cuff) c.visible = false;
+      const cap = new THREE.Mesh(new THREE.CircleGeometry(0.03, 20), stumpMat); cap.position.set(G.s * 0.016, 0, 0.046); cap.scale.set(0.72, 1, 1); st.glove.add(cap);
+      st.handLost = true; return 'your hand';
+    }
+    for (const ch of G.chains) for (let k = 0; k < Math.min(ch.cut, ch.segs.length); k++) {
+      const p1 = ch.groups[k].getWorldPosition(V()), p2 = ch.groups[k].localToWorld(V(0, 0, -ch.lens[k]));
+      if (!inBeam(p1, p2, ch.r + 0.004)) continue;
+      const piece = new THREE.Group(); ch.groups[k].updateWorldMatrix(true, true);
+      piece.add(ch.segs[k].clone()); if (ch.groups[k + 1]) { const n = ch.groups[k + 1].clone(true); n.position.copy(ch.groups[k + 1].position); n.quaternion.copy(ch.groups[k + 1].quaternion); piece.add(n); }
+      ch.groups[k].add(piece); dropPart(piece); ch.groups[k].remove(piece);
+      ch.segs[k].visible = false; if (ch.groups[k + 1]) ch.groups[k + 1].visible = false;
+      const cap = new THREE.Mesh(new THREE.SphereGeometry(ch.r * 1.05, 10, 8), stumpMat); ch.groups[k].add(cap);
+      ch.cut = k; lost.push((k === 0 ? 'your ' : k === ch.segs.length - 1 ? 'the tip of your ' : 'half your ') + ch.name);
+      if (ch.name === 'index finger') st.indexLost = true;
+      break;
+    }
+  } else if (st.hand?.joints?.wrist) {                     // tracked hands: collapse the bones past the cut
+    const J = st.hand.joints, model = st.hand.children.find((c) => c.motionController)?.motionController;
+    st.cutJoints ||= new Set();
+    HAND_CHAINS.forEach((names, ci) => {
+      for (let k = 0; k < names.length - 1; k++) {
+        const a = J[names[k]], b = J[names[k + 1]]; if (!a || !b || st.cutJoints.has(names[k + 1])) continue;
+        if (!inBeam(a.getWorldPosition(V()), b.getWorldPosition(V()), (a.jointRadius || 0.009) + 0.004)) continue;
+        if (k === 0) { st.handLost = true; if (model) st.hand.children.forEach((c) => { c.visible = false; }); lost.push('your hand'); return; }
+        names.slice(k + 1).forEach((n) => st.cutJoints.add(n));
+        for (const bn of model?.bones || []) if (bn && st.cutJoints.has(bn.jointName)) bn.scale.setScalar(1e-4);
+        puff(a.getWorldPosition(V()), 4);
+        lost.push((k === 1 ? 'your ' : 'the end of your ') + HAND_NAMES[ci]); if (ci === 1) st.indexLost = true;
+        break;
+      }
+    });
+  }
+  if (!lost.length) return null;
+  tone(90, 0.4, 0, 0.25); pulse(st, 1, 400);
+  return st.handLost ? 'your hand' : lost.length > 1 ? lost.slice(0, -1).join(', ') + ' and ' + lost.at(-1) : lost[0];
+}
+// ── eyes: a patch burned into the eye the beam went into, where on the retina it landed
+const eyeFlash = new THREE.Mesh(new THREE.SphereGeometry(0.2, 16, 12), new THREE.MeshBasicMaterial({ color: 0xeaffea, transparent: true, opacity: 0, side: THREE.BackSide, depthTest: false, depthWrite: false, toneMapped: false }));
+eyeFlash.renderOrder = 1003; camera.add(eyeFlash);
+function extremeEyeHit(seg, head) {
+  const toSrc = V().subVectors(seg.a, seg.b).normalize();                  // light arrives from the source end
+  const qi = camera.getWorldQuaternion(new THREE.Quaternion()).invert();
+  const dirCam = toSrc.clone().applyQuaternion(qi);
+  if (dirCam.z > -0.2) return false;                                       // coming from behind or the side: no way into the eye
+  const right = V(1, 0, 0).applyQuaternion(camera.getWorldQuaternion(new THREE.Quaternion()));
+  _sp.subVectors(seg.b, seg.a); const t = THREE.MathUtils.clamp(V().subVectors(head, seg.a).dot(_sp) / _sp.lengthSq(), 0, 1);
+  const near = V().copy(seg.a).addScaledVector(_sp, t), eye = V().subVectors(near, head).dot(right) > 0 ? 2 : 1;   // layer 1: left eye, 2: right
+  const d = 0.4, m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: scotomaTex, transparent: true, depthTest: false, depthWrite: false, toneMapped: false }));
+  m.position.copy(dirCam).multiplyScalar(d); m.quaternion.setFromUnitVectors(V(0, 0, 1), dirCam.clone().negate());
+  m.scale.setScalar(2 * d * Math.tan(9 * DEG) * (0.85 + Math.random() * 0.3)); m.rotation.z += Math.random() * 6.28;
+  m.layers.set(eye); m.renderOrder = 1002; camera.add(m); extreme.scotomas.push(m);
+  eyeFlash.material.opacity = 1; tone(2400, 0.5, 0, 0.12);
+  return true;
+}
+function extremeHeal() {
+  extremeClearFires();
+  for (const m of extreme.scotomas) camera.remove(m); extreme.scotomas.length = 0;
+  for (const P of extreme.parts) scene.remove(P.o); extreme.parts.length = 0;
+  for (const p of pointers) {
+    if (p.kind !== 'xr') continue;
+    p.handLost = p.indexLost = false;
+    if (p.glove && p.src) { p.grip.remove(p.glove); p.glove = buildGlove(p.src.handedness); p.grip.add(p.glove); }     // a fresh pair
+    if (p.cutJoints) { for (const bn of p.hand.children.find((c) => c.motionController)?.motionController?.bones || []) bn?.scale.setScalar(1); p.cutJoints.clear(); }
+    p.hand.children.forEach((c) => { c.visible = true; });
+  }
+}
+function updateExtreme(dt) {
+  const want = extremeOn() && game.state !== 'title';
+  if (want && !extremeProps.parent) { room.add(extremeProps); beamColliders.push(...extremeProps.children); }
+  else if (!want && extremeProps.parent) { room.remove(extremeProps); for (const c of extremeProps.children) beamColliders.splice(beamColliders.indexOf(c), 1); }
+  updateFires(dt, game.segs || []);
+  updateParts(dt); updatePuffs(dt);
+  if (eyeFlash.material.opacity > 0) eyeFlash.material.opacity = Math.max(0, eyeFlash.material.opacity - dt * 1.5);
 }
 // ───────────────────────── The Floor is Lava: standing in it hurts ─────────────────────────
 const hurtShell = new THREE.Mesh(new THREE.SphereGeometry(0.25, 16, 12), new THREE.MeshBasicMaterial({ color: 0xff2a00,
@@ -3494,7 +3772,7 @@ function traceBranch(b, segs, ao, nm) {
       const den = dir.dot(ax);
       if (Math.abs(den) > 0.2) { const t = tmp.subVectors(c, origin).dot(ax) / den; if (t > 0) { hit.point.copy(origin).addScaledVector(dir, t); hit.distance = t; } }
     }
-    segs.push({ a: origin.clone(), b: hit.point.clone(), q: { ...q }, qv: { ...qv }, p: power, branch: tag });
+    segs.push({ a: origin.clone(), b: hit.point.clone(), q: { ...q }, qv: { ...qv }, p: power, branch: tag, hit: hit.object, n: hit.normal });
     adv(hit.distance); remaining -= hit.distance;
     const pass = () => { skip = hit.object; origin.copy(hit.point).addScaledVector(dir, 0.0005); adv(0.0005); };
     if (ud.bs) { power *= 0.5; pass(); continue; }
@@ -4475,7 +4753,7 @@ function traceBeam() {
         if (t > 0) { hit.point.copy(origin).addScaledVector(dir, t); hit.distance = t; }
       }
     }
-    step(hit.point, hit.distance);
+    step(hit.point, hit.distance); Object.assign(segs[segs.length - 1], { hit: hit.object, n: hit.normal });
     remaining -= hit.distance;
     const card = hit.object.userData.card;
     if (card) {                                    // detector card: shows where the beam is, then blocks it
@@ -4663,16 +4941,18 @@ function buildGlove(handedness) {
     const root = new THREE.Group(); root.position.set(s * 0.013, y, -0.046); g.add(root);
     const knuckle = part(new THREE.SphereGeometry(r * 1.15, 12, 8)); root.add(knuckle);
     const lens = [L * 0.44, L * 0.31, L * 0.25];
-    root.add(seg(lens[0], r));
-    const mid = new THREE.Group(); mid.position.z = -lens[0]; root.add(mid); mid.add(seg(lens[1], r * 0.93));
-    const tip = new THREE.Group(); tip.position.z = -lens[1]; mid.add(tip); tip.add(seg(lens[2], r * 0.85));
+    const s0 = seg(lens[0], r); root.add(s0);
+    const mid = new THREE.Group(); mid.position.z = -lens[0]; root.add(mid); const s1 = seg(lens[1], r * 0.93); mid.add(s1);
+    const tip = new THREE.Group(); tip.position.z = -lens[1]; mid.add(tip); const s2 = seg(lens[2], r * 0.85); tip.add(s2);
     const end = new THREE.Object3D(); end.position.z = -lens[2]; tip.add(end);
-    fingers.push({ root, mid, tip, end });
+    fingers.push({ root, mid, tip, end, chain: { groups: [root, mid, tip], segs: [s0, s1, s2], lens, r, cut: 9 } });
   }
   const tRoot = new THREE.Group(); tRoot.position.set(s * 0.006, 0.036, 0.012); g.add(tRoot);
-  const tCurl = new THREE.Group(); tRoot.add(tCurl); tCurl.add(seg(0.036, 0.0098));
-  const tTip = new THREE.Group(); tTip.position.z = -0.036; tCurl.add(tTip); tTip.add(seg(0.03, 0.009));
-  g.userData = { s, fingers, tRoot, tCurl, tTip, indexTip: fingers[0].end,
+  const tCurl = new THREE.Group(); tRoot.add(tCurl); const ts0 = seg(0.036, 0.0098); tCurl.add(ts0);
+  const tTip = new THREE.Group(); tTip.position.z = -0.036; tCurl.add(tTip); const ts1 = seg(0.03, 0.009); tTip.add(ts1);
+  const chains = [...fingers.map((f) => f.chain), { groups: [tCurl, tTip], segs: [ts0, ts1], lens: [0.036, 0.03], r: 0.0098, cut: 9, thumb: true }];
+  ['index finger', 'middle finger', 'ring finger', 'little finger', 'thumb'].forEach((n, i) => { chains[i].name = n; });
+  g.userData = { s, fingers, tRoot, tCurl, tTip, indexTip: fingers[0].end, palm, cuff, chains,
     cur: { index: 0, grip: 0, thumb: 0.5, up: 0 } };
   poseGlove(g, g.userData.cur);
   return g;
@@ -4805,7 +5085,7 @@ function aimOnTable(st) { const p = V(); return aimRay(st).ray.intersectPlane(ho
 
 // XRGrabInteractable selectEntered → BeginPlacement
 function beginGrab(st, how) {
-  if (st.held || intro.active) return;
+  if (st.held || intro.active || st.handLost) return;
   let obj = null, mode = null;
   let joy = false;
   if (st.kind === 'xr') {
@@ -5000,6 +5280,7 @@ function updatePointer(st, dt) {
 const pokeRay = new THREE.Raycaster();
 function fingertip(st) {
   const j = st.hand?.joints?.['index-finger-tip'];
+  if (st.handLost || st.indexLost) return null;
   if (st.src?.hand && j) return j.getWorldPosition(V());
   if (st.glove && st.pointing) return st.glove.userData.indexTip.getWorldPosition(V());
   return null;
